@@ -53,10 +53,19 @@ namespace Protobot {
         }
 
         public void RemoveDeletedDetectors() {
-            var deleteList = detectors.Where(detector => detector.gameObject.IsDeleted()).ToList();
+            if (detectors == null || detectors.Count == 0) return;
+
+            var deleteList = detectors.Where(detector =>
+                    detector == null ||
+                    detector.gameObject == null ||
+                    detector.gameObject.IsDeleted())
+                .ToList();
 
             foreach (var detector in deleteList) {
-                detector.RemoveHole(this);
+                detectors.Remove(detector);
+                if (detector != null) {
+                    detector.RemoveHole(this);
+                }
             }
         }
 
@@ -75,11 +84,27 @@ namespace Protobot {
             detectors.Remove(detector);
         }
 
+        public void DetachAllDetectors() {
+            if (detectors == null || detectors.Count == 0) return;
+
+            var attachedDetectors = detectors.ToList();
+            detectors.Clear();
+
+            foreach (var detector in attachedDetectors) {
+                if (detector != null) {
+                    detector.RemoveHole(this);
+                }
+            }
+        }
+
         private void OnDisable() {
             if (!IsEmpty && gameObject.IsDeleted()) {
-                foreach (var detector in detectors)
-                    detector.RemoveHole(this);
+                DetachAllDetectors();
             }
+        }
+
+        private void OnDestroy() {
+            DetachAllDetectors();
         }
     }
 

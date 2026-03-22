@@ -13,6 +13,7 @@ namespace Protobot.UI {
         public Text EmptyListText;
         public string EmptySearchMessage;
         public Text searchText; //the text typed in the searchbar
+        [SerializeField] private InputField searchInput;
         private string prevSearch; //the text typed in the searchbar
         public Toggle searchToggle;
         public Dropdown groupDropdown;
@@ -30,9 +31,12 @@ namespace Protobot.UI {
 
         public UnityEvent OnSelectPartDisplay;
         public UnityEvent OnDeselectPartDisplay;
-        
+
 
         void Start() {
+            EnsureSearchInput();
+            EnsurePartTypesLoaded();
+
             PartDisplayUI.OnChangeSelected += _ => {
                 OnSelectPartDisplay?.Invoke();
             };
@@ -52,11 +56,13 @@ namespace Protobot.UI {
         }
         
         void Update() {
-            if (searchToggle.isOn && searchText.text != prevSearch) {
+            string currentSearch = GetSearchTerm();
+
+            if (searchToggle.isOn && currentSearch != prevSearch) {
                 DisplaySearchResults();
             }
 
-            prevSearch = searchText.text;
+            prevSearch = currentSearch;
             
             if (toggleCount == 0 && prevToggleCount != 0)
                 OnDeselectPartDisplay?.Invoke();
@@ -75,16 +81,21 @@ namespace Protobot.UI {
         }
 
         public void DisplayListGroup(string group) {
-            List<PartType> groupList = PartsManager.partTypes.Where(p => p.group.ToString() == group).ToList();
+            List<PartType> groupList = GetAvailablePartTypes()
+                .Where(p => p != null && p.group.ToString() == group)
+                .ToList();
             UpdateDisplayedParts(groupList);
         }
 
         public void DisplaySearchResults() {
             searchToggle.isOn = true;
-            string search = searchText.text.ToLower();
-            List<PartType> searchList = PartsManager.partTypes.Where(p => 
+            string search = GetSearchTerm().ToLowerInvariant();
+            List<PartType> searchList = GetAvailablePartTypes().Where(p =>
+                p != null
+                && p.group != PartType.PartGroup.None
+                &&
                 CompareSearch(search, p.name)
-                && p.group != PartType.PartGroup.None).ToList();
+            ).ToList();
                 
             UpdateDisplayedParts(searchList);
 
@@ -125,6 +136,38 @@ namespace Protobot.UI {
                 newToggle.group = partDisplayToggleGroup;
             }
             partUIsContainer.sizeDelta = new Vector2(partUIsContainer.sizeDelta.x, (partsToDisplay.Count) * (partUI.GetComponent<RectTransform>().sizeDelta.y + spacing) - spacing);
+        }
+
+        private void EnsurePartTypesLoaded() {
+            if (PartsManager.partTypes == null || PartsManager.partTypes.Length == 0) {
+                PartsManager.LoadPartTypes();
+            }
+        }
+
+        private IEnumerable<PartType> GetAvailablePartTypes() {
+            EnsurePartTypesLoaded();
+            return (PartsManager.partTypes ?? Enumerable.Empty<PartType>())
+                .Where(partType => partType != null && partType.id != PartsManager.ChainToolPartId);
+        }
+
+        private void EnsureSearchInput() {
+            if (searchInput == null && searchText != null) {
+                searchInput = searchText.GetComponentInParent<InputField>();
+            }
+
+            if (searchInput == null) {
+                searchInput = GetComponentInChildren<InputField>(true);
+            }
+        }
+
+        private string GetSearchTerm() {
+            EnsureSearchInput();
+
+            if (searchInput != null) {
+                return searchInput.text == null ? string.Empty : searchInput.text;
+            }
+
+            return string.Empty;
         }
     }
 }

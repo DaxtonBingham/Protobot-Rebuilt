@@ -27,9 +27,9 @@ namespace Protobot.UI {
         }
         
         IEnumerator DisplayLoadError() {
-            buildNameText.text = "File path not found...";
-            buildNameText.color = new Color(0.9f,0.3f,0.3f,0);
-            yield return new WaitForSeconds(1);
+            buildNameText.text = "Build unreadable/corrupt";
+            buildNameText.color = new Color(0.9f, 0.3f, 0.3f, 1f);
+            yield return new WaitForSeconds(1.5f);
             BuildsListUI.OnLoadError?.Invoke();
         }
     }

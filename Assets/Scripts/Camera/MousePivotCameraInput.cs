@@ -9,6 +9,11 @@ namespace Protobot {
         public event Action<float> updateZoom;
         public event Action<Vector2> updatePan;
 
+        [NonSerialized] public bool allowOrbit = true;
+        [NonSerialized] public bool allowPan = true;
+        [NonSerialized] public bool allowZoom = true;
+        [NonSerialized] public bool allowZoomWhenOverUI;
+
         [SerializeField] private float zoomSensitvity = 2f;
         [SerializeField] private float orbitSensitivity = 2f;
         [SerializeField] private bool invertOrbit;
@@ -46,15 +51,17 @@ namespace Protobot {
         }
 
         private void Update() {
-            if (orbitInput.IsPressed && !disableOrbitInput) {
+            if (allowOrbit && orbitInput.IsPressed && !disableOrbitInput) {
                 Orbit();
             }
 
-            if (panInput.IsPressed && !disablePanInput) {
+            if (allowPan && panInput.IsPressed && !disablePanInput) {
                 Pan();
             }
 
-            ZoomScroll();
+            if (allowZoom) {
+                ZoomScroll();
+            }
         }
 
         public void Orbit() {
@@ -80,7 +87,7 @@ namespace Protobot {
         }
 
         public void ZoomScroll() {
-            if (!MouseInput.overUI && MouseInput.withinScreen) {
+            if ((!MouseInput.overUI || allowZoomWhenOverUI) && MouseInput.withinScreen) {
                 float scrollInput = MouseInput.scrollAxis;
                 if (scrollInput != 0)
                     updateZoom?.Invoke(scrollInput * zoomSensitvity);
