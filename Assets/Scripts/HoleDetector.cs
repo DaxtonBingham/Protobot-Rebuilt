@@ -11,8 +11,13 @@ namespace Protobot {
         [SerializeField] HoleCollider.HoleType targetHoleType;
 
         private void Update() {
-            var allHoles = new HashSet<HoleCollider>(holes);
+            var allHoles = new List<HoleCollider>(holes);
             foreach (var holeCollider in allHoles) {
+                if (holeCollider == null) {
+                    RemoveHole(holeCollider);
+                    continue;
+                }
+
                 if (holeCollider.gameObject.IsDeleted())
                     RemoveHole(holeCollider);
             }
@@ -42,7 +47,9 @@ namespace Protobot {
         }
 
         public List<GameObject> GetObjects() {
-            return holes.Select(col => col.holeData.part).ToList();
+            return holes.Where(col => col != null && col.holeData != null && col.holeData.part != null)
+                        .Select(col => col.holeData.part)
+                        .ToList();
         }
 
         /// <summary>
@@ -50,7 +57,8 @@ namespace Protobot {
         /// </summary>
         /// <returns></returns>
         public List<HoleCollider> GetOrderedHoles() {
-            return holes.OrderBy(x => Vector3.Distance(transform.parent.position, x.transform.position))
+            return holes.Where(x => x != null)
+                        .OrderBy(x => Vector3.Distance(transform.parent.position, x.transform.position))
                         .ToList();
         }
 
@@ -64,12 +72,22 @@ namespace Protobot {
 
         //Returns true if a hole is intersecting any other hole current detected by holeDetector
         public bool IsHoleIntersecting(HoleCollider otherHole) {
+            if (otherHole == null) return false;
+
             if (!holes.Contains(otherHole)) {
-                var otherHoleBounds = otherHole.GetComponent<MeshCollider>().bounds;
+                MeshCollider otherMeshCollider = otherHole.GetComponent<MeshCollider>();
+                if (otherMeshCollider == null) return false;
+
+                var otherHoleBounds = otherMeshCollider.bounds;
                 otherHoleBounds.Expand(-0.01f);
 
                 foreach (HoleCollider hole in holes) {
-                    var holeBounds = hole.GetComponent<MeshCollider>().bounds;
+                    if (hole == null) continue;
+
+                    MeshCollider holeMeshCollider = hole.GetComponent<MeshCollider>();
+                    if (holeMeshCollider == null) continue;
+
+                    var holeBounds = holeMeshCollider.bounds;
                     if (holeBounds.Intersects(otherHoleBounds))
                         return true;
                 }
@@ -91,21 +109,38 @@ namespace Protobot {
         }
 
         public void RemoveHole(HoleCollider hole) {
-            holes.Remove(hole);
+            if (hole == null) {
+                int removedCount = holes.RemoveWhere(existingHole => existingHole == null);
+                if (removedCount == 0) return;
+
+                int previousTargetCount = TargetHoleCount;
+                RecalculateTargetHoleCount();
+                if (TargetHoleCount < previousTargetCount) {
+                    OnRemoveTargetHole?.Invoke();
+                }
+
+                OnRemoveHole?.Invoke();
+                return;
+            }
+
+            if (!holes.Remove(hole)) return;
+
             hole.RemoveDetector(this);
 
             if (IsTargetHole(hole)) {
-                TargetHoleCount--;
+                TargetHoleCount = Mathf.Max(0, TargetHoleCount - 1);
                 OnRemoveTargetHole?.Invoke();
             }
             
             OnRemoveHole?.Invoke();
         }
 
-        public bool IsTargetHole(HoleCollider hole) => hole.holeType == targetHoleType;
+        public bool IsTargetHole(HoleCollider hole) => hole != null && hole.holeType == targetHoleType;
 
         public void AddHole(HoleCollider hole) {
-            holes.Add(hole);
+            if (hole == null) return;
+            if (!holes.Add(hole)) return;
+
             hole.AddDetector(this);
 
             if (IsTargetHole(hole)) {
@@ -114,6 +149,10 @@ namespace Protobot {
             }
             
             OnAddHole?.Invoke();
+        }
+
+        private void RecalculateTargetHoleCount() {
+            TargetHoleCount = holes.Count(IsTargetHole);
         }
 
         public static HoleDetector Create(Transform parent, float length, HoleCollider.HoleType targetHoleType) {

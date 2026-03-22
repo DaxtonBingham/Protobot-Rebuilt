@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using Protobot.InputEvents;
+using Protobot.ChainSystem;
 
 namespace Protobot.SelectionSystem {
     public class ClickSelector : Selector {
@@ -17,8 +18,9 @@ namespace Protobot.SelectionSystem {
         private void OnPerformInput() {
             if (!MouseInput.overUI) {
                 if (mouseCast.overObj) {
+                    GameObject selectedObject = ChainManager.ResolveSelectableObject(mouseCast.gameObject);
                     var selection = new ObjectSelection {
-                        gameObject = mouseCast.gameObject,
+                        gameObject = selectedObject,
                         selector = this
                     };
 
