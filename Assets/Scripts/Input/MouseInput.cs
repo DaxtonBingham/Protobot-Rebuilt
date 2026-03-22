@@ -7,6 +7,8 @@ using UnityEngine.InputSystem.Controls;
 
 namespace Protobot {
     public static class MouseInput {
+        private static bool forceOverUI;
+
         public static Mouse CurrentMouse => Mouse.current;
 
         public static ButtonControl LeftButton => CurrentMouse.leftButton;
@@ -17,7 +19,12 @@ namespace Protobot {
         public static float xAxis => CurrentMouse.delta.x.ReadValue();
         public static float yAxis => CurrentMouse.delta.y.ReadValue();
         public static float scrollAxis => CurrentMouse.scroll.y.ReadValue();
-        public static bool overUI => EventSystem.current.IsPointerOverGameObject();
+        public static bool overUI =>
+            forceOverUI || (EventSystem.current != null && EventSystem.current.IsPointerOverGameObject());
         public static bool withinScreen => new Rect(0,0, Screen.width, Screen.height).Contains(Position);
+
+        public static void SetForceOverUI(bool value) {
+            forceOverUI = value;
+        }
     }
 }

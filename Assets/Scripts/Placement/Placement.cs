@@ -185,13 +185,31 @@ namespace Protobot {
         }
 
         private void Place() {
+            bool isGeneratedPlacement = currentPlacementData is IGeneratedPlacementData;
             bool isPartPlacement = currentPlacementData.GetType() == typeof(PartPlacementData);
             bool isGameObjectPlacement = currentPlacementData.GetType() == typeof(GameObjectPlacementData);
 
             var displaceRot = currentDisplacement.rotation.Orientation;
             var displacePos = currentDisplacement.translation.Position;
             
-            if (isPartPlacement) {
+            if (isGeneratedPlacement) {
+                var generatedPlacementData = (IGeneratedPlacementData)currentPlacementData;
+                GameObject placedObj = generatedPlacementData.GeneratePlacedObject(displacePos, displaceRot);
+                if (placedObj != null) {
+                    PartListOutput partListOutput = FindObjectOfType<PartListOutput>();
+                    if (partListOutput != null) {
+                        partListOutput.CalculatePartsList();
+                    }
+
+                    ObjectElement prevElement = new ObjectElement(placedObj);
+                    prevElement.existing = false;
+                    StateSystem.AddElement(prevElement);
+
+                    ObjectElement objElement = new ObjectElement(placedObj);
+                    StateSystem.AddState(objElement);
+                }
+            }
+            else if (isPartPlacement) {
                 var generator = ((PartPlacementData)currentPlacementData).partGenerator;
                 GameObject placedObj = generator.Generate(displacePos, displaceRot);
 
