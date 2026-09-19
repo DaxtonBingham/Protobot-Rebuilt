@@ -113,6 +113,7 @@ namespace Protobot {
             }
 
             partTypes = loadedPartTypes.ToArray();
+            OverrideCatalog.Register();
         }
 
         public static PartType GetPartType(string id) {
