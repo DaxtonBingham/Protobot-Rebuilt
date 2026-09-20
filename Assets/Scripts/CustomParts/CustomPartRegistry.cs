@@ -1,12 +1,47 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using UnityEngine;
 
 namespace Protobot.CustomParts {
     public static class CustomPartRegistry {
         private static readonly Dictionary<string, CustomPartDefinition> Definitions =
             new Dictionary<string, CustomPartDefinition>(StringComparer.Ordinal);
+
+        private static readonly Dictionary<string, CustomPartDefinition> Library = new Dictionary<string, CustomPartDefinition>(StringComparer.Ordinal);
+        private static bool libraryLoaded;
+        private static string LibraryDirectory => Path.Combine(Application.persistentDataPath, "CustomParts");
+
+        private static void LoadLibrary() {
+            if (libraryLoaded) return;
+            libraryLoaded = true;
+            if (!Directory.Exists(LibraryDirectory)) return;
+            foreach (string path in Directory.GetFiles(LibraryDirectory, "*.json")) {
+                try {
+                    var definition = JsonUtility.FromJson<CustomPartDefinition>(File.ReadAllText(path));
+                    if (definition != null && !string.IsNullOrWhiteSpace(definition.definitionId) && definition.sketch != null)
+                        Library[definition.definitionId] = definition;
+                } catch (Exception ex) { Debug.LogWarning("Could not load custom part library item: " + Path.GetFileName(path) + " (" + ex.Message + ")"); }
+            }
+        }
+
+        public static bool SaveToLibrary(CustomPartDefinition definition) {
+            if (definition == null) return false;
+            LoadLibrary();
+            try {
+                Directory.CreateDirectory(LibraryDirectory);
+                // IDs normally use GUIDs; encode any imported ID so it cannot become a path.
+                string fileName = string.Concat(System.Text.Encoding.UTF8.GetBytes(definition.definitionId).Select(b => b.ToString("x2"))) + ".json";
+                string path = Path.Combine(LibraryDirectory, fileName);
+                string temporary = path + ".tmp";
+                File.WriteAllText(temporary, JsonUtility.ToJson(definition, true));
+                if (File.Exists(path)) File.Replace(temporary, path, null); else File.Move(temporary, path);
+                Library[definition.definitionId] = definition.CloneDeep();
+                RegisterDefinition(definition.CloneDeep());
+                return true;
+            } catch (Exception ex) { Debug.LogError("Could not save the custom part library: " + ex.Message); return false; }
+        }
 
         public static event Action OnRegistryChanged;
 
@@ -18,7 +53,9 @@ namespace Protobot.CustomParts {
         }
 
         public static void Clear() {
+            LoadLibrary();
             Definitions.Clear();
+            foreach (var item in Library) Definitions[item.Key] = item.Value.CloneDeep();
             OnRegistryChanged?.Invoke();
         }
 

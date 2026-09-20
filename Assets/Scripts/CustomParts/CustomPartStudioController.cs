@@ -27,11 +27,6 @@ namespace Protobot.CustomParts {
             AddHole = 3
         }
 
-        private enum CloseDialogAction {
-            None = 0,
-            Close = 1
-        }
-
         private enum StudioLaunchMode {
             Definition = 0,
             EditSelectedInstance = 1
@@ -97,10 +92,10 @@ namespace Protobot.CustomParts {
             CustomHoleShape.Square
         };
 
-        private const float TopBarHeight = 48f;
-        private const float LeftPanelWidth = 250f;
-        private const float RightPanelWidth = 300f;
-        private const float BottomMargin = 14f;
+        private const float TopBarHeight = 64f;
+        private float LeftPanelWidth => Screen.width < 1150 ? 172f : 208f;
+        private float RightPanelWidth => Screen.width < 1150 ? 264f : 300f;
+        private const float BottomMargin = 42f;
         private const float CanvasPadding = 8f;
         private const float PanelDimMargin = 2f;
         private const float DefaultZoomScale = 90f;
@@ -120,7 +115,15 @@ namespace Protobot.CustomParts {
         private bool studioOpen;
         private bool hasUnsavedChanges;
         private bool showCloseDialog;
-        private CloseDialogAction closeDialogAction;
+        private bool showLibrary;
+        private string librarySearch = string.Empty;
+        private Action pendingStudioAction;
+        private string validatedHash;
+        private bool geometryValid;
+        private float nextValidationTime;
+        private bool fitOnNextCanvas;
+        private bool typingInField;
+        private bool drawingCanvas;
         private bool showDimensionOverlay = true;
         private bool snapToGrid = true;
         private float snapStepInches = DefaultSnapStepInches;
@@ -184,7 +187,6 @@ namespace Protobot.CustomParts {
         private GUIStyle selectionGridStyle;
         private GUIStyle toggleStyle;
         private GUIStyle textFieldStyle;
-        private GUIStyle openStudioButtonStyle;
         private GUIStyle dimensionLabelStyle;
 
         private Texture2D oneByOne;
@@ -372,14 +374,16 @@ namespace Protobot.CustomParts {
                 return;
             }
 
-            ApplyLivePreviewIfNeeded(force: false);
+            if (!showCloseDialog) {
+                RefreshGeometryValidation(false);
+                ApplyLivePreviewIfNeeded(force: false);
+            }
             HandleUndoRedoHotkeys();
             CommitHistoryIfReady();
 
             if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
                 if (showCloseDialog) {
                     showCloseDialog = false;
-                    closeDialogAction = CloseDialogAction.None;
                     return;
                 }
                 RequestCloseStudio();
@@ -426,7 +430,7 @@ namespace Protobot.CustomParts {
 
             if (labelStyle == null) {
                 labelStyle = new GUIStyle(GUI.skin.label) {
-                    fontSize = 12,
+                    fontSize = 13,
                     fontStyle = FontStyle.Normal
                 };
                 labelStyle.normal.textColor = UiTextPrimary;
@@ -444,17 +448,17 @@ namespace Protobot.CustomParts {
             }
 
             if (buttonStyle == null) {
-                buttonStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Normal, 12);
+                buttonStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Normal, 13);
             }
 
             if (primaryButtonStyle == null) {
-                primaryButtonStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlueHot, Color.white, FontStyle.Bold, 12);
+                primaryButtonStyle = CreateButtonStyle(UiBlue, UiBlueHot, UiBlueDark, Color.white, FontStyle.Bold, 13);
             }
 
             if (dangerButtonStyle == null) {
                 Color hover = Color.Lerp(UiDanger, Color.white, 0.15f);
                 Color active = Color.Lerp(UiDanger, UiDark10, 0.2f);
-                dangerButtonStyle = CreateButtonStyle(UiDanger, hover, active, Color.white, FontStyle.Bold, 12);
+                dangerButtonStyle = CreateButtonStyle(UiDanger, hover, active, Color.white, FontStyle.Bold, 13);
             }
 
             if (miniButtonStyle == null) {
@@ -475,7 +479,7 @@ namespace Protobot.CustomParts {
             }
 
             if (toolbarButtonStyle == null) {
-                toolbarButtonStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Bold, 12);
+                toolbarButtonStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Bold, 13);
                 toolbarButtonStyle.onNormal.background = GetSolidTexture(UiBlueDark);
                 toolbarButtonStyle.onHover.background = GetSolidTexture(UiBlueHot);
                 toolbarButtonStyle.onActive.background = GetSolidTexture(UiBlue);
@@ -484,7 +488,7 @@ namespace Protobot.CustomParts {
             }
 
             if (selectionGridStyle == null) {
-                selectionGridStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Normal, 12);
+                selectionGridStyle = CreateButtonStyle(UiButtonNormal, UiButtonHover, UiBlue, UiTextPrimary, FontStyle.Normal, 13);
                 selectionGridStyle.onNormal.background = GetSolidTexture(UiBlueDark);
                 selectionGridStyle.onHover.background = GetSolidTexture(UiBlueHot);
                 selectionGridStyle.onActive.background = GetSolidTexture(UiBlue);
@@ -495,7 +499,7 @@ namespace Protobot.CustomParts {
 
             if (toggleStyle == null) {
                 toggleStyle = new GUIStyle(GUI.skin.toggle) {
-                    fontSize = 12,
+                    fontSize = 13,
                     fontStyle = FontStyle.Normal
                 };
                 SetAllTextColors(toggleStyle, UiTextPrimary);
@@ -503,7 +507,7 @@ namespace Protobot.CustomParts {
 
             if (textFieldStyle == null) {
                 textFieldStyle = new GUIStyle(GUI.skin.textField) {
-                    fontSize = 12,
+                    fontSize = 13,
                     padding = new RectOffset(8, 8, 5, 5)
                 };
 
@@ -513,12 +517,6 @@ namespace Protobot.CustomParts {
                 SetInteractiveBackgrounds(textFieldStyle, normalTex, hoverTex, activeTex);
                 SetInteractiveTextColors(textFieldStyle, UiTextPrimary);
                 textFieldStyle.alignment = TextAnchor.MiddleLeft;
-            }
-
-            if (openStudioButtonStyle == null) {
-                openStudioButtonStyle = new GUIStyle(buttonStyle) {
-                    fontSize = 13
-                };
             }
 
             if (dimensionLabelStyle == null) {
@@ -620,37 +618,30 @@ namespace Protobot.CustomParts {
         }
 
         private void OnGUI() {
+            if (!studioOpen) return;
             EnsureGuiResources();
 
-            if (!studioOpen) {
-                if (IsProjectContextReady()) {
-                    DrawOpenButton();
-                }
-                else {
-                    MouseInput.SetForceOverUI(false);
-                }
-                return;
-            }
-
+            EnsureWorkingDefinition();
+            GUI.enabled = !showCloseDialog;
             DrawStudioBackdrop();
             DrawTopBar();
             DrawLeftPanel();
             DrawRightPanel();
             DrawCanvas();
+            DrawWorkspaceFooter();
+            typingInField = !string.IsNullOrEmpty(GUI.GetNameOfFocusedControl());
+            GUI.enabled = true;
 
             if (showCloseDialog) {
                 DrawCloseDialog();
             }
         }
 
-        private void DrawOpenButton() {
-            var buttonRect = new Rect(16f, Screen.height - 54f, 220f, 38f);
-            bool pointerOverButton = Event.current != null && buttonRect.Contains(Event.current.mousePosition);
-            MouseInput.SetForceOverUI(pointerOverButton);
+        public void OpenFromBrowser() {
+            if (studioOpen) return;
+            EnsureReferences();
             TryGetSelectedCustomPartFromSelectionManagers(out SavedObject selectedAtOpen);
-            if (GUI.Button(buttonRect, "Custom Part Studio", openStudioButtonStyle)) {
-                OpenStudio(selectedAtOpen);
-            }
+            OpenStudio(selectedAtOpen);
         }
 
         private void DrawStudioBackdrop() {
@@ -665,153 +656,101 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawTopBar() {
-            var rect = new Rect(0f, 0f, Screen.width, TopBarHeight);
-            float topBarAlpha = CurrentPanelAlpha;
-            DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, topBarAlpha));
-            DrawLine(
-                new Vector2(rect.xMin, rect.yMax - 1f),
-                new Vector2(rect.xMax, rect.yMax - 1f),
-                UiBorder,
-                1f);
-
-            GUILayout.BeginArea(rect);
-            GUILayout.BeginHorizontal();
-            GUILayout.Space(12f);
-            GUILayout.Label("Custom Part Studio", headerStyle, GUILayout.Width(170f));
-            GUILayout.Space(10f);
-            GUILayout.Label(GetContextBadgeText(), mutedLabelStyle, GUILayout.Width(210f));
-            GUILayout.Space(8f);
-            GUILayout.Label(GetModeBadgeText(), mutedLabelStyle, GUILayout.Width(280f));
-
-            if (GUILayout.Button("Save Definition", primaryButtonStyle, GUILayout.Width(120f), GUILayout.Height(28f))) {
-                SaveWorkingDefinition();
-            }
-
-            GUILayout.Space(6f);
-            if (GUILayout.Button("Import", buttonStyle, GUILayout.Width(70f), GUILayout.Height(28f))) {
-                ImportDefinition();
-            }
-
-            GUILayout.Space(6f);
-            if (GUILayout.Button("Export", buttonStyle, GUILayout.Width(70f), GUILayout.Height(28f))) {
-                ExportDefinition();
-            }
-
-            GUILayout.FlexibleSpace();
-            Color previousContentColor = GUI.contentColor;
-            GUI.contentColor = hasUnsavedChanges ? UiWarning : UiTextMuted;
-            GUILayout.Label(hasUnsavedChanges ? "Unsaved Changes" : "Saved", mutedLabelStyle, GUILayout.Width(120f));
-            GUI.contentColor = previousContentColor;
-            GUILayout.Space(10f);
-
-            if (GUILayout.Button("Close", buttonStyle, GUILayout.Width(80f), GUILayout.Height(28f))) {
-                RequestCloseStudio();
-            }
-
-            GUILayout.Space(12f);
-            GUILayout.EndHorizontal();
-            GUILayout.EndArea();
+            DrawFilledRect(new Rect(0, 0, Screen.width, TopBarHeight), UiDark10);
+            DrawFilledRect(new Rect(0, TopBarHeight - 1, Screen.width, 1), UiBorder);
+            GUI.Label(new Rect(16, 10, 155, 24), "Poly Maker", headerStyle);
+            GUI.Label(new Rect(16, 34, 220, 22), IsStandaloneDefinitionMode ? "Design a custom plate" : "Editing selected part", mutedLabelStyle);
+            float right = Screen.width - 16;
+            if (GUI.Button(new Rect(right - 68, 16, 68, 32), "Close", buttonStyle)) RequestCloseStudio();
+            GUI.enabled = !showCloseDialog && geometryValid;
+            if (GUI.Button(new Rect(right - 220, 16, 144, 32), IsStandaloneDefinitionMode ? "Insert part" : "Apply changes", primaryButtonStyle)) FinishAndInsert();
+            GUI.enabled = !showCloseDialog;
+            if (GUI.Button(new Rect(right - 362, 16, 134, 32), "Save to library", buttonStyle)) SaveWorkingDefinition();
+            if (Screen.width > 950) GUI.Label(new Rect(LeftPanelWidth + 16, 21, Screen.width - LeftPanelWidth - 402, 24), workingDefinition.name + (hasUnsavedChanges ? "  *" : ""), labelStyle);
         }
 
         private void DrawLeftPanel() {
-            var rect = new Rect(0f, TopBarHeight, LeftPanelWidth, Screen.height - TopBarHeight);
-            float panelAlpha = CurrentPanelAlpha;
-            DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, panelAlpha));
-            DrawLine(
-                new Vector2(rect.xMax - 1f, rect.yMin),
-                new Vector2(rect.xMax - 1f, rect.yMax),
-                UiBorder,
-                1f);
-
+            var rect = new Rect(0, TopBarHeight, LeftPanelWidth, Screen.height - TopBarHeight - BottomMargin);
+            DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, CurrentPanelAlpha));
             GUILayout.BeginArea(rect, panelStyle);
-            GUILayout.Label("Library", headerStyle);
-
-            GUILayout.Space(6f);
-            GUILayout.BeginHorizontal();
-            if (GUILayout.Button("New", primaryButtonStyle, GUILayout.Height(28f))) {
-                CreateNewWorkingDefinition();
-            }
-
-            if (GUILayout.Button("Duplicate", buttonStyle, GUILayout.Height(28f))) {
-                DuplicateWorkingDefinition();
-            }
-            GUILayout.EndHorizontal();
-
-            GUILayout.Space(8f);
-            libraryScroll = GUILayout.BeginScrollView(libraryScroll);
-            foreach (CustomPartDefinition definition in CustomPartRegistry.GetAllDefinitions()) {
-                bool isSelected = workingDefinition != null
-                    && string.Equals(definition.definitionId, workingDefinition.definitionId, StringComparison.Ordinal);
-                GUIStyle listButtonStyle = isSelected ? selectedButtonStyle : buttonStyle;
-                string definitionId = definition.definitionId ?? string.Empty;
-                string shortId = definitionId.Length > 6 ? definitionId.Substring(0, 6) : definitionId.PadRight(6, '-');
-                string title = $"{definition.name}  ({shortId})";
-                if (GUILayout.Button(title, listButtonStyle, GUILayout.Height(28f))) {
-                    LoadDefinition(definition);
+            GUILayout.Label("WORKSPACE", mutedLabelStyle);
+            string[] steps = { "Outline", "Cutouts", "Holes", "Part settings" };
+            for (int i = 0; i < steps.Length; i++) {
+                if (GUILayout.Button(steps[i], (int)activeTab == i ? selectedButtonStyle : buttonStyle, GUILayout.Height(34))) {
+                    activeTab = (StudioTab)i;
+                    rightPanelScroll = Vector2.zero;
+                    ResetDragState();
+                    GUI.FocusControl(null);
+                    if (activeTab == StudioTab.Outline) activeLoopIndex = -1;
+                    if (activeTab == StudioTab.Holes) SetActiveTool(CanvasTool.AddHole);
+                    else SetActiveTool(CanvasTool.Select);
                 }
+                GUILayout.Space(3);
             }
-            GUILayout.EndScrollView();
+            GUILayout.Space(18);
+            GUILayout.Label("START A PART", mutedLabelStyle);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Rectangle", buttonStyle, GUILayout.Height(32))) RequestStudioAction(() => CreatePreset(false));
+            if (GUILayout.Button("Circle", buttonStyle, GUILayout.Height(32))) RequestStudioAction(() => CreatePreset(true));
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("Duplicate current", buttonStyle, GUILayout.Height(30))) DuplicateWorkingDefinition();
+            GUILayout.Space(14);
+            if (GUILayout.Button(showLibrary ? "Library  -" : "Library  +", showLibrary ? selectedButtonStyle : buttonStyle, GUILayout.Height(32))) showLibrary = !showLibrary;
+            if (showLibrary) {
+                GUI.SetNextControlName("library_search");
+                librarySearch = GUILayout.TextField(librarySearch, textFieldStyle, GUILayout.Height(28));
+                libraryScroll = GUILayout.BeginScrollView(libraryScroll);
+                int count = 0;
+                foreach (CustomPartDefinition definition in CustomPartRegistry.GetAllDefinitions().OrderBy(d => d.name)) {
+                    if (definition.name.IndexOf(librarySearch, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                    count++;
+                    bool selected = workingDefinition.definitionId == definition.definitionId;
+                    if (GUILayout.Button(new GUIContent(definition.name, definition.name), selected ? selectedButtonStyle : buttonStyle, GUILayout.Height(32))) {
+                        var next = definition;
+                        RequestStudioAction(() => LoadDefinition(next));
+                    }
+                }
+                if (count == 0) GUILayout.Label("No saved parts yet.", wrappedMutedLabelStyle);
+                GUILayout.EndScrollView();
+            } else GUILayout.FlexibleSpace();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Import", buttonStyle, GUILayout.Height(30))) RequestStudioAction(ImportDefinition);
+            if (GUILayout.Button("Export", buttonStyle, GUILayout.Height(30))) ExportDefinition();
+            GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
 
         private void DrawRightPanel() {
-            var rect = new Rect(Screen.width - RightPanelWidth, TopBarHeight, RightPanelWidth, Screen.height - TopBarHeight);
-            float panelAlpha = CurrentPanelAlpha;
-            DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, panelAlpha));
-            DrawLine(
-                new Vector2(rect.xMin + 1f, rect.yMin),
-                new Vector2(rect.xMin + 1f, rect.yMax),
-                UiBorder,
-                1f);
-
+            var rect = new Rect(Screen.width - RightPanelWidth, TopBarHeight, RightPanelWidth, Screen.height - TopBarHeight - BottomMargin);
+            DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, CurrentPanelAlpha));
             GUILayout.BeginArea(rect, panelStyle);
-            int currentTab = (int)activeTab;
-            int selectedTab = GUILayout.Toolbar(currentTab, TabNames, toolbarButtonStyle);
-            if (selectedTab != currentTab) {
-                activeTab = (StudioTab)selectedTab;
-                ResetDragState();
-                selectedAnchorIndex = -1;
-                selectedHoleIndex = -1;
-                selectedSegmentIndex = -1;
-                lastAnchorFieldSelectionKey = string.Empty;
-                lastHoleFieldSelectionKey = string.Empty;
-            }
-            GUILayout.Space(8f);
-
             rightPanelScroll = GUILayout.BeginScrollView(rightPanelScroll);
             switch (activeTab) {
-            case StudioTab.Outline:
-                DrawOutlineInspector();
-                break;
-            case StudioTab.Cutouts:
-                DrawCutoutsInspector();
-                break;
-            case StudioTab.Holes:
-                DrawHolesInspector();
-                break;
-            case StudioTab.Part:
-                DrawPartInspector();
-                break;
+                case StudioTab.Outline: DrawOutlineInspector(); break;
+                case StudioTab.Cutouts: DrawCutoutsInspector(); break;
+                case StudioTab.Holes: DrawHolesInspector(); break;
+                case StudioTab.Part: DrawPartInspector(); break;
             }
-
             GUILayout.EndScrollView();
             GUILayout.EndArea();
         }
 
         private void DrawOutlineInspector() {
             EnsureWorkingDefinition();
-            GUILayout.Label("Outline Tools", headerStyle);
-            CanvasTool nextTool = (CanvasTool)GUILayout.Toolbar((int)activeTool, ToolNames, toolbarButtonStyle);
-            SetActiveTool(nextTool);
-            showDimensionOverlay = GUILayout.Toggle(showDimensionOverlay, "Show Dimension Overlay (in)", toggleStyle);
-            snapToGrid = GUILayout.Toggle(snapToGrid, "Snap To Grid", toggleStyle);
-            float snapStep = FloatField("snap_step", "Snap Step (in)", snapStepInches);
-            snapStep = Mathf.Clamp(snapStep, MinSnapStepInches, MaxSnapStepInches);
-            if (!Mathf.Approximately(snapStep, snapStepInches)) {
-                snapStepInches = snapStep;
+            GUILayout.Label("Outline", headerStyle);
+            GUILayout.Label("Select a point to edit its coordinates, or choose a drawing tool above the canvas.", wrappedMutedLabelStyle);
+            GUILayout.Space(12);
+            if (TryGetOuterBounds(out Vector2 min, out Vector2 max)) {
+                Vector2 size = max - min;
+                float width = FloatField("outline_width", "Width (in)", size.x);
+                float height = FloatField("outline_height", "Height (in)", size.y);
+                if (width > 0.01f && height > 0.01f && (!Mathf.Approximately(width, size.x) || !Mathf.Approximately(height, size.y))) ResizeOutline(new Vector2(width, height));
             }
-            GUILayout.Label("Hold Alt to temporarily disable snapping while dragging.", wrappedMutedLabelStyle);
-
+            GUILayout.Space(12);
+            showDimensionOverlay = GUILayout.Toggle(showDimensionOverlay, "Show dimensions", toggleStyle);
+            snapToGrid = GUILayout.Toggle(snapToGrid, "Snap to grid", toggleStyle);
+            snapStepInches = Mathf.Clamp(FloatField("snap_step", "Grid step (in)", snapStepInches), MinSnapStepInches, MaxSnapStepInches);
+            GUILayout.Space(12);
             string[] loopNames = BuildLoopNames();
             int previousLoopIndex = activeLoopIndex;
             bool hasLoopChoices = loopNames.Length > 1;
@@ -1037,77 +976,113 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawPartInspector() {
-            EnsureWorkingDefinition();
-            if (workingDefinition.sketch != null && workingDefinition.sketch.unitSystem != CustomPartUnitSystem.Inches) {
-                workingDefinition.sketch.unitSystem = CustomPartUnitSystem.Inches;
-                MarkDirty();
+            GUILayout.Label("Part settings", headerStyle);
+            GUILayout.Space(12);
+            string name = TextField("part_name", "Name", workingDefinition.name);
+            if (name != workingDefinition.name) { workingDefinition.name = name; MarkDirty(); }
+            float thickness = Mathf.Clamp(FloatField("part_thickness", "Thickness (in)", workingDefinition.thicknessInches), 0.01f, 2f);
+            if (!Mathf.Approximately(thickness, workingDefinition.thicknessInches)) { workingDefinition.thicknessInches = thickness; MarkDirty(); }
+            GUILayout.Label("Quick thickness", mutedLabelStyle);
+            GUILayout.BeginHorizontal();
+            float[] thicknesses = { 0.0625f, 0.125f, 0.25f };
+            string[] names = { "1/16 in", "1/8 in", "1/4 in" };
+            for (int i = 0; i < names.Length; i++) if (GUILayout.Button(names[i], Mathf.Approximately(thickness, thicknesses[i]) ? selectedButtonStyle : buttonStyle, GUILayout.Height(30))) {
+                workingDefinition.thicknessInches = thicknesses[i]; fieldCache.Remove("part_thickness"); MarkDirty();
             }
-
-            GUILayout.Label("Part", headerStyle);
-
-            string newName = TextField("part_name", "Name", workingDefinition.name);
-            if (!string.Equals(newName, workingDefinition.name, StringComparison.Ordinal)) {
-                workingDefinition.name = newName;
-                MarkDirty();
+            GUILayout.EndHorizontal();
+            GUILayout.Space(20);
+            GUILayout.Label("Geometry", headerStyle);
+            GUILayout.Label($"{workingDefinition.sketch.outerLoop.anchors.Length} outline points", mutedLabelStyle);
+            GUILayout.Label($"{workingDefinition.sketch.cutoutLoops.Length} cutouts   /   {workingDefinition.holes.Length} holes", mutedLabelStyle);
+            GUILayout.Space(12);
+            GUILayout.Label(geometryValid ? "Ready to insert. Your part will follow the cursor until you place it." : "Check for crossing edges, overlapping holes, or cutouts outside the outline.", wrappedMutedLabelStyle);
+            GUILayout.Space(20);
+            if (IsStandaloneDefinitionMode && GUILayout.Button("Update all placed copies", buttonStyle, GUILayout.Height(32))) {
+                if (RefreshGeometryValidation(true)) { SaveWorkingDefinition(); CustomPartRuntimeUpdater.ApplyDefinitionToAllInstances(workingDefinition.definitionId); }
             }
+        }
 
-            float thickness = FloatField("part_thickness", "Thickness (in)", workingDefinition.thicknessInches);
-            thickness = Mathf.Clamp(thickness, 0.01f, 2f);
-            if (!Mathf.Approximately(thickness, workingDefinition.thicknessInches)) {
-                workingDefinition.thicknessInches = thickness;
-                MarkDirty();
-            }
 
-            GUILayout.Label("Units: Inches", mutedLabelStyle);
-            GUILayout.Space(6f);
-            GUILayout.Label($"Definition ID: {workingDefinition.definitionId}", mutedLabelStyle);
-            GUILayout.Space(10f);
-
-            LoopData outer = workingDefinition.sketch.outerLoop;
-            int cutoutCount = workingDefinition.sketch.cutoutLoops == null ? 0 : workingDefinition.sketch.cutoutLoops.Length;
-            int holeCount = workingDefinition.holes == null ? 0 : workingDefinition.holes.Length;
-
-            GUILayout.Label($"Name: {workingDefinition.name}", mutedLabelStyle);
-            GUILayout.Label($"Outline anchors: {(outer == null || outer.anchors == null ? 0 : outer.anchors.Length)}", mutedLabelStyle);
-            GUILayout.Label($"Cutouts: {cutoutCount}", mutedLabelStyle);
-            GUILayout.Label($"Holes: {holeCount}", mutedLabelStyle);
-            GUILayout.Label($"Thickness: {workingDefinition.thicknessInches:0.###} in", mutedLabelStyle);
-            GUILayout.Label(GetModeBadgeText(), mutedLabelStyle);
-            GUILayout.Label(
-                string.IsNullOrWhiteSpace(sourceDefinitionId)
-                    ? "Source: New definition"
-                    : $"Source: {sourceDefinitionId}",
-                mutedLabelStyle);
-
-            bool isValid = CustomPartMeshBuilder.BuildMeshes(workingDefinition, out _, out _, out _);
-            GUILayout.Space(8f);
-            Color previousContentColor = GUI.contentColor;
-            GUI.contentColor = isValid ? new Color(0.24759902f, 0.671f, 0.24759902f, 1f) : UiWarning;
-            GUILayout.Label(isValid ? "Geometry valid" : "Geometry invalid (fix loop/points).", mutedLabelStyle);
-            GUI.contentColor = previousContentColor;
-
-            GUILayout.Space(10f);
-            if (GUILayout.Button("Save Definition", primaryButtonStyle, GUILayout.Height(30f))) {
-                SaveWorkingDefinition();
-            }
-
-            using (new GUILayout.HorizontalScope()) {
-                if (launchMode == StudioLaunchMode.Definition
-                    && GUILayout.Button("Update Existing Instances", buttonStyle, GUILayout.Height(30f))) {
-                    SaveWorkingDefinition();
-                    CustomPartRuntimeUpdater.ApplyDefinitionToAllInstances(workingDefinition.definitionId);
+        private void DrawCanvasToolbar() {
+            float x = canvasRect.x, y = TopBarHeight + 8;
+            float buttonWidth = Mathf.Min(84, (canvasRect.width - 180) / 4);
+            string[] tools = { "Select  V", "+ Point  P", "Curve  B", "Hole  H" };
+            for (int i = 0; i < tools.Length; i++) {
+                if (GUI.Button(new Rect(x, y, buttonWidth, 32), tools[i], (int)activeTool == i ? selectedButtonStyle : buttonStyle)) {
+                    SetActiveTool((CanvasTool)i); GUI.FocusControl(null);
+                    if (i == 3) activeTab = StudioTab.Holes;
                 }
-
-                string finishText = launchMode == StudioLaunchMode.EditSelectedInstance
-                    ? "Finish (Update Selected Only)"
-                    : "Finish & Insert";
-                if (GUILayout.Button(finishText, primaryButtonStyle, GUILayout.Height(30f))) {
-                    if (launchMode == StudioLaunchMode.Definition) {
-                        SaveWorkingDefinition();
-                    }
-                    FinishAndInsert();
-                }
+                x += buttonWidth + 4;
             }
+            bool enabled = GUI.enabled;
+            GUI.enabled = enabled && historyIndex > 0;
+            if (GUI.Button(new Rect(x, y, 50, 32), new GUIContent("Undo", "Ctrl+Z"), buttonStyle)) UndoHistory();
+            x += 54;
+            GUI.enabled = enabled && historyIndex < history.Count - 1;
+            if (GUI.Button(new Rect(x, y, 50, 32), new GUIContent("Redo", "Ctrl+Y"), buttonStyle)) RedoHistory();
+            GUI.enabled = enabled;
+            if (GUI.Button(new Rect(x + 54, y, 50, 32), new GUIContent("Fit", "F"), buttonStyle)) fitOnNextCanvas = true;
+        }
+
+        private void DrawWorkspaceFooter() {
+            Rect rect = new Rect(0, Screen.height - BottomMargin, Screen.width, BottomMargin);
+            DrawFilledRect(rect, UiDark10);
+            DrawFilledRect(new Rect(0, rect.y, rect.width, 1), UiBorder);
+            var old = GUI.contentColor;
+            GUI.contentColor = geometryValid ? OuterLoopColor : UiWarning;
+            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.", labelStyle);
+            GUI.contentColor = old;
+            GUI.Label(new Rect(Screen.width - 180, rect.y + 10, 166, 24), hasUnsavedChanges ? "Unsaved design" : "Saved to library", mutedLabelStyle);
+        }
+
+        private bool RefreshGeometryValidation(bool force) {
+            if (workingDefinition == null) return false;
+            if (!force && Time.unscaledTime < nextValidationTime) return geometryValid;
+            nextValidationTime = Time.unscaledTime + 0.2f;
+            string hash = workingDefinition.GetDeterministicHash();
+            if (hash == validatedHash) return geometryValid;
+            validatedHash = hash;
+            geometryValid = CustomPartMeshBuilder.BuildMeshes(workingDefinition, out Mesh render, out Mesh collider, out _, false);
+            if (render != null) Destroy(render);
+            if (collider != null && collider != render) Destroy(collider);
+            return geometryValid;
+        }
+
+        private void FitCanvas() {
+            if (UseSceneAlignedCanvas || !TryGetOuterBounds(out Vector2 min, out Vector2 max)) return;
+            Vector2 size = max - min;
+            canvasZoom = Mathf.Clamp(Mathf.Min((canvasRect.width - 120) / Mathf.Max(size.x, 0.1f), (canvasRect.height - 130) / Mathf.Max(size.y, 0.1f)) / DefaultZoomScale, MinZoom, MaxZoom);
+            canvasOrigin = (min + max) * 0.5f;
+        }
+
+        private void CreatePreset(bool circle) {
+            CreateNewWorkingDefinition();
+            workingDefinition.name = BuildDefaultName(circle ? "Round plate" : "Rectangular plate");
+            if (circle) {
+                const float k = 0.55228475f;
+                Vector2[] points = { Vector2.right, Vector2.up, Vector2.left, Vector2.down };
+                var loop = workingDefinition.sketch.outerLoop;
+                loop.anchors = points.Select(v => new AnchorData { position = v, inHandle = new Vector2(v.y, -v.x) * k, outHandle = new Vector2(-v.y, v.x) * k }).ToArray();
+                loop.segmentKinds = Enumerable.Repeat(SegmentKind.Bezier, 4).ToArray();
+            }
+            activeTab = StudioTab.Outline;
+            SetActiveTool(CanvasTool.Select);
+            ResetHistoryWithCurrentDefinition();
+            MarkDirty();
+        }
+
+        private void ResizeOutline(Vector2 size) {
+            if (!TryGetOuterBounds(out Vector2 min, out Vector2 max)) return;
+            Vector2 oldSize = max - min;
+            if (oldSize.x <= 0 || oldSize.y <= 0) return;
+            Vector2 scale = new Vector2(size.x / oldSize.x, size.y / oldSize.y);
+            Vector2 center = (min + max) * 0.5f;
+            foreach (AnchorData a in workingDefinition.sketch.outerLoop.anchors) {
+                a.position = center + Vector2.Scale(a.position - center, scale);
+                a.inHandle = Vector2.Scale(a.inHandle, scale);
+                a.outHandle = Vector2.Scale(a.outHandle, scale);
+            }
+            MarkDirty();
         }
 
         private string GetModeBadgeText() {
@@ -1387,7 +1362,6 @@ namespace Protobot.CustomParts {
             studioOpen = true;
             IsStudioOpen = true;
             showCloseDialog = false;
-            closeDialogAction = CloseDialogAction.None;
             hasUnsavedChanges = false;
             canvasZoom = 1f;
             canvasOrigin = Vector2.zero;
@@ -1408,16 +1382,20 @@ namespace Protobot.CustomParts {
             Cursor.lockState = CursorLockMode.None;
 
             ResetHistoryWithCurrentDefinition();
+            fitOnNextCanvas = true;
+            validatedHash = null;
         }
 
         private void RequestCloseStudio() {
-            if (hasUnsavedChanges) {
-                showCloseDialog = true;
-                closeDialogAction = CloseDialogAction.Close;
-                return;
-            }
+            RequestStudioAction(ForceCloseStudio);
+        }
 
-            ForceCloseStudio();
+        private void RequestStudioAction(Action action) {
+            if (hasUnsavedChanges) {
+                pendingStudioAction = action;
+                showCloseDialog = true;
+                ResetDragState();
+            } else action();
         }
 
         private void ForceCloseStudio() {
@@ -1425,7 +1403,6 @@ namespace Protobot.CustomParts {
             studioOpen = false;
             IsStudioOpen = false;
             showCloseDialog = false;
-            closeDialogAction = CloseDialogAction.None;
             ResetDragState();
             ResetPanState();
             draggingHoleOffset = Vector2.zero;
@@ -1439,33 +1416,26 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawCloseDialog() {
-            Rect modalRect = new Rect(Screen.width * 0.5f - 220f, Screen.height * 0.5f - 90f, 440f, 180f);
-            DrawFilledRect(modalRect, UiDark10);
-            DrawRectOutline(modalRect, UiBorder, 1f);
-
-            GUILayout.BeginArea(modalRect, panelStyle);
-            GUILayout.Label("Unsaved changes", headerStyle);
-            GUILayout.Label("Save changes before exiting Custom Part Studio?", mutedLabelStyle);
+            DrawFilledRect(new Rect(0, 0, Screen.width, Screen.height), new Color(0, 0, 0, 0.65f));
+            Rect rect = new Rect(Screen.width / 2f - 240, Screen.height / 2f - 100, 480, 200);
+            GUILayout.BeginArea(rect, panelStyle);
+            GUILayout.Label("Keep your changes?", headerStyle);
+            GUILayout.Space(12);
+            GUILayout.Label("Save this design to your library before continuing, or discard these changes.", wrappedMutedLabelStyle);
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button("Save & Exit", primaryButtonStyle, GUILayout.Height(28f))) {
+            if (GUILayout.Button("Save & continue", primaryButtonStyle, GUILayout.Height(34))) {
                 SaveWorkingDefinition();
+                if (hasUnsavedChanges) { GUILayout.EndHorizontal(); GUILayout.EndArea(); return; }
                 showCloseDialog = false;
-                if (closeDialogAction == CloseDialogAction.Close) {
-                    ForceCloseStudio();
-                }
+                var next = pendingStudioAction; pendingStudioAction = null; next?.Invoke();
             }
-
-            if (GUILayout.Button("Discard", dangerButtonStyle, GUILayout.Height(28f))) {
+            if (GUILayout.Button("Discard", buttonStyle, GUILayout.Height(34))) {
+                hasUnsavedChanges = false;
                 showCloseDialog = false;
-                if (closeDialogAction == CloseDialogAction.Close) {
-                    ForceCloseStudio();
-                }
+                var next = pendingStudioAction; pendingStudioAction = null; next?.Invoke();
             }
-
-            if (GUILayout.Button("Cancel", buttonStyle, GUILayout.Height(28f))) {
-                showCloseDialog = false;
-            }
+            if (GUILayout.Button("Keep editing", buttonStyle, GUILayout.Height(34))) { showCloseDialog = false; pendingStudioAction = null; }
             GUILayout.EndHorizontal();
             GUILayout.EndArea();
         }
@@ -1523,6 +1493,9 @@ namespace Protobot.CustomParts {
         }
 
         private void CreateNewWorkingDefinition() {
+            RestoreLivePreviewTargetIfNeeded();
+            fitOnNextCanvas = true;
+            validatedHash = null;
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1553,6 +1526,9 @@ namespace Protobot.CustomParts {
 
         private void DuplicateWorkingDefinition() {
             EnsureWorkingDefinition();
+            RestoreLivePreviewTargetIfNeeded();
+            fitOnNextCanvas = true;
+            validatedHash = null;
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1584,6 +1560,9 @@ namespace Protobot.CustomParts {
                 return;
             }
 
+            RestoreLivePreviewTargetIfNeeded();
+            fitOnNextCanvas = true;
+            validatedHash = null;
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1597,10 +1576,6 @@ namespace Protobot.CustomParts {
             livePreviewNextApplyTime = 0f;
             livePreviewOriginalDefinitionId = string.Empty;
             livePreviewOriginalInstanceId = string.Empty;
-
-            if (hasUnsavedChanges && workingDefinition != null) {
-                SaveWorkingDefinition();
-            }
 
             workingDefinition = source.CloneDeep();
             sourceDefinitionId = source.definitionId;
@@ -1628,7 +1603,7 @@ namespace Protobot.CustomParts {
 
             definitionToSave.Touch();
 
-            CustomPartRegistry.RegisterDefinition(definitionToSave, true);
+            if (!CustomPartRegistry.SaveToLibrary(definitionToSave)) return;
 
             workingDefinition = definitionToSave.CloneDeep();
             sourceDefinitionId = workingDefinition.definitionId;
@@ -1640,7 +1615,7 @@ namespace Protobot.CustomParts {
                 return;
             }
 
-            if (!CustomPartMeshBuilder.BuildMeshes(workingDefinition, out _, out _, out _)) {
+            if (!RefreshGeometryValidation(true)) {
                 return;
             }
 
@@ -1653,6 +1628,8 @@ namespace Protobot.CustomParts {
                 return;
             }
 
+            SaveWorkingDefinition();
+            if (hasUnsavedChanges) return;
             placement.StartPlacing(new CustomPartPlacementData(workingDefinition.definitionId, placement.transform));
             ForceCloseStudio();
         }
@@ -1671,7 +1648,7 @@ namespace Protobot.CustomParts {
                 definitionToApply.definitionId = Guid.NewGuid().ToString("N");
             }
             definitionToApply.Touch();
-            CustomPartRegistry.RegisterDefinition(definitionToApply, true);
+            if (!CustomPartRegistry.SaveToLibrary(definitionToApply)) return;
 
             if (!CustomPartRuntimeUpdater.ApplyDefinitionToObject(editTargetObject, definitionToApply.definitionId, editSourceInstanceId)) {
                 return;
@@ -1732,6 +1709,9 @@ namespace Protobot.CustomParts {
                 : imported.thicknessInches;
             imported.Touch();
 
+            RestoreLivePreviewTargetIfNeeded();
+            fitOnNextCanvas = true;
+            validatedHash = null;
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1788,12 +1768,15 @@ namespace Protobot.CustomParts {
             EnsureWorkingDefinition();
 
             float width = Screen.width - LeftPanelWidth - RightPanelWidth - (CanvasPadding * 2f);
-            float height = Screen.height - TopBarHeight - BottomMargin - CanvasPadding;
+            float height = Screen.height - TopBarHeight - BottomMargin - CanvasPadding - 44;
             if (width <= 20f || height <= 20f) {
                 return;
             }
 
-            canvasRect = new Rect(LeftPanelWidth + CanvasPadding, TopBarHeight + CanvasPadding, width, height);
+            canvasRect = new Rect(LeftPanelWidth + CanvasPadding, TopBarHeight + CanvasPadding + 44, width, height);
+            DrawCanvasToolbar();
+            if (fitOnNextCanvas) { FitCanvas(); fitOnNextCanvas = false; }
+            drawingCanvas = true;
             float canvasAlpha = CurrentCanvasAlpha;
             DrawFilledRect(canvasRect, new Color(CanvasColor.r, CanvasColor.g, CanvasColor.b, canvasAlpha));
             DrawRectOutline(canvasRect, UiBorder, 1f);
@@ -1807,7 +1790,8 @@ namespace Protobot.CustomParts {
             }
             DrawAddPointPreview();
             DrawCanvasCursorLegend();
-            HandleCanvasInput();
+            drawingCanvas = false;
+            if (!showCloseDialog) HandleCanvasInput();
         }
 
         private void DrawCanvasGrid() {
@@ -2285,16 +2269,10 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawCanvasCursorLegend() {
-            Rect status = new Rect(canvasRect.xMin + 8f, canvasRect.yMax - 30f, 900f, 20f);
-            Vector2 mouse = Event.current.mousePosition;
-            Vector2 part = SnapPartPoint(ScreenToPart(mouse), allowTemporaryOverride: true);
-            string snapText = snapToGrid ? $"Snap: On ({snapStepInches:0.###} in)" : "Snap: Off";
-            string panText = UseSceneAlignedCanvas
-                ? "Pan Camera: RMB/MMB/Space+Drag"
-                : "Pan Canvas: RMB/MMB/Space+Drag";
-            string zoomText = UseSceneAlignedCanvas ? "Zoom: Camera" : $"Zoom: {canvasZoom:0.##}x";
-            string text = $"Tool: {ToolNames[(int)activeTool]}    Loop: {GetActiveLoopDisplayName()}    Cursor: {part.x:0.###}, {part.y:0.###} in    {snapText}    {panText}    {zoomText}";
-            GUI.Label(status, text, mutedLabelStyle);
+            Rect status = new Rect(canvasRect.xMin + 10, canvasRect.yMax - 26, canvasRect.width - 20, 22);
+            DrawFilledRect(new Rect(status.x - 4, status.y - 2, status.width + 8, 26), new Color(0.1f, 0.1f, 0.1f, 0.9f));
+            Vector2 point = SnapPartPoint(ScreenToPart(Event.current.mousePosition), true);
+            GUI.Label(status, $"{point.x:0.###}, {point.y:0.###} in    |    Scroll to zoom   /   Right-drag to pan", mutedLabelStyle);
         }
 
         private void HandleCanvasInput() {
@@ -3412,6 +3390,11 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawFilledRect(Rect rect, Color color) {
+            if (drawingCanvas) {
+                float x = Mathf.Max(rect.xMin, canvasRect.xMin), y = Mathf.Max(rect.yMin, canvasRect.yMin);
+                rect = Rect.MinMaxRect(x, y, Mathf.Min(rect.xMax, canvasRect.xMax), Mathf.Min(rect.yMax, canvasRect.yMax));
+                if (rect.width <= 0 || rect.height <= 0) return;
+            }
             Color prev = GUI.color;
             GUI.color = color;
             GUI.DrawTexture(rect, oneByOne);
@@ -3446,6 +3429,8 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawLine(Vector2 a, Vector2 b, Color color, float width) {
+            // Clip coordinates before rotating the IMGUI line. Rotating a GUI group also rotates its clip, cutting valid lines.
+            if (drawingCanvas && !ClipCanvasLine(ref a, ref b)) return;
             Matrix4x4 oldMatrix = GUI.matrix;
             Color oldColor = GUI.color;
 
@@ -3458,6 +3443,25 @@ namespace Protobot.CustomParts {
             GUI.DrawTexture(new Rect(a.x, a.y - width * 0.5f, length, width), oneByOne);
             GUI.matrix = oldMatrix;
             GUI.color = oldColor;
+        }
+
+        private bool ClipCanvasLine(ref Vector2 a, ref Vector2 b) {
+            Vector2 delta = b - a;
+            float enter = 0, exit = 1;
+            if (!ClipEdge(-delta.x, a.x - canvasRect.xMin, ref enter, ref exit)
+                || !ClipEdge(delta.x, canvasRect.xMax - a.x, ref enter, ref exit)
+                || !ClipEdge(-delta.y, a.y - canvasRect.yMin, ref enter, ref exit)
+                || !ClipEdge(delta.y, canvasRect.yMax - a.y, ref enter, ref exit)) return false;
+            b = a + delta * exit;
+            a += delta * enter;
+            return true;
+        }
+
+        private static bool ClipEdge(float direction, float distance, ref float enter, ref float exit) {
+            if (Mathf.Abs(direction) < 0.000001f) return distance >= 0;
+            float ratio = distance / direction;
+            if (direction < 0) enter = Mathf.Max(enter, ratio); else exit = Mathf.Min(exit, ratio);
+            return enter <= exit;
         }
 
         private string TextField(string key, string label, string value) {
@@ -3474,7 +3478,7 @@ namespace Protobot.CustomParts {
         private float FloatField(string key, string label, float value) {
             GUILayout.BeginHorizontal();
             GUILayout.Label(label, labelStyle, GUILayout.Width(120f));
-            string current = GetFieldCache(key, value.ToString("0.###", CultureInfo.InvariantCulture));
+            string current = GetFieldCache(key, value.ToString("0.########", CultureInfo.InvariantCulture));
             GUI.SetNextControlName(key);
             string edited = GUILayout.TextField(current, textFieldStyle, GUILayout.Height(24f));
             fieldCache[key] = edited;
@@ -3550,28 +3554,22 @@ namespace Protobot.CustomParts {
         }
 
         private void HandleUndoRedoHotkeys() {
-            Keyboard keyboard = Keyboard.current;
-            if (keyboard == null) {
+            Keyboard key = Keyboard.current;
+            if (key == null || showCloseDialog) return;
+            bool ctrl = key.leftCtrlKey.isPressed || key.rightCtrlKey.isPressed;
+            if (ctrl && key.sKey.wasPressedThisFrame) { SaveWorkingDefinition(); return; }
+            if (typingInField) return;
+            if (ctrl) {
+                if (key.zKey.wasPressedThisFrame) { if (key.leftShiftKey.isPressed || key.rightShiftKey.isPressed) RedoHistory(); else UndoHistory(); }
+                if (key.yKey.wasPressedThisFrame) RedoHistory();
+                if (key.enterKey.wasPressedThisFrame) FinishAndInsert();
                 return;
             }
-
-            bool ctrlPressed = keyboard.leftCtrlKey.isPressed || keyboard.rightCtrlKey.isPressed;
-            if (!ctrlPressed) {
-                return;
-            }
-
-            bool shiftPressed = keyboard.leftShiftKey.isPressed || keyboard.rightShiftKey.isPressed;
-            if (keyboard.zKey.wasPressedThisFrame) {
-                if (shiftPressed) {
-                    RedoHistory();
-                }
-                else {
-                    UndoHistory();
-                }
-            }
-            else if (keyboard.yKey.wasPressedThisFrame) {
-                RedoHistory();
-            }
+            if (key.vKey.wasPressedThisFrame) SetActiveTool(CanvasTool.Select);
+            if (key.pKey.wasPressedThisFrame) SetActiveTool(CanvasTool.AddPoint);
+            if (key.bKey.wasPressedThisFrame) SetActiveTool(CanvasTool.ToggleBezier);
+            if (key.hKey.wasPressedThisFrame) { SetActiveTool(CanvasTool.AddHole); activeTab = StudioTab.Holes; }
+            if (key.fKey.wasPressedThisFrame) fitOnNextCanvas = true;
         }
 
         private void ResetHistoryWithCurrentDefinition() {
@@ -3644,6 +3642,7 @@ namespace Protobot.CustomParts {
             hasUnsavedChanges = true;
             historyPending = false;
             applyingHistory = false;
+            validatedHash = null;
             QueueLivePreviewUpdate();
         }
 
@@ -3663,10 +3662,14 @@ namespace Protobot.CustomParts {
             hasUnsavedChanges = true;
             historyPending = false;
             applyingHistory = false;
+            validatedHash = null;
             QueueLivePreviewUpdate();
         }
 
         private void MarkDirty() {
+            validatedHash = null;
+            fieldCache.Remove("outline_width");
+            fieldCache.Remove("outline_height");
             hasUnsavedChanges = true;
             if (!applyingHistory) {
                 historyPending = true;

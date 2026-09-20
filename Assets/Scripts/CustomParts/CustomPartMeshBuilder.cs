@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace Protobot.CustomParts {
     public static class CustomPartMeshBuilder {
-        private const int MeshBuildVersion = 3;
+        private const int MeshBuildVersion = 4;
         private static readonly Dictionary<string, Mesh> RenderMeshCache =
             new Dictionary<string, Mesh>(StringComparer.Ordinal);
 
@@ -30,7 +30,7 @@ namespace Protobot.CustomParts {
             public bool isCutout;
         }
 
-        public static bool BuildMeshes(CustomPartDefinition definition, out Mesh renderMesh, out Mesh colliderMesh, out List<HoleRuntimeData> holes) {
+        public static bool BuildMeshes(CustomPartDefinition definition, out Mesh renderMesh, out Mesh colliderMesh, out List<HoleRuntimeData> holes, bool useCache = true) {
             renderMesh = null;
             colliderMesh = null;
             holes = new List<HoleRuntimeData>();
@@ -40,7 +40,7 @@ namespace Protobot.CustomParts {
             }
 
             string hash = $"{MeshBuildVersion}:{definition.GetDeterministicHash()}";
-            if (RenderMeshCache.TryGetValue(hash, out Mesh cachedRender) && cachedRender != null
+            if (useCache && RenderMeshCache.TryGetValue(hash, out Mesh cachedRender) && cachedRender != null
                 && ColliderMeshCache.TryGetValue(hash, out Mesh cachedCollider) && cachedCollider != null) {
                 renderMesh = cachedRender;
                 colliderMesh = cachedCollider;
@@ -62,6 +62,7 @@ namespace Protobot.CustomParts {
                 .Select(loop => loop.points)
                 .ToList();
 
+            if (!ValidateContours(outer.points, cutouts)) return false;
             EnsureCounterClockwise(outer.points);
             foreach (List<Vector2> cutout in cutouts) {
                 EnsureClockwise(cutout);
@@ -202,8 +203,10 @@ namespace Protobot.CustomParts {
             colliderMesh = UnityEngine.Object.Instantiate(renderMesh);
             colliderMesh.name = $"{renderMesh.name}_Collider";
 
-            RenderMeshCache[hash] = renderMesh;
-            ColliderMeshCache[hash] = colliderMesh;
+            if (useCache) {
+                RenderMeshCache[hash] = renderMesh;
+                ColliderMeshCache[hash] = colliderMesh;
+            }
             holes = BuildHoleRuntimeData(definition);
             return true;
         }
@@ -243,9 +246,8 @@ namespace Protobot.CustomParts {
             if (definition.sketch.cutoutLoops != null) {
                 foreach (LoopData loop in definition.sketch.cutoutLoops) {
                     if (loop == null) continue;
-                    if (TryCompileLoop(loop, true, out CompiledLoop cutout)) {
-                        loops.Add(cutout);
-                    }
+                    if (!TryCompileLoop(loop, true, out CompiledLoop cutout)) return false;
+                    loops.Add(cutout);
                 }
             }
 
@@ -434,6 +436,52 @@ namespace Protobot.CustomParts {
             }
         }
 
+        private static bool ValidateContours(List<Vector2> outer, List<List<Vector2>> holes) {
+            var contours = new List<List<Vector2>> { outer };
+            contours.AddRange(holes);
+            foreach (var contour in contours) {
+                if (Mathf.Abs(SignedArea(contour)) < 0.000001f) return false;
+                for (int i = 0; i < contour.Count; i++) {
+                    Vector2 a = contour[i], b = contour[(i + 1) % contour.Count];
+                    if (float.IsNaN(a.x) || float.IsNaN(a.y) || float.IsInfinity(a.x) || float.IsInfinity(a.y)) return false;
+                    for (int j = i + 1; j < contour.Count; j++) {
+                        if (j == i + 1 || (i == 0 && j == contour.Count - 1)) continue;
+                        if (EdgesIntersect(a, b, contour[j], contour[(j + 1) % contour.Count])) return false;
+                    }
+                }
+            }
+            for (int i = 0; i < holes.Count; i++) {
+                if (!PointInsideContour(holes[i][0], outer)) return false;
+                for (int j = 0; j < i; j++)
+                    if (PointInsideContour(holes[i][0], holes[j]) || PointInsideContour(holes[j][0], holes[i])) return false;
+            }
+            for (int i = 0; i < contours.Count; i++) for (int j = i + 1; j < contours.Count; j++) {
+                var a = contours[i]; var b = contours[j];
+                for (int u = 0; u < a.Count; u++) for (int v = 0; v < b.Count; v++)
+                    if (EdgesIntersect(a[u], a[(u + 1) % a.Count], b[v], b[(v + 1) % b.Count])) return false;
+            }
+            return true;
+        }
+
+        private static float Cross2(Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
+        private static bool EdgesIntersect(Vector2 a, Vector2 b, Vector2 c, Vector2 d) {
+            const float epsilon = 0.000001f;
+            if (Mathf.Max(a.x, b.x) < Mathf.Min(c.x, d.x) - epsilon || Mathf.Max(c.x, d.x) < Mathf.Min(a.x, b.x) - epsilon
+                || Mathf.Max(a.y, b.y) < Mathf.Min(c.y, d.y) - epsilon || Mathf.Max(c.y, d.y) < Mathf.Min(a.y, b.y) - epsilon) return false;
+            float abC = Cross2(b - a, c - a), abD = Cross2(b - a, d - a);
+            float cdA = Cross2(d - c, a - c), cdB = Cross2(d - c, b - c);
+            return abC * abD <= epsilon * epsilon && cdA * cdB <= epsilon * epsilon;
+        }
+
+        private static bool PointInsideContour(Vector2 point, List<Vector2> contour) {
+            bool inside = false;
+            for (int i = 0, j = contour.Count - 1; i < contour.Count; j = i++) {
+                Vector2 a = contour[i], b = contour[j];
+                if ((a.y > point.y) != (b.y > point.y) && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x) inside = !inside;
+            }
+            return inside;
+        }
+
         private static bool TryTriangulate(List<Vector2> outer, List<List<Vector2>> holes, out List<int> indices, out List<Vector2> allPoints) {
             allPoints = new List<Vector2>(outer);
             if (holes != null) {
@@ -448,7 +496,8 @@ namespace Protobot.CustomParts {
                 return true;
             }
 
-            // Fallback: ignore holes and triangulate outer contour only.
+            // Never silently fill requested holes if their triangulation failed.
+            if (holes != null && holes.Count > 0) return false;
             if (TryTriangulateSimple(outer, out List<int> fallback)) {
                 indices = fallback;
                 allPoints = new List<Vector2>(outer);

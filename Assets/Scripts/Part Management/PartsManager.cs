@@ -235,6 +235,8 @@ namespace Protobot {
         }
 
         private static Sprite ResolveChainIcon(IEnumerable<PartType> loadedPartTypes) {
+            var icon = Resources.Load<Sprite>("Chain/ChainIcon");
+            if (icon != null) return icon;
             PartType sprocketPart = loadedPartTypes.FirstOrDefault(p =>
                 p != null
                 && !string.IsNullOrWhiteSpace(p.id)

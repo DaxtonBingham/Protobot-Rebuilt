@@ -310,6 +310,7 @@ namespace Protobot.Builds {
 
             buildData.parts ??= Array.Empty<ObjectData>();
             buildData.chains ??= Array.Empty<ChainData>();
+            buildData.chainGuides ??= Array.Empty<ChainGuideData>();
             buildData.customDefinitions ??= Array.Empty<CustomPartDefinition>();
             buildData.camera ??= new CameraData {
                 xPos = 0d,

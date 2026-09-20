@@ -152,7 +152,7 @@ namespace Protobot.ChainSystem {
             IReadOnlyList<ChainEndpoint> inputEndpoints,
             ChainSettings settings,
             out ChainConnection connection,
-            out string errorMessage) {
+            out string errorMessage, ChainConnection reusablePreview = null, bool preview = false) {
             connection = null;
             errorMessage = string.Empty;
 
@@ -188,7 +188,7 @@ namespace Protobot.ChainSystem {
             bool endpointBAutoAligned = false;
 
             if (canAutoAlign) {
-                endpointBTransform = GetBindableTransform(endpoints[1]);
+                endpointBTransform = GetBindingTransformForEndpoint(endpoints[1]);
                 if (endpointBTransform == null) {
                     errorMessage = "Could not resolve a valid transform for the second sprocket.";
                     return false;
@@ -202,17 +202,19 @@ namespace Protobot.ChainSystem {
                 endpointBAutoAligned = true;
             }
 
-            if (!ValidateLoopPath(endpoints, settings, out errorMessage)) {
+            if (!ChainPathSolver.TrySolve(endpoints, settings.standard, ChainSprocketUtility.ResolvePitch(endpoints, settings.standard), settings.slack, out var solvedRoute, out errorMessage)) {
                 if (endpointBAutoAligned && endpointBTransform != null) {
                     endpointBTransform.SetPositionAndRotation(endpointBStartPosition, endpointBStartRotation);
                 }
                 return false;
             }
 
-            GameObject chainObject = new GameObject("Chain Connection");
-            connection = chainObject.AddComponent<ChainConnection>();
+            connection = reusablePreview != null && reusablePreview.IsPreview && reusablePreview.Settings.standard == settings.standard ? reusablePreview : null;
+            GameObject chainObject = connection != null ? connection.gameObject : new GameObject("Chain Connection");
+            if (connection == null) connection = chainObject.AddComponent<ChainConnection>();
+            connection.SetPreviewMode(preview);
 
-            if (!connection.Initialize(endpoints, settings)) {
+            if (!connection.Initialize(endpoints, settings, solvedRoute)) {
                 Destroy(chainObject);
                 connection = null;
                 if (endpointBAutoAligned && endpointBTransform != null) {
@@ -222,6 +224,8 @@ namespace Protobot.ChainSystem {
                 return false;
             }
 
+            connection.gameObject.SetActive(true);
+            Register(connection);
             return true;
         }
 
@@ -232,7 +236,7 @@ namespace Protobot.ChainSystem {
             out string errorMessage) {
             errorMessage = string.Empty;
 
-            Transform secondTransform = GetBindableTransform(endpointB);
+            Transform secondTransform = GetBindingTransformForEndpoint(endpointB);
             if (secondTransform == null) {
                 errorMessage = "Could not resolve a valid transform for auto-align.";
                 return false;
@@ -293,17 +297,102 @@ namespace Protobot.ChainSystem {
             return true;
         }
 
-        private static Transform GetBindableTransform(ChainEndpoint endpoint) {
-            if (endpoint == null) {
-                return null;
+        internal static Transform GetBindingTransformForEndpoint(ChainEndpoint endpoint) {
+            return ChainSprocketUtility.ResolveBindingTransform(endpoint);
+        }
+
+        internal static bool SnapEndpointsToPlane(IReadOnlyList<ChainEndpoint> endpoints, IReadOnlyList<int> changedIndices) {
+            if (endpoints == null || changedIndices == null || endpoints.Count < 2 || changedIndices.Count == 0) {
+                return false;
             }
 
-            Transform endpointTransform = endpoint.transform;
-            if (endpointTransform.gameObject.TryGetGroup(out Transform groupTransform)) {
-                return groupTransform;
+            Vector3 planeNormal = Vector3.zero;
+            for (int i = 0; i < endpoints.Count; i++) {
+                ChainEndpoint endpoint = endpoints[i];
+                if (endpoint == null) {
+                    continue;
+                }
+
+                Vector3 axis = endpoint.WorldAxis;
+                if (axis.sqrMagnitude > 0.0001f) {
+                    planeNormal = axis.normalized;
+                    break;
+                }
             }
 
-            return endpointTransform;
+            if (planeNormal.sqrMagnitude < 0.0001f) {
+                return false;
+            }
+
+            float referenceDepth = 0f;
+            int referenceCount = 0;
+
+            for (int i = 0; i < endpoints.Count; i++) {
+                if (ContainsIndex(changedIndices, i)) {
+                    continue;
+                }
+
+                ChainEndpoint endpoint = endpoints[i];
+                if (endpoint == null || endpoint.IsGuideEndpoint) {
+                    continue;
+                }
+
+                referenceDepth += Vector3.Dot(endpoint.WorldCenter, planeNormal);
+                referenceCount++;
+            }
+
+            if (referenceCount == 0) {
+                for (int i = 0; i < endpoints.Count; i++) {
+                    ChainEndpoint endpoint = endpoints[i];
+                    if (endpoint == null || endpoint.IsGuideEndpoint) {
+                        continue;
+                    }
+
+                    referenceDepth += Vector3.Dot(endpoint.WorldCenter, planeNormal);
+                    referenceCount++;
+                }
+            }
+
+            if (referenceCount == 0) {
+                return false;
+            }
+
+            referenceDepth /= referenceCount;
+
+            bool adjusted = false;
+            for (int i = 0; i < changedIndices.Count; i++) {
+                int index = changedIndices[i];
+                if (index < 0 || index >= endpoints.Count) {
+                    continue;
+                }
+
+                ChainEndpoint endpoint = endpoints[index];
+                Transform target = GetBindingTransformForEndpoint(endpoint);
+                if (endpoint == null || endpoint.IsGuideEndpoint || target == null) {
+                    continue;
+                }
+
+                float depth = Vector3.Dot(endpoint.WorldCenter, planeNormal);
+                float depthDelta = referenceDepth - depth;
+                if (Mathf.Abs(depthDelta) <= 0.0001f) {
+                    continue;
+                }
+
+                target.position += planeNormal * depthDelta;
+                adjusted = true;
+            }
+
+            return adjusted;
+        }
+
+        private static bool ContainsIndex(IReadOnlyList<int> indices, int value) {
+            for (int i = 0; i < indices.Count; i++) {
+                if (indices[i] == value) {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         public static void NotifyEndpointObjectDeleted(GameObject deletedObject) {
@@ -333,16 +422,42 @@ namespace Protobot.ChainSystem {
             }
         }
 
+        public static void NotifyEndpointObjectChanged(GameObject changedObject) {
+            if (changedObject == null) {
+                return;
+            }
+
+            GameObject resolved = ChainSprocketUtility.ResolvePartObject(changedObject);
+            if (resolved == null) {
+                return;
+            }
+
+            foreach (var guide in resolved.GetComponentsInChildren<ChainGuide>(true)) guide.RouteGeometryCache = null;
+            if (instance == null) return;
+
+            for (int i = 0; i < instance.connections.Count; i++) {
+                ChainConnection connection = instance.connections[i];
+                if (connection == null || !connection.gameObject.activeInHierarchy) {
+                    continue;
+                }
+
+                if (connection.ContainsEndpointObject(resolved)) {
+                    connection.RequestRebuild();
+                }
+            }
+        }
+
         public static ChainData[] ExportBuildData(Func<GameObject, int> objectToIndex) {
             if (instance == null) {
                 return Array.Empty<ChainData>();
             }
 
+            var editor = UnityEngine.Object.FindObjectOfType<InsertChainTool>();
             var dataList = new List<ChainData>();
 
             for (int i = 0; i < instance.connections.Count; i++) {
                 ChainConnection connection = instance.connections[i];
-                if (connection == null || !connection.gameObject.activeInHierarchy) {
+                if (connection == null || connection.IsPreview || (!connection.gameObject.activeInHierarchy && (editor == null || editor.EditingSourceConnection != connection))) {
                     continue;
                 }
 
@@ -371,7 +486,13 @@ namespace Protobot.ChainSystem {
                 settings.autoAlignSecondEndpoint = false;
                 settings.singleChainPerEndpoint = false;
 
-                TryCreateBoundChain(endpoints, settings, out ChainConnection _, out string _);
+                if (!TryCreateBoundChain(endpoints, settings, out ChainConnection _, out string error)) {
+                    // Preserve a legacy binding even if its geometry needs correction.
+                    // It must survive the next save instead of silently disappearing.
+                    var retained = new GameObject("Chain Connection (needs adjustment)").AddComponent<ChainConnection>();
+                    retained.Initialize(endpoints, settings);
+                    Debug.LogWarning("Loaded chain needs adjustment: " + error);
+                }
             }
         }
 
@@ -405,88 +526,6 @@ namespace Protobot.ChainSystem {
             return true;
         }
 
-        private static bool ValidateLoopPath(
-            IReadOnlyList<ChainEndpoint> endpoints,
-            ChainSettings settings,
-            out string errorMessage) {
-            errorMessage = string.Empty;
-            if (!TryResolveSharedPlaneNormal(endpoints, out Vector3 planeNormal, out errorMessage)) {
-                return false;
-            }
-
-            float resolvedPitch = ChainSprocketUtility.ResolvePitch(endpoints, settings.standard);
-            ChainDimensions dimensions = ChainDimensions.FromPitch(resolvedPitch, settings.standard);
-            var centers = new List<Vector3>(endpoints.Count);
-            var radii = new List<float>(endpoints.Count);
-
-            for (int i = 0; i < endpoints.Count; i++) {
-                centers.Add(endpoints[i].WorldCenter);
-                radii.Add(ChainSprocketUtility.ResolvePitchRadius(endpoints[i], settings.standard));
-            }
-
-            bool hasValidPath = ChainPathSolver.TrySolveLoop(
-                centers,
-                radii,
-                planeNormal,
-                dimensions.pitch,
-                settings.slack,
-                out List<ChainPathSolver.ChainPose> _,
-                out _,
-                out _);
-
-            if (!hasValidPath) {
-                errorMessage = endpoints.Count > 2
-                    ? "Selected sprocket order does not form a valid chain loop."
-                    : "Sprockets are not aligned for a valid chain path.";
-                return false;
-            }
-
-            return true;
-        }
-
-        private static bool TryResolveSharedPlaneNormal(
-            IReadOnlyList<ChainEndpoint> endpoints,
-            out Vector3 planeNormal,
-            out string errorMessage) {
-            planeNormal = Vector3.zero;
-            errorMessage = string.Empty;
-
-            if (endpoints == null || endpoints.Count < 2) {
-                errorMessage = "At least two sprockets are required.";
-                return false;
-            }
-
-            planeNormal = endpoints[0].WorldAxis;
-            if (planeNormal.sqrMagnitude < 0.0001f) {
-                errorMessage = "Could not determine a valid chain plane.";
-                return false;
-            }
-            planeNormal.Normalize();
-
-            float referenceDepth = Vector3.Dot(endpoints[0].WorldCenter, planeNormal);
-            for (int i = 1; i < endpoints.Count; i++) {
-                Vector3 axis = endpoints[i].WorldAxis;
-                if (axis.sqrMagnitude < 0.0001f) {
-                    errorMessage = "Could not determine a valid chain plane.";
-                    return false;
-                }
-
-                axis.Normalize();
-                if (Mathf.Abs(Vector3.Dot(axis, planeNormal)) < 0.99f) {
-                    errorMessage = "Selected sprockets are not parallel enough for one chain.";
-                    return false;
-                }
-
-                float depth = Vector3.Dot(endpoints[i].WorldCenter, planeNormal);
-                if (Mathf.Abs(depth - referenceDepth) > 0.05f) {
-                    errorMessage = "Selected sprockets are not coplanar enough for one chain.";
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
         private static bool TryResolveEndpointsFromData(
             ChainData data,
             Func<int, GameObject> indexToObject,
@@ -497,7 +536,7 @@ namespace Protobot.ChainSystem {
             }
 
             for (int i = 0; i < data.OrderedEndpointCount; i++) {
-                if (!data.TryGetEndpointReference(i, out int endpointIndex, out string _)) {
+                if (!data.TryGetEndpointReference(i, out int endpointIndex, out string socketId)) {
                     return false;
                 }
 
@@ -506,7 +545,7 @@ namespace Protobot.ChainSystem {
                     return false;
                 }
 
-                ChainEndpoint endpoint = ChainSprocketUtility.GetOrCreateEndpoint(endpointObject);
+                ChainEndpoint endpoint = ChainSprocketUtility.GetOrCreateEndpoint(endpointObject, socketId);
                 if (endpoint == null) {
                     return false;
                 }

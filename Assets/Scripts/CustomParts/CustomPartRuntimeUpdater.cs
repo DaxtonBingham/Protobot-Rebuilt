@@ -3,18 +3,29 @@ using System.Linq;
 using UnityEngine;
 
 namespace Protobot.CustomParts {
+    // Only meshes built for a live edit are owned here. Shared library meshes are never destroyed.
+    public sealed class CustomPartPreviewMeshes : MonoBehaviour {
+        private Mesh renderMesh, colliderMesh;
+        public void Replace(Mesh render, Mesh collider) {
+            if (renderMesh != null && renderMesh != render) Destroy(renderMesh);
+            if (colliderMesh != null && colliderMesh != collider && colliderMesh != renderMesh) Destroy(colliderMesh);
+            renderMesh = render; colliderMesh = collider;
+        }
+        private void OnDestroy() { Replace(null, null); }
+    }
+
     public static class CustomPartRuntimeUpdater {
         public static bool ApplyDefinitionToObject(GameObject target, string definitionId, string customInstanceId = null) {
             if (target == null) return false;
             if (!CustomPartRegistry.TryGetDefinition(definitionId, out CustomPartDefinition definition)) return false;
-            if (!ApplyDefinitionPreviewToObject(target, definition)) return false;
+            if (!ApplyDefinitionPreviewToObject(target, definition, true)) return false;
             CustomPartGenerator.AddPartMetadata(target, definition, customInstanceId);
             return true;
         }
 
-        public static bool ApplyDefinitionPreviewToObject(GameObject target, CustomPartDefinition definition) {
+        public static bool ApplyDefinitionPreviewToObject(GameObject target, CustomPartDefinition definition, bool useCache = false) {
             if (target == null || definition == null) return false;
-            if (!CustomPartMeshBuilder.BuildMeshes(definition, out Mesh renderMesh, out Mesh colliderMesh, out var holes)) return false;
+            if (!CustomPartMeshBuilder.BuildMeshes(definition, out Mesh renderMesh, out Mesh colliderMesh, out var holes, useCache)) return false;
 
             MeshFilter meshFilter = target.GetComponent<MeshFilter>();
             if (meshFilter == null) meshFilter = target.AddComponent<MeshFilter>();
@@ -29,6 +40,10 @@ namespace Protobot.CustomParts {
             MeshCollider meshCollider = target.GetComponent<MeshCollider>();
             if (meshCollider == null) meshCollider = target.AddComponent<MeshCollider>();
             meshCollider.sharedMesh = colliderMesh;
+
+            var owned = target.GetComponent<CustomPartPreviewMeshes>();
+            if (!useCache && owned == null) owned = target.AddComponent<CustomPartPreviewMeshes>();
+            if (owned != null) owned.Replace(useCache ? null : renderMesh, useCache ? null : colliderMesh);
 
             RemoveExistingHoleColliders(target);
             CustomPartGenerator.AddHoleColliders(target, holes);

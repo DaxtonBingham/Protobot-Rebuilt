@@ -96,6 +96,10 @@ namespace Protobot.Builds {
                     }
                 }
 
+                ChainGuideRuntimeAuthoring.LoadBuildData(
+                    buildData.chainGuides,
+                    index => generatedObjects.ContainsKey(index) ? generatedObjects[index] : null);
+
                 ChainManager.LoadBuildData(
                     buildData.chains,
                     index => generatedObjects.ContainsKey(index) ? generatedObjects[index] : null);
@@ -191,6 +195,7 @@ namespace Protobot.Builds {
             ObjectData[] newParts = new ObjectData[sceneObjs.Count];
             Dictionary<GameObject, int> objectIndices = new Dictionary<GameObject, int>();
             var customDefinitionIds = new HashSet<string>();
+            var chainEditor = UnityEngine.Object.FindObjectOfType<InsertChainTool>();
 
             for (int i = 0; i < newParts.Length; i++) {
                 Transform tForm = sceneObjs[i].transform;
@@ -198,7 +203,9 @@ namespace Protobot.Builds {
                 Renderer savedColor = tForm.GetComponent<Renderer>();
 
                 var position = tForm.position;
-                var eulerAngles = tForm.eulerAngles;
+                var rotation = tForm.rotation;
+                if (chainEditor != null) chainEditor.GetCommittedTransform(tForm, ref position, ref rotation);
+                var eulerAngles = rotation.eulerAngles;
                 newParts[i] = new ObjectData {
                     partId = savedData.id,
                     states = savedData.state,
@@ -230,6 +237,7 @@ namespace Protobot.Builds {
             return new BuildData {
                 camera = newCameraData,
                 parts = newParts,
+                chainGuides = ChainGuideRuntimeAuthoring.ExportBuildData(obj => objectIndices.ContainsKey(obj) ? objectIndices[obj] : -1),
                 chains = ChainManager.ExportBuildData(obj => objectIndices.ContainsKey(obj) ? objectIndices[obj] : -1),
                 customDefinitions = customDefinitions
             };

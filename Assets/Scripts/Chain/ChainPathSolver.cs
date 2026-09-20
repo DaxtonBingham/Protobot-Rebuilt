@@ -1,1126 +1,445 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace Protobot.ChainSystem {
+    // A closed, ordered route around convex contact surfaces. Circles are exact;
+    // solid guides use their mesh cross-section, rounded by the roller radius.
+    // No route is accepted by changing a guide's shape, order, or contact side.
     public static class ChainPathSolver {
+        const float Epsilon = 0.0001f;
+        const float Tau = Mathf.PI * 2;
+        const int CandidatesPerState = 12;
         public struct ChainPose {
-            public Vector3 position;
-            public Vector3 tangent;
-
-            public ChainPose(Vector3 newPosition, Vector3 newTangent) {
-                position = newPosition;
-                tangent = newTangent.normalized;
+            public Vector3 position, tangent;
+            public ChainPose(Vector3 p, Vector3 t) { position = p; tangent = t.normalized; }
+        }
+        public struct Span {
+            public Vector3 start, end;
+            public int afterEndpoint;
+            public Vector3 ClosestPoint(Vector3 p) {
+                var d = end - start;
+                return start + d * Mathf.Clamp01(Vector3.Dot(p - start, d) / Mathf.Max(d.sqrMagnitude, Epsilon));
             }
         }
+        public sealed class Route {
+            public readonly List<ChainPose> poses = new List<ChainPose>();
+            public readonly List<Span> spans = new List<Span>();
+            public readonly List<Vector3> contactDirections = new List<Vector3>();
+            public float length, spacing;
+        }
+        struct Piece {
+            public Vector2 a, b, center;
+            public float radius, angle, sweep, length;
+            public int owner, edge;
+            public bool deformed;
+            public bool Arc => radius > 0;
+            public Vector2 Point(float distance) {
+                float t = Mathf.Clamp01(distance / Mathf.Max(length, Epsilon));
+                return Arc ? center + Direction(angle + sweep * t) * radius : Vector2.Lerp(a, b, t);
+            }
+            public Vector2 Tangent(float distance) {
+                return Arc ? Left(Direction(angle + sweep * Mathf.Clamp01(distance / Mathf.Max(length, Epsilon)))) * Mathf.Sign(sweep) : (b - a).normalized;
+            }
+        }
+        sealed class Shape {
+            public Vector2[] vertices;
+            public Vector2 center, hint;
+            public float radius, perimeter;
+            public bool guide;
+            public readonly List<Piece> boundary = new List<Piece>();
+            public float[] cornerStart;
+            public Vector2[] normals;
+            public void BuildBoundary() {
+                cornerStart = new float[vertices.Length];
+                normals = new Vector2[vertices.Length];
+                if (vertices.Length == 1) {
+                    boundary.Add(Arc(vertices[0], radius, 0, Tau)); perimeter = Tau * radius; return;
+                }
+                for (int i = 0; i < vertices.Length; i++) normals[i] = Right((vertices[(i + 1) % vertices.Length] - vertices[i]).normalized);
+                for (int i = 0; i < vertices.Length; i++) {
+                    int previous = (i + vertices.Length - 1) % vertices.Length, next = (i + 1) % vertices.Length;
+                    cornerStart[i] = perimeter;
+                    var arc = Arc(vertices[i], radius, Angle(normals[previous]), Positive(Angle(normals[i]) - Angle(normals[previous])));
+                    boundary.Add(arc); perimeter += arc.length;
+                    var line = Line(vertices[i] + normals[i] * radius, vertices[next] + normals[i] * radius);
+                    boundary.Add(line); perimeter += line.length;
+                }
+            }
+            public Contact Support(Vector2 normal, Vector2 travel, bool outgoing) {
+                // CAD bevels can be smaller than the route's collision tolerance.
+                // Compare support heights in local double precision so nearby bevel
+                // vertices are not incorrectly treated as one flat contact face.
+                int best = 0;
+                double value = SupportHeight(vertices[0], normal);
+                for (int i = 1; i < vertices.Length; i++) {
+                    double v = SupportHeight(vertices[i], normal);
+                    float tie = Vector2.Dot(vertices[i] - vertices[best], travel) * (outgoing ? 1 : -1);
+                    if (v > value + 1e-9 || (Math.Abs(v - value) <= 1e-9 && tie > 0)) { best = i; value = v; }
+                }
+                float coordinate = Positive(Angle(normal)) * radius;
+                if (vertices.Length > 1) {
+                    Vector2 previousNormal = normals[(best + vertices.Length - 1) % vertices.Length];
+                    float cornerSweep = Positive(Angle(normals[best]) - Angle(previousNormal));
+                    float offset = Mathf.Clamp(Mathf.Atan2(Cross(previousNormal, normal), Vector2.Dot(previousNormal, normal)), 0, cornerSweep);
+                    // A tiny negative angle at a shared edge is zero, not a full
+                    // revolution around the corner. Keep point and distance paired.
+                    normal = Direction(Angle(previousNormal) + offset);
+                    coordinate = cornerStart[best] + offset * radius;
+                }
+                return new Contact { point = vertices[best] + radius * normal, distance = coordinate % perimeter };
+            }
+            double SupportHeight(Vector2 vertex, Vector2 normal) =>
+                ((double)vertex.x - center.x) * normal.x + ((double)vertex.y - center.y) * normal.y;
+        }
+        struct Contact { public Vector2 point; public float distance; }
+        sealed class Edge { public Contact from, to; public Piece line; }
+        sealed class Candidate { public int[] signs; public float cost; }
+        sealed class SliceCache {
+            public Vector3 origin, normal;
+            public Mesh[] meshes;
+            public Matrix4x4[] transforms;
+            public Bounds[] bounds;
+            public Vector2[] hull;
+        }
+        static Vector2 Left(Vector2 v) => new Vector2(-v.y, v.x);
+        static Vector2 Right(Vector2 v) => new Vector2(v.y, -v.x);
+        static float Cross(Vector2 a, Vector2 b) => a.x * b.y - a.y * b.x;
+        static float Angle(Vector2 v) => Mathf.Atan2(v.y, v.x);
+        static Vector2 Direction(float a) => new Vector2(Mathf.Cos(a), Mathf.Sin(a));
+        static float Positive(float a) => Mathf.Repeat(a, Tau);
+        static Piece Line(Vector2 a, Vector2 b) => new Piece { a = a, b = b, length = Vector2.Distance(a, b), owner = -1, edge = -1 };
+        static Piece Arc(Vector2 c, float r, float a, float sweep) => new Piece { center = c, radius = r, angle = a, sweep = sweep, length = Mathf.Abs(sweep) * r, a = c + Direction(a) * r, b = c + Direction(a + sweep) * r, owner = -1, edge = -1 };
+        static bool Finite(float x) => !float.IsNaN(x) && !float.IsInfinity(x);
 
-        private struct ArcDefinition {
-            public Vector2 center;
-            public float radius;
-            public float startAngle;
-            public float deltaAngle;
-            public float length;
+        public static bool TrySolve(IReadOnlyList<ChainEndpoint> endpoints, ChainStandard standard, float pitch, float slack, out Route route, out string error) {
+            route = null; error = "Select at least two sprockets.";
+            if (endpoints == null || endpoints.Count < 2) return false;
+            ChainEndpoint reference = null;
+            foreach (var endpoint in endpoints) if (endpoint != null && !endpoint.IsGuideEndpoint) { reference = endpoint; break; }
+            if (reference == null) return false;
+            Vector3 origin = reference.WorldCenter, normal = reference.WorldAxis.normalized;
+            if (normal.sqrMagnitude < 0.9f) { error = "The sprocket axis is invalid."; return false; }
+            Basis(normal, out var x, out var y);
+            var shapes = new List<Shape>(endpoints.Count);
+            var unique = new HashSet<ChainEndpoint>();
+            for (int i = 0; i < endpoints.Count; i++) {
+                var endpoint = endpoints[i];
+                if (endpoint == null || !unique.Add(endpoint)) { error = "Each path part must be different."; return false; }
+                Vector2 center = Project(endpoint.WorldCenter, origin, x, y);
+                var shape = new Shape { center = center, guide = endpoint.IsGuideEndpoint };
+                if (!shape.guide) {
+                    if (Mathf.Abs(Vector3.Dot(endpoint.WorldAxis.normalized, normal)) < 0.99f || Mathf.Abs(Vector3.Dot(endpoint.WorldCenter - origin, normal)) > 0.05f) {
+                        error = "Align the sprocket axes and chain planes."; return false;
+                    }
+                    shape.vertices = new[] { center };
+                    shape.radius = ChainSprocketUtility.ResolvePitchRadius(endpoint, standard);
+                } else {
+                    var guide = endpoint.GetComponent<ChainGuide>();
+                    if (!SliceGuide(endpoint, origin, normal, x, y, out shape.vertices)) {
+                        error = "Tensioner misses the chain plane. Move it into the plane."; return false;
+                    }
+                    shape.radius = ChainDimensions.FromPitch(pitch, standard).rollerDiameter * 0.5f;
+                    if (guide.HasContactHint) shape.hint = Project(guide.WorldContactHint, Vector3.zero, x, y).normalized;
+                    else if (guide.RoutingBias != ChainGuideRoutingBias.Auto) {
+                        var a = Project(endpoints[(i + endpoints.Count - 1) % endpoints.Count].WorldCenter, origin, x, y);
+                        var b = Project(endpoints[(i + 1) % endpoints.Count].WorldCenter, origin, x, y);
+                        var d = b - a;
+                        var near = a + d * Mathf.Clamp01(Vector2.Dot(center - a, d) / Mathf.Max(Epsilon, d.sqrMagnitude));
+                        shape.hint = (guide.RoutingBias == ChainGuideRoutingBias.PushInward ? near - center : center - near).normalized;
+                        if (shape.hint.sqrMagnitude < 0.5f) shape.hint = Left(d.normalized);
+                    }
+                    if (guide.FlipSide) shape.hint = -shape.hint;
+                }
+                if (!Finite(shape.radius) || shape.radius < Epsilon) { error = "A part has an invalid contact radius."; return false; }
+                shape.BuildBoundary(); shapes.Add(shape);
+            }
+            return Solve(shapes, origin, x, y, pitch, slack, out route, out error);
         }
 
-        private struct TangentSegment {
-            public Vector2 start;
-            public Vector2 end;
-            public float length;
+        public static bool TrySolveLoop(IReadOnlyList<ChainEndpoint> endpoints, ChainStandard standard, Vector3 normal, float pitch, float slack, out List<ChainPose> poses, out float length, out float spacing) {
+            bool ok = TrySolve(endpoints, standard, pitch, slack, out var route, out _);
+            poses = ok ? route.poses : new List<ChainPose>(); length = ok ? route.length : 0; spacing = ok ? route.spacing : 0; return ok;
         }
-
-        private struct LoopSection {
-            public bool isArc;
-            public Vector2 lineStart;
-            public Vector2 lineEnd;
-            public ArcDefinition arc;
-            public float length;
-        }
-
-        public static bool TrySolveLoop(
-            Vector3 centerA,
-            float radiusA,
-            Vector3 centerB,
-            float radiusB,
-            Vector3 planeNormal,
-            float preferredPitch,
-            float slack,
-            out List<ChainPose> poses,
-            out float totalLength,
-            out float effectivePitch) {
-            return TrySolveLoop(
-                new[] { centerA, centerB },
-                new[] { radiusA, radiusB },
-                planeNormal,
-                preferredPitch,
-                slack,
-                out poses,
-                out totalLength,
-                out effectivePitch);
-        }
-
-        public static bool TrySolveLoop(
-            IReadOnlyList<Vector3> centers,
-            IReadOnlyList<float> radii,
-            Vector3 planeNormal,
-            float preferredPitch,
-            float slack,
-            out List<ChainPose> poses,
-            out float totalLength,
-            out float effectivePitch) {
-            poses = new List<ChainPose>();
-            totalLength = 0f;
-            effectivePitch = 0f;
-
-            if (centers == null || radii == null || centers.Count != radii.Count || centers.Count < 2) {
-                return false;
-            }
-
-            if (centers.Count == 2) {
-                return TrySolvePairLoop(
-                    centers[0],
-                    radii[0],
-                    centers[1],
-                    radii[1],
-                    planeNormal,
-                    preferredPitch,
-                    slack,
-                    out poses,
-                    out totalLength,
-                    out effectivePitch);
-            }
-
-            Vector3 n = planeNormal.normalized;
-            if (n.sqrMagnitude < 0.0001f) {
-                return false;
-            }
-
-            if (!TryBuildPlaneBasis(centers, n, out Vector3 origin, out Vector3 basisX, out Vector3 basisY)) {
-                return false;
-            }
-
-            var centers2D = new List<Vector2>(centers.Count);
+        public static bool TrySolveLoop(Vector3 a, float ra, Vector3 b, float rb, Vector3 normal, float pitch, float slack, out List<ChainPose> poses, out float length, out float spacing) => TrySolveLoop(new[] { a, b }, new[] { ra, rb }, normal, pitch, slack, out poses, out length, out spacing);
+        public static bool TrySolveLoop(IReadOnlyList<Vector3> centers, IReadOnlyList<float> radii, Vector3 normal, float pitch, float slack, out List<ChainPose> poses, out float length, out float spacing) {
+            poses = new List<ChainPose>(); length = spacing = 0;
+            if (centers == null || radii == null || centers.Count < 2 || centers.Count != radii.Count || normal.sqrMagnitude < Epsilon) return false;
+            normal.Normalize(); Basis(normal, out var x, out var y); var shapes = new List<Shape>();
             for (int i = 0; i < centers.Count; i++) {
-                Vector3 offset = centers[i] - origin;
-                centers2D.Add(new Vector2(Vector3.Dot(offset, basisX), Vector3.Dot(offset, basisY)));
+                if (!Finite(radii[i]) || radii[i] <= Epsilon || Mathf.Abs(Vector3.Dot(centers[i] - centers[0], normal)) > 0.05f) return false;
+                var c = Project(centers[i], centers[0], x, y); var s = new Shape { center = c, vertices = new[] { c }, radius = radii[i] }; s.BuildBoundary(); shapes.Add(s);
             }
-
-            if (!TrySolveMultiLoop2D(centers2D, radii, preferredPitch, slack, out List<LoopSection> bestSections, out totalLength, out effectivePitch)) {
-                return false;
-            }
-
-            int linkCount = Mathf.Max(3, Mathf.RoundToInt(totalLength / Mathf.Max(effectivePitch, 0.0001f)));
-            for (int i = 0; i < linkCount; i++) {
-                float distance = i * effectivePitch;
-                Evaluate(bestSections, distance, out Vector2 point2D, out Vector2 tangent2D);
-
-                Vector3 position = origin + (basisX * point2D.x) + (basisY * point2D.y);
-                Vector3 tangent = ((basisX * tangent2D.x) + (basisY * tangent2D.y)).normalized;
-                poses.Add(new ChainPose(position, tangent));
-            }
-
-            return poses.Count > 0;
+            if (!Solve(shapes, centers[0], x, y, pitch, slack, out var route, out _)) return false;
+            poses = route.poses; length = route.length; spacing = route.spacing; return true;
         }
+        static void Basis(Vector3 n, out Vector3 x, out Vector3 y) { x = Vector3.Cross(Mathf.Abs(n.y) < 0.9f ? Vector3.up : Vector3.right, n).normalized; y = Vector3.Cross(n, x); }
+        static Vector2 Project(Vector3 p, Vector3 origin, Vector3 x, Vector3 y) { p -= origin; return new Vector2(Vector3.Dot(p, x), Vector3.Dot(p, y)); }
 
-        private static bool TrySolveMultiLoop2D(
-            IReadOnlyList<Vector2> centers,
-            IReadOnlyList<float> radii,
-            float preferredPitch,
-            float slack,
-            out List<LoopSection> bestSections,
-            out float totalLength,
-            out float effectivePitch) {
-            bestSections = null;
-            totalLength = 0f;
-            effectivePitch = 0f;
-
-            List<int[]> candidateOrders = BuildCandidateOrders(centers);
-            bool foundSolution = false;
-            float bestLength = float.MaxValue;
-
-            for (int orderIndex = 0; orderIndex < candidateOrders.Count; orderIndex++) {
-                int[] order = candidateOrders[orderIndex];
-                List<Vector2> orderedCenters = Reorder(centers, order);
-                List<float> orderedRadii = Reorder(radii, order);
-                HashSet<int> hullIndices = ComputeConvexHullIndices(orderedCenters);
-                List<int[]> circleSignAssignments = BuildCircleSignAssignments(orderedCenters.Count, hullIndices);
-                float bestScoreForOrder = float.MaxValue;
-                List<LoopSection> bestSectionsForOrder = null;
-                float bestLengthForOrder = 0f;
-                float bestPitchForOrder = 0f;
-
-                for (int signIndex = 0; signIndex < circleSignAssignments.Count; signIndex++) {
-                    int[] circleSigns = circleSignAssignments[signIndex];
-
-                    for (int sideIndex = 0; sideIndex < 2; sideIndex++) {
-                        float tangentSide = sideIndex == 0 ? -1f : 1f;
-                        if (!TrySolveOrderedLoop2D(
-                            orderedCenters,
-                            orderedRadii,
-                            circleSigns,
-                            tangentSide,
-                            preferredPitch,
-                            slack,
-                            out List<LoopSection> sections,
-                            out float candidateLength,
-                            out float candidatePitch)) {
-                            continue;
-                        }
-
-                        float candidateScore = candidateLength + ComputeRoutePenalty(circleSigns, hullIndices);
-                        if (candidateScore < bestScoreForOrder) {
-                            bestScoreForOrder = candidateScore;
-                            bestSectionsForOrder = sections;
-                            bestLengthForOrder = candidateLength;
-                            bestPitchForOrder = candidatePitch;
-                        }
-                    }
-                }
-
-                if (bestSectionsForOrder != null) {
-                    if (!foundSolution || bestScoreForOrder < bestLength) {
-                        foundSolution = true;
-                        bestSections = bestSectionsForOrder;
-                        totalLength = bestLengthForOrder;
-                        effectivePitch = bestPitchForOrder;
-                        bestLength = bestScoreForOrder;
-                    }
-                }
-
-                if (foundSolution && orderIndex == 0) {
-                    // Prefer the user's clicked order if it can produce a valid route.
-                    return true;
-                }
+        static bool SliceGuide(ChainEndpoint endpoint, Vector3 origin, Vector3 normal, Vector3 x, Vector3 y, out Vector2[] hull) {
+            var part = ChainSprocketUtility.ResolvePartObject(endpoint.gameObject);
+            var guide = endpoint.GetComponent<ChainGuide>();
+            var filters = part.GetComponentsInChildren<MeshFilter>();
+            var cached = guide.RouteGeometryCache as SliceCache;
+            bool reusable = cached != null && cached.origin == origin && cached.normal == normal && cached.meshes.Length == filters.Length;
+            if (reusable) for (int i = 0; i < filters.Length; i++) {
+                var mesh = filters[i].sharedMesh;
+                if (cached.meshes[i] != mesh || cached.transforms[i] != filters[i].transform.localToWorldMatrix || (mesh != null && cached.bounds[i] != mesh.bounds)) { reusable = false; break; }
             }
-
-            return foundSolution;
-        }
-
-        private static bool TrySolveOrderedLoop2D(
-            IReadOnlyList<Vector2> centers,
-            IReadOnlyList<float> radii,
-            IReadOnlyList<int> circleSigns,
-            float tangentSide,
-            float preferredPitch,
-            float slack,
-            out List<LoopSection> sections,
-            out float totalLength,
-            out float effectivePitch) {
-            sections = null;
-            totalLength = 0f;
-            effectivePitch = 0f;
-
-            if (centers == null || radii == null || circleSigns == null || centers.Count != radii.Count || centers.Count != circleSigns.Count || centers.Count < 3) {
-                return false;
-            }
-
-            Vector2 centroid = ComputeAverageCenter(centers);
-            if (!TryBuildTangentSegments(
-                centers,
-                radii,
-                circleSigns,
-                tangentSide,
-                out TangentSegment[] tangentSegments)) {
-                return false;
-            }
-
-            var arcs = new ArcDefinition[centers.Count];
-            for (int i = 0; i < centers.Count; i++) {
-                int previousIndex = (i - 1 + centers.Count) % centers.Count;
-                Vector2 incomingPoint = tangentSegments[previousIndex].end;
-                Vector2 outgoingPoint = tangentSegments[i].start;
-                Vector2 awayDirection = circleSigns[i] >= 0
-                    ? centers[i] - centroid
-                    : centroid - centers[i];
-                if (awayDirection.sqrMagnitude < 0.0001f) {
-                    Vector2 neighborAverage = (centers[previousIndex] + centers[(i + 1) % centers.Count]) * 0.5f;
-                    awayDirection = circleSigns[i] >= 0
-                        ? centers[i] - neighborAverage
-                        : neighborAverage - centers[i];
-                }
-                if (awayDirection.sqrMagnitude < 0.0001f) {
-                    awayDirection = new Vector2(0f, tangentSide * circleSigns[i]);
-                }
-
-                arcs[i] = BuildArc(
-                    centers[i],
-                    Mathf.Max(0.01f, radii[i]),
-                    incomingPoint - centers[i],
-                    outgoingPoint - centers[i],
-                    awayDirection.normalized);
-            }
-
-            sections = new List<LoopSection>(centers.Count * 2);
-            for (int i = 0; i < tangentSegments.Length; i++) {
-                sections.Add(new LoopSection {
-                    isArc = false,
-                    lineStart = tangentSegments[i].start,
-                    lineEnd = tangentSegments[i].end,
-                    length = tangentSegments[i].length
-                });
-                totalLength += tangentSegments[i].length;
-
-                int nextIndex = (i + 1) % tangentSegments.Length;
-                sections.Add(new LoopSection {
-                    isArc = true,
-                    arc = arcs[nextIndex],
-                    length = arcs[nextIndex].length
-                });
-                totalLength += arcs[nextIndex].length;
-            }
-
-            if (totalLength < 0.0001f) {
-                sections = null;
-                return false;
-            }
-
-            float pitch = Mathf.Max(0.05f, preferredPitch);
-            int linkCount = Mathf.Max(3, Mathf.RoundToInt((totalLength + Mathf.Max(0f, slack)) / pitch));
-            effectivePitch = totalLength / linkCount;
-            return true;
-        }
-
-        private static bool TryBuildTangentSegments(
-            IReadOnlyList<Vector2> centers,
-            IReadOnlyList<float> radii,
-            IReadOnlyList<int> circleSigns,
-            float preferredBranch,
-            out TangentSegment[] tangentSegments) {
-            tangentSegments = new TangentSegment[centers.Count];
-            if (centers == null || radii == null || circleSigns == null || centers.Count != radii.Count || centers.Count != circleSigns.Count || centers.Count < 3) {
-                return false;
-            }
-
-            if (TryBuildTangentSegmentsWithBranch(
-                centers,
-                radii,
-                circleSigns,
-                preferredBranch,
-                tangentSegments)) {
-                return true;
-            }
-
-            if (TryBuildTangentSegmentsWithBranch(
-                centers,
-                radii,
-                circleSigns,
-                -preferredBranch,
-                tangentSegments)) {
-                return true;
-            }
-
-            return TryBuildTangentSegmentsRecursive(
-                centers,
-                radii,
-                circleSigns,
-                preferredBranch,
-                tangentSegments,
-                0);
-        }
-
-        private static bool TryBuildTangentSegmentsWithBranch(
-            IReadOnlyList<Vector2> centers,
-            IReadOnlyList<float> radii,
-            IReadOnlyList<int> circleSigns,
-            float tangentBranch,
-            TangentSegment[] tangentSegments) {
-            for (int i = 0; i < centers.Count; i++) {
-                int nextIndex = (i + 1) % centers.Count;
-                if (!TryBuildSignedTangent(
-                    centers[i],
-                    Mathf.Max(0.01f, radii[i]),
-                    circleSigns[i],
-                    centers[nextIndex],
-                    Mathf.Max(0.01f, radii[nextIndex]),
-                    circleSigns[nextIndex],
-                    tangentBranch,
-                    out tangentSegments[i])) {
-                    return false;
-                }
-            }
-
-            return !HasSelfIntersectingSegments(tangentSegments);
-        }
-
-        private static bool TryBuildTangentSegmentsRecursive(
-            IReadOnlyList<Vector2> centers,
-            IReadOnlyList<float> radii,
-            IReadOnlyList<int> circleSigns,
-            float preferredBranch,
-            TangentSegment[] tangentSegments,
-            int segmentIndex) {
-            if (segmentIndex >= centers.Count) {
-                return !HasSelfIntersectingSegments(tangentSegments);
-            }
-
-            int nextIndex = (segmentIndex + 1) % centers.Count;
-            float[] branchOptions = { preferredBranch, -preferredBranch };
-
-            for (int optionIndex = 0; optionIndex < branchOptions.Length; optionIndex++) {
-                float tangentBranch = branchOptions[optionIndex];
-                if (!TryBuildSignedTangent(
-                    centers[segmentIndex],
-                    Mathf.Max(0.01f, radii[segmentIndex]),
-                    circleSigns[segmentIndex],
-                    centers[nextIndex],
-                    Mathf.Max(0.01f, radii[nextIndex]),
-                    circleSigns[nextIndex],
-                    tangentBranch,
-                    out tangentSegments[segmentIndex])) {
-                    continue;
-                }
-
-                if (HasSelfIntersectingSegmentsPartial(tangentSegments, segmentIndex + 1)) {
-                    continue;
-                }
-
-                if (TryBuildTangentSegmentsRecursive(
-                    centers,
-                    radii,
-                    circleSigns,
-                    preferredBranch,
-                    tangentSegments,
-                    segmentIndex + 1)) {
-                    return true;
-                }
-            }
-
-            tangentSegments[segmentIndex] = default;
-            return false;
-        }
-
-        private static bool HasSelfIntersectingSegmentsPartial(IReadOnlyList<TangentSegment> segments, int assignedCount) {
-            for (int i = 0; i < assignedCount; i++) {
-                for (int j = i + 1; j < assignedCount; j++) {
-                    if (AreAdjacentEdges(i, j, segments.Count)) {
-                        continue;
-                    }
-
-                    if (SegmentsIntersect(segments[i].start, segments[i].end, segments[j].start, segments[j].end)) {
-                        return true;
+            if (reusable) { hull = cached.hull; return hull.Length >= 3; }
+            var points = new List<Vector2>();
+            foreach (var filter in filters) {
+                var mesh = filter.sharedMesh;
+                if (mesh == null || !mesh.isReadable || filter.GetComponentInParent<ChainConnection>() != null) continue;
+                var vertices = mesh.vertices; var triangles = mesh.triangles;
+                var world = new Vector3[vertices.Length]; var depth = new float[vertices.Length];
+                for (int i = 0; i < vertices.Length; i++) { world[i] = filter.transform.TransformPoint(vertices[i]); depth[i] = Vector3.Dot(world[i] - origin, normal); }
+                for (int i = 0; i + 2 < triangles.Length; i += 3) {
+                    for (int j = 0; j < 3; j++) {
+                        int a = triangles[i + j], b = triangles[i + (j + 1) % 3];
+                        if (Mathf.Abs(depth[a]) <= Epsilon) points.Add(Project(world[a], origin, x, y));
+                        if ((depth[a] < 0 && depth[b] > 0) || (depth[a] > 0 && depth[b] < 0)) points.Add(Project(Vector3.Lerp(world[a], world[b], depth[a] / (depth[a] - depth[b])), origin, x, y));
                     }
                 }
             }
-
-            return false;
+            hull = Hull(points);
+            cached = new SliceCache { origin = origin, normal = normal, meshes = new Mesh[filters.Length], transforms = new Matrix4x4[filters.Length], bounds = new Bounds[filters.Length], hull = hull };
+            for (int i = 0; i < filters.Length; i++) { cached.meshes[i] = filters[i].sharedMesh; cached.transforms[i] = filters[i].transform.localToWorldMatrix; if (cached.meshes[i] != null) cached.bounds[i] = cached.meshes[i].bounds; }
+            guide.RouteGeometryCache = cached;
+            return hull.Length >= 3;
+        }
+        static Vector2[] Hull(List<Vector2> points) {
+            points.Sort((a, b) => a.x != b.x ? a.x.CompareTo(b.x) : a.y.CompareTo(b.y));
+            var unique = new List<Vector2>(); foreach (var p in points) if (unique.Count == 0 || (p - unique[unique.Count - 1]).sqrMagnitude > Epsilon * Epsilon) unique.Add(p);
+            if (unique.Count < 3) return unique.ToArray();
+            var hull = new List<Vector2>();
+            foreach (var p in unique) { while (hull.Count >= 2 && Cross(hull[hull.Count - 1] - hull[hull.Count - 2], p - hull[hull.Count - 1]) <= Epsilon * Epsilon) hull.RemoveAt(hull.Count - 1); hull.Add(p); }
+            int lower = hull.Count;
+            for (int i = unique.Count - 2; i >= 0; i--) { var p = unique[i]; while (hull.Count > lower && Cross(hull[hull.Count - 1] - hull[hull.Count - 2], p - hull[hull.Count - 1]) <= Epsilon * Epsilon) hull.RemoveAt(hull.Count - 1); hull.Add(p); }
+            hull.RemoveAt(hull.Count - 1); return hull.ToArray();
         }
 
-        private static List<int[]> BuildCircleSignAssignments(int count, HashSet<int> hullIndices) {
-            var assignments = new List<int[]>();
-            if (count <= 0) {
-                return assignments;
-            }
-
-            var interiorIndices = new List<int>();
-            for (int i = 0; i < count; i++) {
-                if (hullIndices == null || !hullIndices.Contains(i)) {
-                    interiorIndices.Add(i);
+        // Within each interval the support vertex is constant, so the tangent
+        // equation is analytic. There is no angular scan or recursive sign search.
+        static Edge Tangent(Shape a, Shape b, int sa, int sb) {
+            var breaks = new List<float> { 0, Tau };
+            AddBreaks(a, sa, breaks); AddBreaks(b, sb, breaks); breaks.Sort();
+            for (int i = 0; i < breaks.Count - 1; i++) {
+                float lo = breaks[i], hi = breaks[i + 1]; if (hi - lo < 0.000001f) continue;
+                var middle = Direction((lo + hi) * 0.5f);
+                var ca = a.Support(middle * sa, Left(middle), true).point - middle * (sa * a.radius);
+                var cb = b.Support(middle * sb, Left(middle), false).point - middle * (sb * b.radius);
+                var delta = ca - cb; float magnitude = delta.magnitude;
+                if (magnitude < Epsilon) continue;
+                float q = (sb * b.radius - sa * a.radius) / magnitude; if (Mathf.Abs(q) >= 1 - 0.000001f) continue;
+                float root = Mathf.Acos(q), baseAngle = Angle(delta);
+                for (int branch = -1; branch <= 1; branch += 2) {
+                    float angle = Positive(baseAngle + branch * root);
+                    if (angle < lo - Epsilon || angle > hi + Epsilon) continue;
+                    var n = Direction(angle); var travel = Left(n);
+                    var from = a.Support(n * sa, travel, true); var to = b.Support(n * sb, travel, false);
+                    var d = to.point - from.point;
+                    if (Vector2.Dot(d, travel) <= Epsilon || Mathf.Abs(Vector2.Dot(d, n)) > 0.001f) continue;
+                    return new Edge { from = from, to = to, line = Line(from.point, to.point) };
                 }
             }
+            return null;
+        }
+        static void AddBreaks(Shape s, int sign, List<float> breaks) { if (s.vertices.Length > 1) foreach (var normal in s.normals) breaks.Add(Positive(Angle(normal * sign))); }
+        static List<Piece> Wrap(Shape shape, Contact incoming, Contact outgoing, int sign, int owner) {
+            float start = incoming.distance, length = Mathf.Repeat((outgoing.distance - start) * sign, shape.perimeter);
+            if (Vector2.Distance(incoming.point, outgoing.point) < Epsilon && (length < Epsilon || length > shape.perimeter - Epsilon)) {
+                // Collinear standoffs may touch a straight run without bending it.
+                if (shape.hint.sqrMagnitude > 0.5f && Vector2.Dot((incoming.point - shape.center).normalized, shape.hint) <= 0.05f) return null;
+                return new List<Piece>();
+            }
+            if (length < Epsilon) return new List<Piece>();
+            if (length > shape.perimeter - Epsilon) return null;
+            var result = new List<Piece>(); float remaining = length, cursor = start;
+            for (int guard = 0; remaining > Epsilon && guard < shape.boundary.Count + 3; guard++) {
+                float offset = 0; int found = -1; float within = 0;
+                float probe = Mathf.Repeat(cursor + sign * Epsilon * 0.1f, shape.perimeter);
+                for (int i = 0; i < shape.boundary.Count; i++) {
+                    if (probe < offset + shape.boundary[i].length) { found = i; within = Mathf.Clamp(cursor - offset, 0, shape.boundary[i].length); if (sign < 0 && cursor < Epsilon && i == shape.boundary.Count - 1) within = shape.boundary[i].length; break; }
+                    offset += shape.boundary[i].length;
+                }
+                if (found < 0) return null;
+                var source = shape.boundary[found]; float take = Mathf.Min(remaining, sign > 0 ? source.length - within : within);
+                if (take < Epsilon * 0.01f) return null;
+                Piece piece = source.Arc ? Arc(source.center, source.radius, source.angle + within / source.radius, sign * take / source.radius) : Line(source.Point(within), source.Point(within + sign * take));
+                piece.owner = owner; result.Add(piece); cursor = Mathf.Repeat(cursor + sign * take, shape.perimeter); remaining -= take;
+            }
+            if (remaining > 0.001f) return null;
+            if (shape.hint.sqrMagnitude > 0.5f) {
+                float half = length * 0.5f; Vector2 contact = incoming.point;
+                foreach (var piece in result) { if (half <= piece.length) { contact = piece.Point(half); break; } half -= piece.length; }
+                if (Vector2.Dot((contact - shape.center).normalized, shape.hint) <= 0.05f) return null;
+            }
+            return result;
+        }
 
-            int variants = 1 << interiorIndices.Count;
-            for (int mask = 0; mask < variants; mask++) {
-                var signs = new int[count];
+        static bool Solve(List<Shape> shapes, Vector3 origin, Vector3 x, Vector3 y, float pitch, float slack, out Route route, out string error) {
+            route = null; error = "No clear path. Move the tensioner, flip contact, or switch runs.";
+            int count = shapes.Count;
+            if (count > 128 || !Finite(pitch) || pitch <= 0 || !Finite(slack) || slack < 0) { error = "Invalid chain dimensions or too many path parts (maximum 128)."; return false; }
+            for (int i = 0; i < count; i++) for (int j = i + 1; j < count; j++) {
+                bool overlap = Inside(shapes[i].vertices[0], shapes[j]) || Inside(shapes[j].vertices[0], shapes[i]);
+                if (!overlap) foreach (var a in shapes[i].boundary) {
+                    foreach (var b in shapes[j].boundary) if (Intersect(a, b, false)) { overlap = true; break; }
+                    if (overlap) break;
+                }
+                if (overlap) { error = "Path parts overlap. Separate them in the chain plane."; return false; }
+            }
+            var edges = new Edge[count, 2, 2]; var wraps = new List<Piece>[count, 2, 2, 2];
+            for (int i = 0; i < count; i++) for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) {
+                var edge = Tangent(shapes[i], shapes[(i + 1) % count], a * 2 - 1, b * 2 - 1);
+                if (edge != null && ClearOfShapes(edge.line, shapes, i, (i + 1) % count)) { edge.line.edge = i; edges[i, a, b] = edge; }
+            }
+            for (int i = 0; i < count; i++) for (int a = 0; a < 2; a++) for (int b = 0; b < 2; b++) for (int c = 0; c < 2; c++) {
+                var incoming = edges[(i + count - 1) % count, a, b]; var outgoing = edges[i, b, c];
+                if (incoming == null || outgoing == null) continue;
+                var wrap = Wrap(shapes[i], incoming.to, outgoing.from, b * 2 - 1, i);
+                if (wrap == null) continue;
+                bool clear = true; foreach (var piece in wrap) if (!ClearOfShapes(piece, shapes, i, -1)) { clear = false; break; }
+                if (clear) wraps[i, a, b, c] = wrap;
+            }
+            var candidates = new List<Candidate>();
+            for (int first = 0; first < 2; first++) for (int second = 0; second < 2; second++) {
+                if (edges[0, first, second] == null) continue;
+                var current = new List<Candidate> { new Candidate { signs = new[] { first, second }, cost = edges[0, first, second].line.length } };
+                for (int index = 2; index < count && current.Count > 0; index++) {
+                    var buckets = new List<Candidate>[4]; for (int k = 0; k < 4; k++) buckets[k] = new List<Candidate>();
+                    foreach (var candidate in current) for (int next = 0; next < 2; next++) {
+                        int a = candidate.signs[index - 2], b = candidate.signs[index - 1]; var wrap = wraps[index - 1, a, b, next]; var edge = edges[index - 1, b, next];
+                        if (wrap == null || edge == null) continue;
+                        int[] signs = new int[index + 1]; Array.Copy(candidate.signs, signs, index); signs[index] = next;
+                        buckets[b * 2 + next].Add(new Candidate { signs = signs, cost = candidate.cost + Length(wrap) + edge.line.length });
+                    }
+                    current.Clear(); foreach (var bucket in buckets) { bucket.Sort((a, b) => a.cost.CompareTo(b.cost)); for (int k = 0; k < Mathf.Min(CandidatesPerState, bucket.Count); k++) current.Add(bucket[k]); }
+                }
+                foreach (var candidate in current) {
+                    var signs = candidate.signs; int last = signs[count - 1], prev = signs[count - 2];
+                    var close = edges[count - 1, last, first]; var lastWrap = wraps[count - 1, prev, last, first]; var firstWrap = wraps[0, last, first, second];
+                    if (close == null || lastWrap == null || firstWrap == null) continue;
+                    candidate.cost += close.line.length + Length(lastWrap) + Length(firstWrap); candidates.Add(candidate);
+                }
+            }
+            candidates.Sort((a, b) => a.cost.CompareTo(b.cost));
+            foreach (var candidate in candidates) {
+                var pieces = new List<Piece>();
                 for (int i = 0; i < count; i++) {
-                    signs[i] = 1;
+                    int prev = (i + count - 1) % count, next = (i + 1) % count;
+                    pieces.AddRange(wraps[i, candidate.signs[prev], candidate.signs[i], candidate.signs[next]]);
+                    pieces.Add(edges[i, candidate.signs[i], candidate.signs[next]].line);
                 }
-
-                for (int i = 0; i < interiorIndices.Count; i++) {
-                    int index = interiorIndices[i];
-                    signs[index] = ((mask >> i) & 1) == 0 ? 1 : -1;
+                if (slack > Epsilon) AddSlack(pieces, slack);
+                if (!Validate(pieces, shapes)) continue;
+                float length = Length(pieces);
+                int links = Mathf.Max(4, Mathf.RoundToInt(length / pitch));
+                if (links > 8192) { error = "This chain exceeds the 8,192-link limit. Shorten the route."; return false; }
+                route = new Route { length = length, spacing = length / links };
+                for (int i = 0; i < count; i++) {
+                    var contact = wraps[i, candidate.signs[(i + count - 1) % count], candidate.signs[i], candidate.signs[(i + 1) % count]];
+                    float half = Length(contact) * 0.5f;
+                    Vector2 direction = (edges[(i + count - 1) % count, candidate.signs[(i + count - 1) % count], candidate.signs[i]].to.point - shapes[i].center).normalized;
+                    foreach (var piece in contact) { if (half <= piece.length) { direction = (piece.Point(half) - shapes[i].center).normalized; break; } half -= piece.length; }
+                    route.contactDirections.Add(x * direction.x + y * direction.y);
                 }
-
-                assignments.Add(signs);
+                int section = 0; float consumed = 0;
+                for (int i = 0; i < links; i++) {
+                    float distance = i * route.spacing;
+                    while (section < pieces.Count - 1 && consumed + pieces[section].length < distance) consumed += pieces[section++].length;
+                    var p = pieces[section].Point(distance - consumed); var t = pieces[section].Tangent(distance - consumed);
+                    route.poses.Add(new ChainPose(origin + x * p.x + y * p.y, x * t.x + y * t.y));
+                }
+                foreach (var piece in pieces) if (piece.edge >= 0) route.spans.Add(new Span { start = origin + x * piece.a.x + y * piece.a.y, end = origin + x * piece.b.x + y * piece.b.y, afterEndpoint = piece.edge });
+                error = string.Empty; return true;
             }
-
-            assignments.Sort((a, b) => CountSignChanges(a).CompareTo(CountSignChanges(b)));
-            return assignments;
+            return false;
         }
-
-        private static int CountSignChanges(IReadOnlyList<int> signs) {
-            if (signs == null || signs.Count == 0) {
-                return 0;
+        static float Length(List<Piece> pieces) { float sum = 0; foreach (var p in pieces) sum += p.length; return sum; }
+        static void AddSlack(List<Piece> pieces, float slack) {
+            int longest = -1; float area = 0;
+            for (int i = 0; i < pieces.Count; i++) { area += Cross(pieces[i].a, pieces[i].b); if (!pieces[i].Arc && (longest < 0 || pieces[i].length > pieces[longest].length)) longest = i; }
+            if (longest < 0) return;
+            var original = pieces[longest]; var outward = Right((original.b - original.a).normalized) * (area >= 0 ? 1 : -1);
+            float low = 0, high = original.length + slack; var bowed = new List<Piece>();
+            for (int iteration = 0; iteration < 24; iteration++) {
+                float amplitude = (low + high) * 0.5f; bowed.Clear(); Vector2 previous = original.a;
+                for (int i = 1; i <= 64; i++) { float t = i / 64f; float bump = 16 * t * t * (1 - t) * (1 - t); var point = Vector2.Lerp(original.a, original.b, t) + outward * (amplitude * bump); var p = Line(previous, point); p.edge = original.edge; p.deformed = true; bowed.Add(p); previous = point; }
+                if (Length(bowed) < original.length + slack) low = amplitude; else high = amplitude;
             }
-
-            int changes = 0;
-            for (int i = 0; i < signs.Count; i++) {
-                int nextIndex = (i + 1) % signs.Count;
-                if (signs[i] != signs[nextIndex]) {
-                    changes++;
-                }
-            }
-
-            return changes;
+            pieces.RemoveAt(longest); pieces.InsertRange(longest, bowed);
         }
-
-        private static float ComputeRoutePenalty(IReadOnlyList<int> circleSigns, HashSet<int> hullIndices) {
-            if (circleSigns == null || hullIndices == null) {
-                return 0f;
-            }
-
-            float penalty = 0f;
-            for (int i = 0; i < circleSigns.Count; i++) {
-                bool onHull = hullIndices.Contains(i);
-                if (onHull && circleSigns[i] < 0) {
-                    penalty += 100000f;
-                }
-                else if (!onHull && circleSigns[i] > 0) {
-                    penalty += 5000f;
+        static bool Validate(List<Piece> pieces, List<Shape> shapes) {
+            for (int i = 0; i < pieces.Count; i++) {
+                var p = pieces[i]; var next = pieces[(i + 1) % pieces.Count];
+                if (!Finite(p.length) || p.length < Epsilon * 0.01f || Vector2.Distance(p.b, next.a) > 0.002f) return false;
+                if (!ClearOfShapes(p, shapes, p.owner >= 0 ? p.owner : p.edge, p.edge >= 0 ? (p.edge + 1) % shapes.Count : -1)) return false;
+                for (int j = i + 1; j < pieces.Count; j++) {
+                    bool adjacent = j == i + 1 || (i == 0 && j == pieces.Count - 1);
+                    if (Intersect(p, pieces[j], adjacent)) return false;
                 }
             }
-
-            penalty += CountSignChanges(circleSigns) * 10f;
-            return penalty;
-        }
-
-        private static HashSet<int> ComputeConvexHullIndices(IReadOnlyList<Vector2> points) {
-            var hullIndices = new HashSet<int>();
-            if (points == null || points.Count == 0) {
-                return hullIndices;
-            }
-
-            if (points.Count <= 3) {
-                for (int i = 0; i < points.Count; i++) {
-                    hullIndices.Add(i);
-                }
-                return hullIndices;
-            }
-
-            var sorted = Enumerable.Range(0, points.Count)
-                .OrderBy(index => points[index].x)
-                .ThenBy(index => points[index].y)
-                .ToList();
-
-            var lower = new List<int>();
-            for (int i = 0; i < sorted.Count; i++) {
-                int index = sorted[i];
-                while (lower.Count >= 2 && Cross(points[lower[lower.Count - 2]], points[lower[lower.Count - 1]], points[index]) <= 0f) {
-                    lower.RemoveAt(lower.Count - 1);
-                }
-                lower.Add(index);
-            }
-
-            var upper = new List<int>();
-            for (int i = sorted.Count - 1; i >= 0; i--) {
-                int index = sorted[i];
-                while (upper.Count >= 2 && Cross(points[upper[upper.Count - 2]], points[upper[upper.Count - 1]], points[index]) <= 0f) {
-                    upper.RemoveAt(upper.Count - 1);
-                }
-                upper.Add(index);
-            }
-
-            for (int i = 0; i < lower.Count; i++) {
-                hullIndices.Add(lower[i]);
-            }
-            for (int i = 0; i < upper.Count; i++) {
-                hullIndices.Add(upper[i]);
-            }
-
-            return hullIndices;
-        }
-
-        private static List<int> ComputeConvexHullOrder(IReadOnlyList<Vector2> points) {
-            var hullOrder = new List<int>();
-            if (points == null || points.Count == 0) {
-                return hullOrder;
-            }
-
-            if (points.Count <= 3) {
-                for (int i = 0; i < points.Count; i++) {
-                    hullOrder.Add(i);
-                }
-                return hullOrder;
-            }
-
-            var sorted = Enumerable.Range(0, points.Count)
-                .OrderBy(index => points[index].x)
-                .ThenBy(index => points[index].y)
-                .ToList();
-
-            var lower = new List<int>();
-            for (int i = 0; i < sorted.Count; i++) {
-                int index = sorted[i];
-                while (lower.Count >= 2 && Cross(points[lower[lower.Count - 2]], points[lower[lower.Count - 1]], points[index]) <= 0f) {
-                    lower.RemoveAt(lower.Count - 1);
-                }
-                lower.Add(index);
-            }
-
-            var upper = new List<int>();
-            for (int i = sorted.Count - 1; i >= 0; i--) {
-                int index = sorted[i];
-                while (upper.Count >= 2 && Cross(points[upper[upper.Count - 2]], points[upper[upper.Count - 1]], points[index]) <= 0f) {
-                    upper.RemoveAt(upper.Count - 1);
-                }
-                upper.Add(index);
-            }
-
-            for (int i = 0; i < lower.Count - 1; i++) {
-                hullOrder.Add(lower[i]);
-            }
-
-            for (int i = 0; i < upper.Count - 1; i++) {
-                int index = upper[i];
-                if (!hullOrder.Contains(index)) {
-                    hullOrder.Add(index);
-                }
-            }
-
-            if (hullOrder.Count == 0) {
-                hullOrder.AddRange(Enumerable.Range(0, points.Count));
-            }
-
-            return hullOrder;
-        }
-
-        private static float ComputeInsertionCost(Vector2 start, Vector2 point, Vector2 end) {
-            float replacementCost = Vector2.Distance(start, point) + Vector2.Distance(point, end) - Vector2.Distance(start, end);
-            Vector2 closestPoint = ClosestPointOnSegment(start, end, point);
-            return replacementCost + (point - closestPoint).sqrMagnitude;
-        }
-
-        private static Vector2 ClosestPointOnSegment(Vector2 start, Vector2 end, Vector2 point) {
-            Vector2 segment = end - start;
-            float segmentLengthSq = segment.sqrMagnitude;
-            if (segmentLengthSq < 0.0001f) {
-                return start;
-            }
-
-            float t = Mathf.Clamp01(Vector2.Dot(point - start, segment) / segmentLengthSq);
-            return start + (segment * t);
-        }
-
-        private static float Cross(Vector2 a, Vector2 b, Vector2 c) {
-            return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-        }
-
-        private static List<int[]> BuildCandidateOrders(IReadOnlyList<Vector2> centers) {
-            var candidateOrders = new List<int[]>();
-            int count = centers.Count;
-
-            AddCandidateOrder(candidateOrders, Enumerable.Range(0, count).ToArray());
-            AddCandidateOrder(candidateOrders, Enumerable.Range(0, count).Reverse().ToArray());
-
-            Vector2 centroid = ComputeAverageCenter(centers);
-            int[] angleAscending = Enumerable.Range(0, count)
-                .OrderBy(index => Mathf.Atan2(centers[index].y - centroid.y, centers[index].x - centroid.x))
-                .ToArray();
-            AddCandidateOrder(candidateOrders, angleAscending);
-            AddCandidateOrder(candidateOrders, angleAscending.Reverse().ToArray());
-
-            int[] hullInsertionOrder = BuildHullInsertionOrder(centers);
-            AddCandidateOrder(candidateOrders, hullInsertionOrder);
-            AddCandidateOrder(candidateOrders, hullInsertionOrder.Reverse().ToArray());
-
-            int initialCandidateCount = candidateOrders.Count;
-            for (int i = 0; i < initialCandidateCount; i++) {
-                AddInsertionVariants(candidateOrders, candidateOrders[i]);
-            }
-
-            return candidateOrders;
-        }
-
-        private static int[] BuildHullInsertionOrder(IReadOnlyList<Vector2> centers) {
-            if (centers == null || centers.Count == 0) {
-                return System.Array.Empty<int>();
-            }
-
-            List<int> hullOrder = ComputeConvexHullOrder(centers);
-            if (hullOrder.Count == 0) {
-                return Enumerable.Range(0, centers.Count).ToArray();
-            }
-
-            var remaining = Enumerable.Range(0, centers.Count)
-                .Where(index => !hullOrder.Contains(index))
-                .ToList();
-
-            while (remaining.Count > 0) {
-                float bestCost = float.MaxValue;
-                int bestPoint = remaining[0];
-                int bestInsertIndex = hullOrder.Count - 1;
-
-                for (int remainingIndex = 0; remainingIndex < remaining.Count; remainingIndex++) {
-                    int pointIndex = remaining[remainingIndex];
-                    for (int edgeIndex = 0; edgeIndex < hullOrder.Count; edgeIndex++) {
-                        int startIndex = hullOrder[edgeIndex];
-                        int endIndex = hullOrder[(edgeIndex + 1) % hullOrder.Count];
-                        float insertionCost = ComputeInsertionCost(
-                            centers[startIndex],
-                            centers[pointIndex],
-                            centers[endIndex]);
-
-                        if (insertionCost < bestCost) {
-                            bestCost = insertionCost;
-                            bestPoint = pointIndex;
-                            bestInsertIndex = edgeIndex;
-                        }
-                    }
-                }
-
-                hullOrder.Insert(bestInsertIndex + 1, bestPoint);
-                remaining.Remove(bestPoint);
-            }
-
-            return hullOrder.ToArray();
-        }
-
-        private static void AddInsertionVariants(List<int[]> candidateOrders, int[] baseOrder) {
-            if (candidateOrders == null || baseOrder == null || baseOrder.Length < 4) {
-                return;
-            }
-
-            for (int sourceIndex = 0; sourceIndex < baseOrder.Length; sourceIndex++) {
-                int movedPoint = baseOrder[sourceIndex];
-                var remaining = new List<int>(baseOrder.Length - 1);
-                for (int i = 0; i < baseOrder.Length; i++) {
-                    if (i != sourceIndex) {
-                        remaining.Add(baseOrder[i]);
-                    }
-                }
-
-                for (int insertIndex = 0; insertIndex <= remaining.Count; insertIndex++) {
-                    var variant = new List<int>(remaining);
-                    variant.Insert(insertIndex, movedPoint);
-                    AddCandidateOrder(candidateOrders, variant.ToArray());
-                }
-            }
-        }
-
-        private static void AddCandidateOrder(List<int[]> candidateOrders, int[] order) {
-            int[] normalized = NormalizeCyclicOrder(order);
-            for (int i = 0; i < candidateOrders.Count; i++) {
-                if (OrdersMatch(candidateOrders[i], normalized)) {
-                    return;
-                }
-            }
-
-            candidateOrders.Add(normalized);
-        }
-
-        private static int[] NormalizeCyclicOrder(int[] order) {
-            if (order == null || order.Length == 0) {
-                return System.Array.Empty<int>();
-            }
-
-            int minValue = order[0];
-            int minIndex = 0;
-            for (int i = 1; i < order.Length; i++) {
-                if (order[i] < minValue) {
-                    minValue = order[i];
-                    minIndex = i;
-                }
-            }
-
-            var normalized = new int[order.Length];
-            for (int i = 0; i < order.Length; i++) {
-                normalized[i] = order[(minIndex + i) % order.Length];
-            }
-
-            return normalized;
-        }
-
-        private static bool OrdersMatch(int[] a, int[] b) {
-            if (a == null || b == null || a.Length != b.Length) {
-                return false;
-            }
-
-            for (int i = 0; i < a.Length; i++) {
-                if (a[i] != b[i]) {
-                    return false;
-                }
-            }
-
             return true;
         }
-
-        private static List<T> Reorder<T>(IReadOnlyList<T> items, int[] order) {
-            var reordered = new List<T>(order.Length);
-            for (int i = 0; i < order.Length; i++) {
-                reordered.Add(items[order[i]]);
+        static bool ClearOfShapes(Piece piece, List<Shape> shapes, int exceptA, int exceptB) {
+            for (int i = 0; i < shapes.Count; i++) {
+                bool ownContact = i == exceptA || i == exceptB;
+                if (ownContact && !piece.deformed) continue;
+                var shape = shapes[i];
+                if (Inside(piece.a, shape) || Inside(piece.b, shape) || Inside(piece.Point(piece.length * 0.5f), shape)) return false;
+                foreach (var boundary in shape.boundary) if (Intersect(piece, boundary, false, ownContact)) return false;
             }
-
-            return reordered;
-        }
-
-        private static bool TrySolvePairLoop(
-            Vector3 centerA,
-            float radiusA,
-            Vector3 centerB,
-            float radiusB,
-            Vector3 planeNormal,
-            float preferredPitch,
-            float slack,
-            out List<ChainPose> poses,
-            out float totalLength,
-            out float effectivePitch) {
-            poses = new List<ChainPose>();
-            totalLength = 0f;
-            effectivePitch = 0f;
-
-            Vector3 n = planeNormal.normalized;
-            Vector3 delta = Vector3.ProjectOnPlane(centerB - centerA, n);
-            float d = delta.magnitude;
-
-            if (d < 0.0001f) {
-                return false;
-            }
-
-            float rA = Mathf.Max(0.01f, radiusA);
-            float rB = Mathf.Max(0.01f, radiusB);
-            float diff = Mathf.Abs(rA - rB);
-            if (d <= diff + 0.0001f) {
-                return false;
-            }
-
-            Vector3 u = delta / d;
-            Vector3 v = Vector3.Cross(n, u).normalized;
-
-            float r = (rA - rB) / d;
-            float hSq = 1f - (r * r);
-            if (hSq <= 0f) {
-                return false;
-            }
-
-            float h = Mathf.Sqrt(hSq);
-
-            Vector2 aTop = new Vector2(rA * r, rA * h);
-            Vector2 aBottom = new Vector2(rA * r, -rA * h);
-            Vector2 bTop = new Vector2(d + (rB * r), rB * h);
-            Vector2 bBottom = new Vector2(d + (rB * r), -rB * h);
-
-            Vector2 line1Start = aTop;
-            Vector2 line1End = bTop;
-            Vector2 line2Start = bBottom;
-            Vector2 line2End = aBottom;
-
-            Vector2 centerA2 = Vector2.zero;
-            Vector2 centerB2 = new Vector2(d, 0f);
-
-            Vector2 awayFromA = (centerA2 - centerB2).normalized;
-            Vector2 awayFromB = (centerB2 - centerA2).normalized;
-
-            ArcDefinition arcB = BuildArc(centerB2, rB, bTop - centerB2, bBottom - centerB2, awayFromB);
-            ArcDefinition arcA = BuildArc(centerA2, rA, aBottom - centerA2, aTop - centerA2, awayFromA);
-
-            float line1Length = Vector2.Distance(line1Start, line1End);
-            float line2Length = Vector2.Distance(line2Start, line2End);
-
-            totalLength = line1Length + arcB.length + line2Length + arcA.length;
-            if (totalLength < 0.0001f) {
-                return false;
-            }
-
-            float pitch = Mathf.Max(0.05f, preferredPitch);
-            int linkCount = Mathf.Max(3, Mathf.RoundToInt((totalLength + Mathf.Max(0f, slack)) / pitch));
-            effectivePitch = totalLength / linkCount;
-
-            for (int i = 0; i < linkCount; i++) {
-                float distance = i * effectivePitch;
-                Evaluate(
-                    line1Start,
-                    line1End,
-                    line1Length,
-                    arcB,
-                    line2Start,
-                    line2End,
-                    line2Length,
-                    arcA,
-                    distance,
-                    out Vector2 point2D,
-                    out Vector2 tangent2D);
-
-                Vector3 position = centerA + (u * point2D.x) + (v * point2D.y);
-                Vector3 tangent = ((u * tangent2D.x) + (v * tangent2D.y)).normalized;
-                poses.Add(new ChainPose(position, tangent));
-            }
-
-            return poses.Count > 0;
-        }
-
-        private static bool TryBuildPlaneBasis(
-            IReadOnlyList<Vector3> centers,
-            Vector3 planeNormal,
-            out Vector3 origin,
-            out Vector3 basisX,
-            out Vector3 basisY) {
-            origin = centers[0];
-            basisX = Vector3.zero;
-            basisY = Vector3.zero;
-
-            for (int i = 1; i < centers.Count; i++) {
-                Vector3 delta = Vector3.ProjectOnPlane(centers[i] - origin, planeNormal);
-                if (delta.sqrMagnitude > 0.0001f) {
-                    basisX = delta.normalized;
-                    basisY = Vector3.Cross(planeNormal, basisX).normalized;
-                    return basisY.sqrMagnitude > 0.0001f;
-                }
-            }
-
-            return false;
-        }
-
-        private static bool TryBuildSignedTangent(
-            Vector2 centerA,
-            float radiusA,
-            int sideA,
-            Vector2 centerB,
-            float radiusB,
-            int sideB,
-            float tangentBranch,
-            out TangentSegment tangentSegment) {
-            tangentSegment = default;
-
-            Vector2 delta = centerB - centerA;
-            float distance = delta.magnitude;
-            if (distance < 0.0001f) {
-                return false;
-            }
-
-            float signedDistance = (sideA * radiusA) - (sideB * radiusB);
-            if (Mathf.Abs(signedDistance) >= distance - 0.0001f) {
-                return false;
-            }
-
-            Vector2 u = delta / distance;
-            Vector2 v = new Vector2(-u.y, u.x);
-
-            float r = signedDistance / distance;
-            float hSq = 1f - (r * r);
-            if (hSq <= 0f) {
-                return false;
-            }
-
-            float h = Mathf.Sqrt(hSq);
-            Vector2 normal = (u * r) + (v * h * tangentBranch);
-            tangentSegment.start = centerA + (normal * radiusA * sideA);
-            tangentSegment.end = centerB + (normal * radiusB * sideB);
-            tangentSegment.length = Vector2.Distance(tangentSegment.start, tangentSegment.end);
-            return tangentSegment.length > 0.0001f;
-        }
-
-        private static bool IsSimpleLoopOrder(IReadOnlyList<Vector2> centers) {
-            if (centers == null || centers.Count < 3) {
-                return true;
-            }
-
-            for (int i = 0; i < centers.Count; i++) {
-                Vector2 a1 = centers[i];
-                Vector2 a2 = centers[(i + 1) % centers.Count];
-
-                for (int j = i + 1; j < centers.Count; j++) {
-                    if (AreAdjacentEdges(i, j, centers.Count)) {
-                        continue;
-                    }
-
-                    Vector2 b1 = centers[j];
-                    Vector2 b2 = centers[(j + 1) % centers.Count];
-                    if (SegmentsIntersect(a1, a2, b1, b2)) {
-                        return false;
-                    }
-                }
-            }
-
             return true;
         }
-
-        private static bool HasSelfIntersectingSegments(IReadOnlyList<TangentSegment> segments) {
-            for (int i = 0; i < segments.Count; i++) {
-                for (int j = i + 1; j < segments.Count; j++) {
-                    if (AreAdjacentEdges(i, j, segments.Count)) {
-                        continue;
-                    }
-
-                    if (SegmentsIntersect(segments[i].start, segments[i].end, segments[j].start, segments[j].end)) {
-                        return true;
-                    }
+        static bool Inside(Vector2 p, Shape shape) {
+            if (shape.vertices.Length == 1) return Vector2.Distance(p, shape.center) < shape.radius - Epsilon;
+            bool inside = true; float nearest = float.MaxValue;
+            for (int i = 0; i < shape.vertices.Length; i++) {
+                var a = shape.vertices[i]; var d = shape.vertices[(i + 1) % shape.vertices.Length] - a;
+                if (Cross(d, p - a) < 0) inside = false;
+                nearest = Mathf.Min(nearest, (p - a - d * Mathf.Clamp01(Vector2.Dot(p - a, d) / d.sqrMagnitude)).sqrMagnitude);
+            }
+            return inside || nearest < (shape.radius - Epsilon) * (shape.radius - Epsilon);
+        }
+        static bool OnArc(Vector2 p, Piece arc) {
+            float angle = Positive((Angle(p - arc.center) - arc.angle) * Mathf.Sign(arc.sweep));
+            return angle <= Mathf.Abs(arc.sweep) + Epsilon || angle >= Tau - Epsilon;
+        }
+        static bool AllowedJoin(Vector2 p, Piece a, Piece b, bool adjacent, bool surfaceContact) =>
+            (surfaceContact && (Vector2.Distance(p, a.a) < Epsilon || Vector2.Distance(p, a.b) < Epsilon)) ||
+            (adjacent && ((Vector2.Distance(p, a.a) < 0.001f || Vector2.Distance(p, a.b) < 0.001f) && (Vector2.Distance(p, b.a) < 0.001f || Vector2.Distance(p, b.b) < 0.001f)));
+        static bool Intersect(Piece a, Piece b, bool adjacent, bool surfaceContact = false) {
+            if (!a.Arc && !b.Arc) {
+                var u = a.b - a.a; var v = b.b - b.a; float cross = Cross(u, v);
+                if (Mathf.Abs(cross) < 0.000001f) {
+                    if (Mathf.Abs(Cross(b.a - a.a, u)) > Epsilon * u.magnitude) return false;
+                    float t0 = Vector2.Dot(b.a - a.a, u) / u.sqrMagnitude, t1 = Vector2.Dot(b.b - a.a, u) / u.sqrMagnitude;
+                    float lo = Mathf.Max(0, Mathf.Min(t0, t1)), hi = Mathf.Min(1, Mathf.Max(t0, t1));
+                    return hi >= lo && (hi - lo > Epsilon || !AllowedJoin(a.a + u * lo, a, b, adjacent, surfaceContact));
                 }
+                float t = Cross(b.a - a.a, v) / cross, s = Cross(b.a - a.a, u) / cross;
+                return t >= -Epsilon && t <= 1 + Epsilon && s >= -Epsilon && s <= 1 + Epsilon && !AllowedJoin(a.a + u * t, a, b, adjacent, surfaceContact);
             }
-
+            if (!a.Arc || !b.Arc) {
+                var line = a.Arc ? b : a; var arc = a.Arc ? a : b; var d = line.b - line.a; var f = line.a - arc.center;
+                float aa = d.sqrMagnitude, bb = 2 * Vector2.Dot(f, d), cc = f.sqrMagnitude - arc.radius * arc.radius, discriminant = bb * bb - 4 * aa * cc;
+                if (discriminant < -Epsilon * aa) return false;
+                float root = Mathf.Sqrt(Mathf.Max(0, discriminant));
+                for (int sign = -1; sign <= 1; sign += 2) { float t = (-bb + sign * root) / (2 * aa); var p = line.a + d * t; if (t >= -Epsilon && t <= 1 + Epsilon && OnArc(p, arc) && !AllowedJoin(p, a, b, adjacent, surfaceContact)) return true; }
+                return false;
+            }
+            var delta = b.center - a.center; float distance = delta.magnitude;
+            if (distance < Epsilon) {
+                if (Mathf.Abs(a.radius - b.radius) > Epsilon) return false;
+                return (OnArc(a.Point(a.length * 0.5f), b) || OnArc(b.Point(b.length * 0.5f), a));
+            }
+            if (distance > a.radius + b.radius + Epsilon || distance < Mathf.Abs(a.radius - b.radius) - Epsilon) return false;
+            float along = (a.radius * a.radius - b.radius * b.radius + distance * distance) / (2 * distance);
+            float height = Mathf.Sqrt(Mathf.Max(0, a.radius * a.radius - along * along)); var center = a.center + delta * (along / distance); var offset = Left(delta) * (height / distance);
+            for (int sign = -1; sign <= 1; sign += 2) { var p = center + offset * sign; if (OnArc(p, a) && OnArc(p, b) && !AllowedJoin(p, a, b, adjacent, surfaceContact)) return true; }
             return false;
-        }
-
-        private static bool AreAdjacentEdges(int indexA, int indexB, int count) {
-            if (indexA == indexB) {
-                return true;
-            }
-
-            if (((indexA + 1) % count) == indexB || ((indexB + 1) % count) == indexA) {
-                return true;
-            }
-
-            return indexA == 0 && indexB == count - 1 || indexB == 0 && indexA == count - 1;
-        }
-
-        private static bool SegmentsIntersect(Vector2 a1, Vector2 a2, Vector2 b1, Vector2 b2) {
-            float o1 = Orientation(a1, a2, b1);
-            float o2 = Orientation(a1, a2, b2);
-            float o3 = Orientation(b1, b2, a1);
-            float o4 = Orientation(b1, b2, a2);
-
-            if (o1 * o2 < 0f && o3 * o4 < 0f) {
-                return true;
-            }
-
-            const float epsilon = 0.0001f;
-            if (Mathf.Abs(o1) <= epsilon && OnSegment(a1, a2, b1)) {
-                return true;
-            }
-            if (Mathf.Abs(o2) <= epsilon && OnSegment(a1, a2, b2)) {
-                return true;
-            }
-            if (Mathf.Abs(o3) <= epsilon && OnSegment(b1, b2, a1)) {
-                return true;
-            }
-            if (Mathf.Abs(o4) <= epsilon && OnSegment(b1, b2, a2)) {
-                return true;
-            }
-
-            return false;
-        }
-
-        private static float Orientation(Vector2 a, Vector2 b, Vector2 c) {
-            return ((b.x - a.x) * (c.y - a.y)) - ((b.y - a.y) * (c.x - a.x));
-        }
-
-        private static bool OnSegment(Vector2 a, Vector2 b, Vector2 point) {
-            return point.x <= Mathf.Max(a.x, b.x) + 0.0001f
-                && point.x >= Mathf.Min(a.x, b.x) - 0.0001f
-                && point.y <= Mathf.Max(a.y, b.y) + 0.0001f
-                && point.y >= Mathf.Min(a.y, b.y) - 0.0001f;
-        }
-
-        private static float ComputeSignedArea(IReadOnlyList<Vector2> points) {
-            float area = 0f;
-            for (int i = 0; i < points.Count; i++) {
-                Vector2 current = points[i];
-                Vector2 next = points[(i + 1) % points.Count];
-                area += (current.x * next.y) - (next.x * current.y);
-            }
-
-            return area * 0.5f;
-        }
-
-        private static Vector2 ComputeAverageCenter(IReadOnlyList<Vector2> points) {
-            Vector2 sum = Vector2.zero;
-            for (int i = 0; i < points.Count; i++) {
-                sum += points[i];
-            }
-
-            return sum / Mathf.Max(1, points.Count);
-        }
-
-        private static ArcDefinition BuildArc(Vector2 center, float radius, Vector2 startVector, Vector2 endVector, Vector2 awayDirection) {
-            float startAngle = Mathf.Atan2(startVector.y, startVector.x);
-            float endAngle = Mathf.Atan2(endVector.y, endVector.x);
-
-            float ccwDelta = Repeat(endAngle - startAngle, Mathf.PI * 2f);
-            float cwDelta = ccwDelta - (Mathf.PI * 2f);
-
-            float midCcw = startAngle + (ccwDelta * 0.5f);
-            float midCw = startAngle + (cwDelta * 0.5f);
-
-            Vector2 ccwMidDir = new Vector2(Mathf.Cos(midCcw), Mathf.Sin(midCcw));
-            Vector2 cwMidDir = new Vector2(Mathf.Cos(midCw), Mathf.Sin(midCw));
-
-            float ccwScore = Vector2.Dot(ccwMidDir, awayDirection);
-            float cwScore = Vector2.Dot(cwMidDir, awayDirection);
-
-            float chosenDelta = ccwScore >= cwScore ? ccwDelta : cwDelta;
-
-            return new ArcDefinition {
-                center = center,
-                radius = radius,
-                startAngle = startAngle,
-                deltaAngle = chosenDelta,
-                length = Mathf.Abs(chosenDelta) * radius
-            };
-        }
-
-        private static void Evaluate(
-            IReadOnlyList<LoopSection> sections,
-            float distance,
-            out Vector2 position,
-            out Vector2 tangent) {
-            float cursor = distance;
-
-            for (int i = 0; i < sections.Count; i++) {
-                LoopSection section = sections[i];
-                if (cursor <= section.length || i == sections.Count - 1) {
-                    if (section.isArc) {
-                        float t = section.length > 0f ? Mathf.Clamp01(cursor / section.length) : 0f;
-                        position = EvaluateArcPosition(section.arc, t);
-                        tangent = EvaluateArcTangent(section.arc, t);
-                        return;
-                    }
-
-                    float lineT = section.length > 0f ? Mathf.Clamp01(cursor / section.length) : 0f;
-                    position = Vector2.Lerp(section.lineStart, section.lineEnd, lineT);
-                    tangent = (section.lineEnd - section.lineStart).normalized;
-                    return;
-                }
-
-                cursor -= section.length;
-            }
-
-            position = Vector2.zero;
-            tangent = Vector2.right;
-        }
-
-        private static void Evaluate(
-            Vector2 line1Start,
-            Vector2 line1End,
-            float line1Length,
-            ArcDefinition arcB,
-            Vector2 line2Start,
-            Vector2 line2End,
-            float line2Length,
-            ArcDefinition arcA,
-            float distance,
-            out Vector2 position,
-            out Vector2 tangent) {
-            float cursor = distance;
-
-            if (cursor <= line1Length) {
-                float t = line1Length > 0f ? cursor / line1Length : 0f;
-                position = Vector2.Lerp(line1Start, line1End, t);
-                tangent = (line1End - line1Start).normalized;
-                return;
-            }
-
-            cursor -= line1Length;
-            if (cursor <= arcB.length) {
-                float t = arcB.length > 0f ? cursor / arcB.length : 0f;
-                position = EvaluateArcPosition(arcB, t);
-                tangent = EvaluateArcTangent(arcB, t);
-                return;
-            }
-
-            cursor -= arcB.length;
-            if (cursor <= line2Length) {
-                float t = line2Length > 0f ? cursor / line2Length : 0f;
-                position = Vector2.Lerp(line2Start, line2End, t);
-                tangent = (line2End - line2Start).normalized;
-                return;
-            }
-
-            cursor -= line2Length;
-            float arcAT = arcA.length > 0f ? Mathf.Clamp01(cursor / arcA.length) : 0f;
-            position = EvaluateArcPosition(arcA, arcAT);
-            tangent = EvaluateArcTangent(arcA, arcAT);
-        }
-
-        private static Vector2 EvaluateArcPosition(ArcDefinition arc, float t) {
-            float angle = arc.startAngle + (arc.deltaAngle * t);
-            return arc.center + (new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * arc.radius);
-        }
-
-        private static Vector2 EvaluateArcTangent(ArcDefinition arc, float t) {
-            float angle = arc.startAngle + (arc.deltaAngle * t);
-            float sign = Mathf.Sign(arc.deltaAngle);
-            return new Vector2(-Mathf.Sin(angle), Mathf.Cos(angle)) * sign;
-        }
-
-        private static float Repeat(float value, float length) {
-            return Mathf.Repeat(value, length);
         }
     }
 }

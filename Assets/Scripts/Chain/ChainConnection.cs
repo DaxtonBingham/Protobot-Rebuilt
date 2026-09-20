@@ -56,12 +56,22 @@ namespace Protobot.ChainSystem {
         };
 
         private bool pendingRebuild;
+        private ChainPathSolver.Route preparedRoute;
+        public ChainPathSolver.Route Route { get; private set; }
+        public string ValidationMessage { get; private set; } = string.Empty;
+        private readonly List<Transform> bindingBuffer = new List<Transform>();
+        private readonly List<int> changedBuffer = new List<int>();
+        private readonly List<Matrix4x4> previousMatrices = new List<Matrix4x4>();
 
         public IReadOnlyList<ChainEndpoint> Endpoints => endpoints;
         public ChainEndpoint EndpointA => endpoints.Count > 0 ? endpoints[0] : endpointA;
         public ChainEndpoint EndpointB => endpoints.Count > 1 ? endpoints[1] : endpointB;
         public bool IsPreview => previewMode;
         public ChainSettings Settings => settings;
+
+        internal void RequestRebuild() {
+            pendingRebuild = true;
+        }
 
         private void Awake() {
             selectableLayer = ResolveSelectableLayer(previewMode);
@@ -101,7 +111,8 @@ namespace Protobot.ChainSystem {
             return Initialize(new[] { newEndpointA, newEndpointB }, newSettings);
         }
 
-        public bool Initialize(IReadOnlyList<ChainEndpoint> newEndpoints, ChainSettings newSettings) {
+        public bool Initialize(IReadOnlyList<ChainEndpoint> newEndpoints, ChainSettings newSettings, ChainPathSolver.Route solvedRoute = null) {
+            preparedRoute = solvedRoute;
             if (newEndpoints == null || newEndpoints.Count < 2) {
                 return false;
             }
@@ -140,16 +151,18 @@ namespace Protobot.ChainSystem {
             }
 
             if (!AreEndpointsValid()) {
-                Destroy(gameObject);
+                SetLinksActive(false);
+                pendingRebuild = true;
                 return;
             }
 
             List<Transform> bindingTransforms = GetBindingTransforms();
             bool anyChanged = false;
-            var changedIndices = new List<int>();
+            var changedIndices = changedBuffer;
+            changedIndices.Clear();
 
             for (int i = 0; i < bindingTransforms.Count; i++) {
-                if (TransformChanged(bindingTransforms[i], previousPositions[i], previousRotations[i])) {
+                if (TransformChanged(bindingTransforms[i], previousPositions[i], previousRotations[i]) || endpoints[i].transform.localToWorldMatrix != previousMatrices[i]) {
                     changedIndices.Add(i);
                     anyChanged = true;
                 }
@@ -189,33 +202,30 @@ namespace Protobot.ChainSystem {
                 return false;
             }
 
-            var centers = new List<Vector3>(endpoints.Count);
-            var radii = new List<float>(endpoints.Count);
             Vector3 centroid = Vector3.zero;
 
             for (int i = 0; i < endpoints.Count; i++) {
                 ChainEndpoint endpoint = endpoints[i];
-                centers.Add(endpoint.WorldCenter);
-                radii.Add(ChainSprocketUtility.ResolvePitchRadius(endpoint, settings.standard));
                 centroid += endpoint.WorldCenter;
             }
 
             centroid /= Mathf.Max(1, endpoints.Count);
 
-            if (!ChainPathSolver.TrySolveLoop(
-                centers,
-                radii,
-                normal,
-                dimensions.pitch,
-                settings.slack,
-                out List<ChainPathSolver.ChainPose> poses,
-                out totalLength,
-                out float effectivePitch)) {
+            var solved = preparedRoute;
+            preparedRoute = null;
+            if (solved == null && !ChainPathSolver.TrySolve(endpoints, settings.standard,
+                ChainSprocketUtility.ResolvePitch(endpoints, settings.standard), settings.slack, out solved, out string error)) {
+                ValidationMessage = error;
                 SetLinksActive(false);
                 return false;
             }
-
-            resolvedPitch = effectivePitch;
+            Route = solved;
+            ValidationMessage = string.Empty;
+            totalLength = solved.length;
+            var poses = solved.poses;
+            // Keep physical width and roller size nominal; fitting a closed loop
+            // only adjusts the rendered distance between link joints.
+            resolvedPitch = ChainSprocketUtility.ResolvePitch(endpoints, settings.standard);
             dimensions = ChainDimensions.FromPitch(resolvedPitch, settings.standard);
             UpdateResourcePrototypeScale();
 
@@ -284,28 +294,13 @@ namespace Protobot.ChainSystem {
             while (linkInstances.Count < targetCount) {
                 GameObject clone = Instantiate(linkPrototype, transform);
                 clone.name = "Chain Link";
+                SetLayerRecursive(clone, selectableLayer);
+                ConfigureLinkSelectableCollider(clone);
                 clone.SetActive(true);
                 linkInstances.Add(clone.transform);
             }
 
-            while (linkInstances.Count > targetCount) {
-                int lastIndex = linkInstances.Count - 1;
-                Transform last = linkInstances[lastIndex];
-                linkInstances.RemoveAt(lastIndex);
-                if (last != null) {
-                    Destroy(last.gameObject);
-                }
-            }
-
-            for (int i = 0; i < linkInstances.Count; i++) {
-                Transform link = linkInstances[i];
-                if (link == null) {
-                    continue;
-                }
-
-                SetLayerRecursive(link.gameObject, selectableLayer);
-                ConfigureLinkSelectableCollider(link.gameObject);
-            }
+            // Retain inactive links when a route gets shorter; reuse them on the next edit.
         }
 
         private void SetLinksActive(bool value) {
@@ -318,6 +313,7 @@ namespace Protobot.ChainSystem {
 
         private void BuildLinkPrototype() {
             chainMaterial = BuildChainMaterial();
+            chainMaterial.enableInstancing = true;
 
             if (TryBuildResourcePrototype()) {
                 return;
@@ -909,15 +905,28 @@ namespace Protobot.ChainSystem {
                     continue;
                 }
 
+                if (endpoints[i] == null || endpoints[i].IsGuideEndpoint) {
+                    continue;
+                }
+
                 referenceDepth += Vector3.Dot(endpoints[i].WorldCenter, planeNormal);
                 referenceCount++;
             }
 
             if (referenceCount == 0) {
                 for (int i = 0; i < endpoints.Count; i++) {
+                    if (endpoints[i] == null || endpoints[i].IsGuideEndpoint) {
+                        continue;
+                    }
+
                     referenceDepth += Vector3.Dot(endpoints[i].WorldCenter, planeNormal);
+                    referenceCount++;
                 }
-                referenceDepth /= Mathf.Max(1, endpoints.Count);
+                if (referenceCount == 0) {
+                    return false;
+                }
+
+                referenceDepth /= referenceCount;
             }
             else {
                 referenceDepth /= referenceCount;
@@ -927,7 +936,7 @@ namespace Protobot.ChainSystem {
             for (int i = 0; i < changedIndices.Count; i++) {
                 int index = changedIndices[i];
                 Transform target = bindingTransforms[index];
-                if (target == null) {
+                if (target == null || endpoints[index] == null || endpoints[index].IsGuideEndpoint) {
                     continue;
                 }
 
@@ -965,6 +974,8 @@ namespace Protobot.ChainSystem {
         }
 
         private void CachePreviousTransforms() {
+            previousMatrices.Clear();
+            foreach (var endpoint in endpoints) previousMatrices.Add(endpoint.transform.localToWorldMatrix);
             previousPositions.Clear();
             previousRotations.Clear();
 
@@ -990,16 +1001,7 @@ namespace Protobot.ChainSystem {
         }
 
         private static Transform GetBindingTransform(ChainEndpoint endpoint) {
-            if (endpoint == null) {
-                return null;
-            }
-
-            Transform endpointTransform = endpoint.transform;
-            if (endpointTransform.gameObject.TryGetGroup(out Transform groupTransform)) {
-                return groupTransform;
-            }
-
-            return endpointTransform;
+            return ChainSprocketUtility.ResolveBindingTransform(endpoint);
         }
 
         private static int ResolveSelectableLayer(bool useIgnoreRaycast) {
@@ -1009,7 +1011,8 @@ namespace Protobot.ChainSystem {
         }
 
         private List<Transform> GetBindingTransforms() {
-            var bindingTransforms = new List<Transform>(endpoints.Count);
+            var bindingTransforms = bindingBuffer;
+            bindingTransforms.Clear();
             for (int i = 0; i < endpoints.Count; i++) {
                 bindingTransforms.Add(GetBindingTransform(endpoints[i]));
             }
@@ -1018,15 +1021,18 @@ namespace Protobot.ChainSystem {
         }
 
         private Vector3 GetPlaneNormal() {
-            for (int i = 0; i < endpoints.Count; i++) {
-                ChainEndpoint endpoint = endpoints[i];
-                if (endpoint == null) {
-                    continue;
-                }
+            for (int pass = 0; pass < 2; pass++) {
+                bool includeGuides = pass > 0;
+                for (int i = 0; i < endpoints.Count; i++) {
+                    ChainEndpoint endpoint = endpoints[i];
+                    if (endpoint == null || (!includeGuides && endpoint.IsGuideEndpoint)) {
+                        continue;
+                    }
 
-                Vector3 axis = endpoint.WorldAxis;
-                if (axis.sqrMagnitude > 0.0001f) {
-                    return axis.normalized;
+                    Vector3 axis = endpoint.WorldAxis;
+                    if (axis.sqrMagnitude > 0.0001f) {
+                        return axis.normalized;
+                    }
                 }
             }
 
@@ -1065,7 +1071,7 @@ namespace Protobot.ChainSystem {
             GameObject resolvedObj = ChainSprocketUtility.ResolvePartObject(obj);
             for (int i = 0; i < endpoints.Count; i++) {
                 ChainEndpoint endpoint = endpoints[i];
-                if (endpoint != null && endpoint.gameObject == resolvedObj) {
+                if (endpoint != null && ChainSprocketUtility.ResolveEndpointObject(endpoint) == resolvedObj) {
                     return true;
                 }
             }
@@ -1088,7 +1094,12 @@ namespace Protobot.ChainSystem {
                     return false;
                 }
 
-                int endpointIndex = objectToIndex(endpoint.gameObject);
+                GameObject endpointObject = ChainSprocketUtility.ResolveEndpointObject(endpoint);
+                if (endpointObject == null) {
+                    return false;
+                }
+
+                int endpointIndex = objectToIndex(endpointObject);
                 if (endpointIndex < 0) {
                     return false;
                 }

@@ -175,7 +175,7 @@ namespace Protobot {
         }
 
         public void StopPlacing() {
-            if (currentPlacementData.TryParse(out GameObjectPlacementData objPlaceData))
+            if (currentPlacementData != null && currentPlacementData.TryParse(out GameObjectPlacementData objPlaceData))
                 SetPlacementLayer(objPlaceData.GetGameObject(), false);
             
             transform.rotation = Quaternion.identity;

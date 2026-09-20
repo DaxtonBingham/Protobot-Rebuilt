@@ -77,22 +77,91 @@ namespace Protobot.ChainSystem {
             return false;
         }
 
-        public static ChainEndpoint GetOrCreateEndpoint(GameObject obj) {
+        public static bool IsGuide(GameObject obj) {
             GameObject partObject = ResolvePartObject(obj);
-            if (partObject == null || !IsSprocket(partObject)) {
+            return TryResolveGuide(obj, partObject, null, Vector3.zero, false, out ChainGuide resolvedGuide) && resolvedGuide != null;
+        }
+
+        public static bool IsChainRoutable(GameObject obj) {
+            return IsSprocket(obj) || IsGuide(obj);
+        }
+
+        public static GameObject ResolveEndpointObject(ChainEndpoint endpoint) {
+            if (endpoint == null) {
                 return null;
             }
 
-            if (!partObject.TryGetComponent(out ChainEndpoint endpoint)) {
-                endpoint = partObject.AddComponent<ChainEndpoint>();
+            GameObject resolved = ResolvePartObject(endpoint.gameObject);
+            return resolved != null ? resolved : endpoint.gameObject;
+        }
+
+        public static Transform ResolveBindingTransform(ChainEndpoint endpoint) {
+            if (endpoint == null) {
+                return null;
             }
 
-            endpoint.ConfigureFromObject();
-            return endpoint;
+            Transform endpointTransform = endpoint.transform;
+            GameObject endpointObject = ResolveEndpointObject(endpoint);
+            Transform partTransform = endpointObject != null ? endpointObject.transform : endpointTransform;
+
+            // Guides can live on child markers; keep their own transform movable instead of snapping the whole part/group.
+            if (endpoint.IsGuideEndpoint && endpointTransform != null && endpointTransform != partTransform) {
+                return endpointTransform;
+            }
+
+            Transform bindingTransform = partTransform != null ? partTransform : endpointTransform;
+            if (bindingTransform != null && bindingTransform.gameObject.TryGetGroup(out Transform groupTransform)) {
+                return groupTransform;
+            }
+
+            return bindingTransform;
+        }
+
+        public static ChainEndpoint GetOrCreateEndpoint(GameObject obj) {
+            return GetOrCreateEndpointInternal(obj, null, Vector3.zero, false);
+        }
+
+        public static ChainEndpoint GetOrCreateEndpoint(GameObject obj, Vector3 guideHintPoint) {
+            return GetOrCreateEndpointInternal(obj, null, guideHintPoint, true);
+        }
+
+        public static ChainEndpoint GetOrCreateEndpoint(GameObject obj, string socketId) {
+            return GetOrCreateEndpointInternal(obj, socketId, Vector3.zero, false);
+        }
+
+        private static ChainEndpoint GetOrCreateEndpointInternal(GameObject obj, string socketId, Vector3 guideHintPoint, bool hasGuideHintPoint) {
+            GameObject partObject = ResolvePartObject(obj);
+            if (partObject == null) {
+                return null;
+            }
+
+            if (TryResolveGuide(obj, partObject, socketId, guideHintPoint, hasGuideHintPoint, out ChainGuide guide)) {
+                if (!guide.gameObject.TryGetComponent(out ChainEndpoint guideEndpoint)) {
+                    guideEndpoint = guide.gameObject.AddComponent<ChainEndpoint>();
+                }
+
+                guideEndpoint.ConfigureFromGuide(guide);
+                return guideEndpoint;
+            }
+
+            if (!IsSprocket(partObject)) {
+                return null;
+            }
+
+            if (!partObject.TryGetComponent(out ChainEndpoint sprocketEndpoint)) {
+                sprocketEndpoint = partObject.AddComponent<ChainEndpoint>();
+            }
+
+            sprocketEndpoint.ConfigureFromObject();
+            return sprocketEndpoint;
         }
 
         public static SprocketFamily ResolveSprocketFamily(ChainEndpoint endpoint) {
-            return endpoint == null ? SprocketFamily.Unknown : ResolveSprocketFamily(endpoint.gameObject);
+            if (endpoint == null || !endpoint.ParticipatesInStandardCompatibility) {
+                return SprocketFamily.Unknown;
+            }
+
+            return ResolveSprocketFamily(endpoint.gameObject);
         }
 
         public static SprocketFamily ResolveSprocketFamily(GameObject obj) {
@@ -164,7 +233,7 @@ namespace Protobot.ChainSystem {
             SprocketFamily enforcedFamily = SprocketFamily.Unknown;
             for (int i = 0; i < endpoints.Count; i++) {
                 ChainEndpoint endpoint = endpoints[i];
-                if (endpoint == null) {
+                if (endpoint == null || !endpoint.ParticipatesInStandardCompatibility) {
                     continue;
                 }
 
@@ -213,7 +282,12 @@ namespace Protobot.ChainSystem {
             }
 
             for (int i = 0; i < endpoints.Count; i++) {
-                SprocketFamily family = ResolveSprocketFamily(endpoints[i]);
+                ChainEndpoint endpoint = endpoints[i];
+                if (endpoint == null || !endpoint.ParticipatesInStandardCompatibility) {
+                    continue;
+                }
+
+                SprocketFamily family = ResolveSprocketFamily(endpoint);
                 if (family != SprocketFamily.Unknown) {
                     return PreferredStandardForFamily(family);
                 }
@@ -314,6 +388,10 @@ namespace Protobot.ChainSystem {
         public static float ResolvePitchRadius(ChainEndpoint endpoint, ChainStandard standard) {
             if (endpoint == null) {
                 return 0.5f;
+            }
+
+            if (endpoint.IsGuideEndpoint) {
+                return Mathf.Max(endpoint.PitchRadius, 0.05f);
             }
 
             int toothCount = endpoint.ToothCount;
@@ -561,6 +639,84 @@ namespace Protobot.ChainSystem {
             }
 
             return planarScale;
+        }
+
+        private static bool TryResolveGuide(
+            GameObject obj,
+            GameObject partObject,
+            string socketId,
+            Vector3 guideHintPoint,
+            bool hasGuideHintPoint,
+            out ChainGuide guide) {
+            guide = null;
+            if (partObject == null) {
+                return false;
+            }
+
+            ChainGuide[] guides = partObject.GetComponentsInChildren<ChainGuide>();
+            if (guides == null || guides.Length == 0) {
+                return false;
+            }
+
+            if (!string.IsNullOrWhiteSpace(socketId)) {
+                for (int i = 0; i < guides.Length; i++) {
+                    if (guides[i] != null && guides[i].MatchesSocket(socketId)) {
+                        guide = guides[i];
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            Transform current = obj != null ? obj.transform : null;
+            while (current != null) {
+                if (current.TryGetComponent(out ChainGuide currentGuide) && currentGuide != null && currentGuide.gameObject.activeInHierarchy && currentGuide.transform.IsChildOf(partObject.transform)) {
+                    guide = currentGuide;
+                    return true;
+                }
+
+                if (current.gameObject == partObject) {
+                    break;
+                }
+
+                current = current.parent;
+            }
+
+            if (partObject.TryGetComponent(out ChainGuide partGuide)) {
+                guide = partGuide;
+                return true;
+            }
+
+            if (guides.Length == 1) {
+                guide = guides[0];
+                return guide != null;
+            }
+
+            if (hasGuideHintPoint) {
+                float bestDistanceSq = float.MaxValue;
+                ChainGuide bestGuide = null;
+
+                for (int i = 0; i < guides.Length; i++) {
+                    ChainGuide candidate = guides[i];
+                    if (candidate == null) {
+                        continue;
+                    }
+
+                    float distanceSq = (candidate.WorldCenter - guideHintPoint).sqrMagnitude;
+                    if (distanceSq < bestDistanceSq) {
+                        bestDistanceSq = distanceSq;
+                        bestGuide = candidate;
+                    }
+                }
+
+                if (bestGuide != null) {
+                    guide = bestGuide;
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

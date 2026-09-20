@@ -49,7 +49,7 @@ namespace Protobot {
                 return;
             }
 
-            GameObject endpointObject = endpoint.gameObject;
+            GameObject endpointObject = ChainSprocketUtility.ResolveEndpointObject(endpoint);
             if (endpointObject == null) {
                 return;
             }

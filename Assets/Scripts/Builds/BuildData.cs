@@ -19,6 +19,8 @@ namespace Protobot.Builds {
         [OptionalField]
         public ChainData[] chains = Array.Empty<ChainData>();
         [OptionalField]
+        public ChainGuideData[] chainGuides = Array.Empty<ChainGuideData>();
+        [OptionalField]
         public CustomPartDefinition[] customDefinitions = Array.Empty<CustomPartDefinition>();
         [OptionalField]
         public CameraData camera;
@@ -33,6 +35,7 @@ namespace Protobot.Builds {
         private void OnDeserialized(StreamingContext context) {
             parts ??= Array.Empty<ObjectData>();
             chains ??= Array.Empty<ChainData>();
+            chainGuides ??= Array.Empty<ChainGuideData>();
             customDefinitions ??= Array.Empty<CustomPartDefinition>();
             camera ??= new CameraData {
                 xPos = 0d,
@@ -74,6 +77,20 @@ namespace Protobot.Builds {
             if (chains != null) {
                 foreach (ChainData chain in chains) {
                     if (!data.chains.Contains(chain)) {
+                        return false;
+                    }
+                }
+            }
+
+            int thisGuideCount = chainGuides == null ? 0 : chainGuides.Length;
+            int dataGuideCount = data.chainGuides == null ? 0 : data.chainGuides.Length;
+            if (thisGuideCount != dataGuideCount) {
+                return false;
+            }
+
+            if (chainGuides != null) {
+                foreach (ChainGuideData guide in chainGuides) {
+                    if (!data.chainGuides.Contains(guide)) {
                         return false;
                     }
                 }

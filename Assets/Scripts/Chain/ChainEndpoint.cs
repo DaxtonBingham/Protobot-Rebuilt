@@ -7,19 +7,37 @@ namespace Protobot.ChainSystem {
         [SerializeField] private Vector3 localAxisNormal = Vector3.forward;
         [SerializeField] private float pitchRadius = 0.5f;
         [SerializeField] private int toothCount = 0;
+        [SerializeField] private bool guideEndpoint = false;
         [SerializeField] private bool autoConfigure = true;
         [SerializeField] private bool configured = false;
 
-        public string SocketId => socketId;
+        public string SocketId {
+            get {
+                if (TryGetComponent(out ChainGuide guide)) {
+                    return guide.SocketId;
+                }
+
+                return string.IsNullOrWhiteSpace(socketId) ? "main" : socketId;
+            }
+        }
         public int ToothCount => toothCount;
-        public float PitchRadius => Mathf.Max(0.01f, pitchRadius);
-        public Vector3 WorldCenter => transform.TransformPoint(localCenterOffset);
-        public Vector3 WorldAxis => transform.TransformDirection(localAxisNormal).normalized;
+        public float PitchRadius => TryGetComponent(out ChainGuide guide) ? guide.Radius : Mathf.Max(0.01f, pitchRadius);
+        public Vector3 WorldCenter => TryGetComponent(out ChainGuide guide) ? guide.WorldCenter : transform.TransformPoint(localCenterOffset);
+        public Vector3 WorldAxis => TryGetComponent(out ChainGuide guide) ? guide.WorldAxis : transform.TransformDirection(localAxisNormal).normalized;
+        public bool IsGuideEndpoint => TryGetComponent(out ChainGuide _) || guideEndpoint;
+        public bool ParticipatesInStandardCompatibility => !IsGuideEndpoint;
 
         private void Awake() {
             if (autoConfigure) {
                 AutoConfigureIfNeeded();
             }
+        }
+
+        public bool MatchesSocket(string requestedSocketId) {
+            string normalizedRequested = string.IsNullOrWhiteSpace(requestedSocketId)
+                ? SocketId
+                : requestedSocketId.Trim().ToLowerInvariant();
+            return SocketId.Trim().ToLowerInvariant() == normalizedRequested;
         }
 
         public void AutoConfigureIfNeeded() {
@@ -31,6 +49,14 @@ namespace Protobot.ChainSystem {
         }
 
         public void ConfigureFromObject() {
+            if (TryGetComponent(out ChainGuide guide)) {
+                ConfigureFromGuide(guide);
+                return;
+            }
+
+            guideEndpoint = false;
+            socketId = "main";
+
             Vector3 worldAxis = transform.forward;
             Vector3 worldCenter = transform.position;
             bool usedPrimaryHoleCenter = false;
@@ -41,6 +67,9 @@ namespace Protobot.ChainSystem {
                 usedPrimaryHoleCenter = true;
             }
 
+            if (worldAxis.sqrMagnitude < 0.0001f) {
+                worldAxis = Vector3.forward;
+            }
             localAxisNormal = transform.InverseTransformDirection(worldAxis).normalized;
 
             toothCount = ChainSprocketUtility.ParseToothCount(gameObject);
@@ -69,5 +98,26 @@ namespace Protobot.ChainSystem {
             configured = true;
         }
 
+        public void ConfigureFromGuide(ChainGuide guide) {
+            if (guide == null) {
+                return;
+            }
+
+            guide.AutoConfigureIfNeeded();
+
+            guideEndpoint = true;
+            socketId = guide.SocketId;
+            localCenterOffset = transform.InverseTransformPoint(guide.WorldCenter);
+
+            Vector3 worldAxis = guide.WorldAxis;
+            if (worldAxis.sqrMagnitude < 0.0001f) {
+                worldAxis = transform.forward.sqrMagnitude > 0.0001f ? transform.forward : Vector3.forward;
+            }
+
+            localAxisNormal = transform.InverseTransformDirection(worldAxis).normalized;
+            pitchRadius = guide.Radius;
+            toothCount = 0;
+            configured = true;
+        }
     }
 }
