@@ -1,0 +1,17 @@
+#pragma kernel Cull
+struct Instance { float4x4 world, inverse; float4 center, extents; };
+StructuredBuffer<Instance> _Instances;
+AppendStructuredBuffer<uint> _Visible;
+float4 _FrustumPlanes[6];
+uint _InstanceCount;
+[numthreads(64,1,1)]
+void Cull(uint id : SV_DispatchThreadID) {
+    if (id >= _InstanceCount) return;
+    float3 center = _Instances[id].center.xyz;
+    float3 extents = _Instances[id].extents.xyz;
+    [unroll] for (uint i = 0; i < 6; i++) {
+        float4 plane = _FrustumPlanes[i];
+        if (dot(center, plane.xyz) + plane.w < -dot(extents, abs(plane.xyz)) - .0001) return;
+    }
+    _Visible.Append(id);
+}

@@ -1,0 +1,6 @@
+{
+  "name": "protobot-chain-display-meshes",
+  "private": true,
+  "type": "module",
+  "dependencies": { "meshoptimizer": "1.2.0" }
+}

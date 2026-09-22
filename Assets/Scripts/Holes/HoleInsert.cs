@@ -19,14 +19,22 @@ namespace Protobot {
 
         private void Start() {
             holeCol = GetComponent<HoleCollider>();
-            metalInserts = InstantiateInserts(metalInsertPrefab, "Metal Inserts");
-            plasticInserts = InstantiateInserts(plasticInsertPrefab, "Plastic Inserts");
+            // Duplicating a placed part also duplicates its generated children.
+            metalInserts = transform.Find("Metal Inserts")?.gameObject ?? InstantiateInserts(metalInsertPrefab, "Metal Inserts");
+            plasticInserts = transform.Find("Plastic Inserts")?.gameObject ?? InstantiateInserts(plasticInsertPrefab, "Plastic Inserts");
 
-            holeCol.OnSetDetector += detector => {
-                if (UsingPlastic) return;
-                metalInserts.SetActive(detector != null && detector.transform.parent.name.Contains("Normal Shaft"));
-            };
+            holeCol.OnSetDetector += SetDetector;
+            // Compact contacts can be resolved before this visual adapter starts.
+            // Apply the current contact as well as subscribing to later changes.
+            var detectors = holeCol.detectors;
+            SetDetector(detectors.Count > 0 ? detectors[detectors.Count - 1] : null);
         }
+
+        private void SetDetector(HoleDetector detector) {
+            if (UsingPlastic) return;
+            metalInserts.SetActive(detector != null && detector.transform.parent.name.Contains("Normal Shaft"));
+        }
+        private void OnDestroy() { if (holeCol != null) holeCol.OnSetDetector -= SetDetector; }
 
         private GameObject InstantiateInserts(GameObject insertPrefab, string insertName) {
             GameObject inserts = new GameObject(insertName);

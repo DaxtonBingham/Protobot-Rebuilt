@@ -23,7 +23,8 @@ namespace Protobot {
                 displacement = new Displacement(currentHoleFace.position, currentHoleFace.LookRotation);
             }
 
-            if (mouseCast.overObj && mouseCast.gameObject.TryGetComponent(out Motor motor))
+            var hoveredObject = mouseCast.gameObject;
+            if (hoveredObject != null && hoveredObject.TryGetComponent(out Motor motor))
                 refMotor = motor;
 
             if (refMotor != null) {

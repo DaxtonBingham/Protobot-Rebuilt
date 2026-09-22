@@ -1,189 +1,116 @@
-﻿using System.Collections.Generic;
-using System.Linq;
 using System;
-using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
-using Protobot.StateSystems;
 
 namespace Protobot {
     public class HoleDetector : MonoBehaviour {
-        public HashSet<HoleCollider> holes = new HashSet<HoleCollider>();
-        [SerializeField] HoleCollider.HoleType targetHoleType;
+        public readonly HashSet<HoleRecord> holes = new HashSet<HoleRecord>();
+        [SerializeField] private HoleCollider.HoleType targetHoleType;
+        [SerializeField] private float capsuleLength, capsuleRadius = .01f;
+        private readonly List<HoleRecord> scratch = new List<HoleRecord>();
+        private RobotPart owner;
+        private Vector3 capsuleA, capsuleB;
+        private float worldRadius;
+        private int targetCount;
+        private bool added, removed, addedTarget, removedTarget;
+        internal Bounds QueryBounds { get; private set; }
+        public bool TargetHoleFound { get { HoleWorld.Flush(); return targetCount > 0; } }
+        public int TargetHoleCount { get { HoleWorld.Flush(); return targetCount; } }
+        public Action OnAddHole, OnAddTargetHole, OnRemoveHole, OnRemoveTargetHole;
 
-        private void Update() {
-            var allHoles = new List<HoleCollider>(holes);
-            foreach (var holeCollider in allHoles) {
-                if (holeCollider == null) {
-                    RemoveHole(holeCollider);
-                    continue;
-                }
-
-                if (holeCollider.gameObject.IsDeleted())
-                    RemoveHole(holeCollider);
-            }
+        private void Awake() {
+            var collider = GetComponent<CapsuleCollider>();
+            if (collider != null) { capsuleLength = collider.height; capsuleRadius = collider.radius; collider.enabled = false; Destroy(collider); }
+            var body = GetComponent<Rigidbody>(); if (body != null) Destroy(body);
         }
-
-        public bool TargetHoleFound => TargetHoleCount > 0;
-        public int TargetHoleCount { get; private set; } = 0;
-
-        public Action OnAddHole; // Runs whenever any hole gets added to this hole detector
-        public Action OnAddTargetHole; // Runs when a target hole is added to this hole detector
-        public Action OnRemoveHole; // Runs whenever any hole gets removed from this hole detector
-        public Action OnRemoveTargetHole; // Runs when a target hole is added to this hole detector
-        
-        private void Start() {
-            TargetHoleCount = 0;
-            holes.Clear();
+        private void Start() { BindOwner(); HoleWorld.MarkDirty(this); }
+        private void OnEnable() { BindOwner(); HoleWorld.Register(this); }
+        private void OnDisable() { HoleWorld.Unregister(this); RemoveAll(); }
+        private void OnDestroy() { if (owner != null) owner.Changed -= OnPartChanged; HoleWorld.Unregister(this); RemoveAll(); }
+        private void BindOwner() {
+            var view = GetComponentInParent<SavedObject>(); var part = view != null ? view.DocumentPart : null;
+            if (owner == part) return;
+            if (owner != null) owner.Changed -= OnPartChanged;
+            owner = part;
+            if (owner != null) owner.Changed += OnPartChanged;
         }
-        
-        /// <summary>
-        /// Makes sure to wait until all holes have been added before deciding to add a target hole
-        /// Due to the randomness of OnTriggerStay
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator WaitAddTargetHole() {
-            yield return new WaitForEndOfFrame();
-            OnAddTargetHole?.Invoke();
+        private void OnPartChanged(RobotPart part, PartChange change) {
+            if ((change & (PartChange.Pose | PartChange.Geometry | PartChange.Existence)) != 0) HoleWorld.MarkDirty(this);
         }
-
-        public List<GameObject> GetObjects() {
-            return holes.Where(col => col != null && col.holeData != null && col.holeData.part != null)
-                        .Select(col => col.holeData.part)
-                        .ToList();
+        internal void RefreshGeometry() {
+            BindOwner();
+            var scale = transform.lossyScale;
+            worldRadius = capsuleRadius * Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float half = Mathf.Max(0, capsuleLength * Mathf.Abs(scale.y) * .5f - worldRadius);
+            capsuleA = transform.position - transform.up * half; capsuleB = transform.position + transform.up * half;
+            QueryBounds = new Bounds((capsuleA + capsuleB) * .5f, new Vector3(Mathf.Abs(capsuleB.x - capsuleA.x), Mathf.Abs(capsuleB.y - capsuleA.y), Mathf.Abs(capsuleB.z - capsuleA.z)) + Vector3.one * (worldRadius * 2));
         }
-
-        /// <summary>
-        /// Returns the list of holes detected in order from distance to the connecting part
-        /// </summary>
-        /// <returns></returns>
-        public List<HoleCollider> GetOrderedHoles() {
-            return holes.Where(x => x != null)
-                        .OrderBy(x => Vector3.Distance(transform.parent.position, x.transform.position))
-                        .ToList();
+        private bool Touches(HoleRecord hole) => hole.IsActive && hole.QueryMesh != null && QueryBounds.Intersects(hole.Bounds)
+            && GeometryQuery.CapsuleMesh(hole.QueryMesh, hole.WorldMatrix, capsuleA, capsuleB, worldRadius, hole.Definition.convex);
+        internal void RemoveInvalidContacts() {
+            scratch.Clear();
+            foreach (var hole in holes) if (!Touches(hole)) scratch.Add(hole);
+            foreach (var hole in scratch) RemoveHole(hole);
         }
-
-        public void RemoveAll() {
-            var allHoles = new List<HoleCollider>(holes);
-            
-            foreach (HoleCollider hole in allHoles) {
-                RemoveHole(hole);
-            }
+        internal void AddCandidates(List<HoleRecord> candidates) {
+            var origin = transform.parent != null ? transform.parent.position : transform.position;
+            candidates.Sort((a,b) => {
+                int order = (a.Position - origin).sqrMagnitude.CompareTo((b.Position - origin).sqrMagnitude);
+                if (order != 0) return order;
+                order = a.Owner.GetInstanceID().CompareTo(b.Owner.GetInstanceID());
+                return order != 0 ? order : a.Index.CompareTo(b.Index);
+            });
+            foreach (var hole in candidates) if (!holes.Contains(hole) && !hole.IsOccupied && Touches(hole) && !IsHoleIntersecting(hole)) AddHole(hole);
         }
-
-        //Returns true if a hole is intersecting any other hole current detected by holeDetector
-        public bool IsHoleIntersecting(HoleCollider otherHole) {
-            if (otherHole == null) return false;
-
-            if (!holes.Contains(otherHole)) {
-                MeshCollider otherMeshCollider = otherHole.GetComponent<MeshCollider>();
-                if (otherMeshCollider == null) return false;
-
-                var otherHoleBounds = otherMeshCollider.bounds;
-                otherHoleBounds.Expand(-0.01f);
-
-                foreach (HoleCollider hole in holes) {
-                    if (hole == null) continue;
-
-                    MeshCollider holeMeshCollider = hole.GetComponent<MeshCollider>();
-                    if (holeMeshCollider == null) continue;
-
-                    var holeBounds = holeMeshCollider.bounds;
-                    if (holeBounds.Intersects(otherHoleBounds))
-                        return true;
-                }
-            }
-
+        public bool IsHoleIntersecting(HoleRecord other) {
+            if (holes.Contains(other)) return false;
+            var bounds = other.Bounds; bounds.Expand(-.01f);
+            foreach (var hole in holes) if (hole.Bounds.Intersects(bounds)) return true;
             return false;
         }
-
-        private void OnTriggerStay(Collider other) {
-            if (other.TryGetComponent(out HoleCollider hole))
-                if (!hole.IsOccupied && !IsHoleIntersecting(hole))
-                    AddHole(hole);
+        public List<GameObject> GetObjects() {
+            HoleWorld.Flush(); var result = new List<GameObject>(holes.Count);
+            foreach (var hole in holes) if (hole.IsActive) result.Add(hole.holeData.part);
+            return result;
         }
-
-        private void OnTriggerExit(Collider other) {
-            if (other.TryGetComponent(out HoleCollider hole))
-                if (hole.IsOccupiedBy(this))
-                    RemoveHole(hole);
+        public List<HoleRecord> GetOrderedHoles() {
+            HoleWorld.Flush(); var result = new List<HoleRecord>(holes);
+            var origin = transform.parent != null ? transform.parent.position : transform.position;
+            result.Sort((a,b) => (a.Position - origin).sqrMagnitude.CompareTo((b.Position - origin).sqrMagnitude));
+            return result;
         }
-
-        public void RemoveHole(HoleCollider hole) {
-            if (hole == null) {
-                int removedCount = holes.RemoveWhere(existingHole => existingHole == null);
-                if (removedCount == 0) return;
-
-                int previousTargetCount = TargetHoleCount;
-                RecalculateTargetHoleCount();
-                if (TargetHoleCount < previousTargetCount) {
-                    OnRemoveTargetHole?.Invoke();
-                }
-
-                OnRemoveHole?.Invoke();
-                return;
-            }
-
-            if (!holes.Remove(hole)) return;
-
-            hole.RemoveDetector(this);
-
-            if (IsTargetHole(hole)) {
-                TargetHoleCount = Mathf.Max(0, TargetHoleCount - 1);
-                OnRemoveTargetHole?.Invoke();
-            }
-            
-            OnRemoveHole?.Invoke();
+        public void RemoveAll() {
+            scratch.Clear(); scratch.AddRange(holes);
+            foreach (var hole in scratch) RemoveHole(hole);
         }
-
-        public bool IsTargetHole(HoleCollider hole) => hole != null && hole.holeType == targetHoleType;
-
-        public void AddHole(HoleCollider hole) {
-            if (hole == null) return;
-            if (!holes.Add(hole)) return;
-
-            hole.AddDetector(this);
-
-            if (IsTargetHole(hole)) {
-                TargetHoleCount++;
-                StartCoroutine(WaitAddTargetHole());
-            }
-            
-            OnAddHole?.Invoke();
+        public bool IsTargetHole(HoleRecord hole) => hole != null && hole.holeType == targetHoleType;
+        public void AddHole(HoleRecord hole) {
+            if (hole == null || holes.Contains(hole) || !hole.AddDetector(this)) return;
+            holes.Add(hole); added = true;
+            if (IsTargetHole(hole)) { targetCount++; addedTarget = true; }
+            HoleWorld.QueueEvents(this);
         }
-
-        private void RecalculateTargetHoleCount() {
-            TargetHoleCount = holes.Count(IsTargetHole);
+        public void RemoveHole(HoleRecord hole) {
+            if (hole == null || !holes.Remove(hole)) return;
+            hole.RemoveDetector(this); removed = true;
+            if (IsTargetHole(hole)) { targetCount = Mathf.Max(0, targetCount - 1); removedTarget = true; }
+            HoleWorld.QueueEvents(this);
         }
-
-        public static HoleDetector Create(Transform parent, float length, HoleCollider.HoleType targetHoleType) {
-            var newGameObject = new GameObject("Hole Detector");
-            newGameObject.layer = HoleCollider.HOLE_COLLISIONS_LAYER;
-
-            Rigidbody rb = newGameObject.AddComponent<Rigidbody>();
-            rb.isKinematic = true;
-
-            CapsuleCollider collider = newGameObject.AddComponent<CapsuleCollider>();
-            collider.isTrigger = true;
-            collider.radius = 0.01f;
-            collider.height = length;
-
-            newGameObject.transform.position = parent.position;
-            newGameObject.transform.up = parent.forward;
-
-            newGameObject.transform.SetParent(parent);
-
-            HoleDetector holeDetector = newGameObject.AddComponent<HoleDetector>();
-            holeDetector.targetHoleType = targetHoleType;
-
-            return holeDetector;
+        internal void FlushEvents() {
+            bool a = added, r = removed, at = addedTarget, rt = removedTarget;
+            added = removed = addedTarget = removedTarget = false;
+            if (r) OnRemoveHole?.Invoke();
+            if (a) OnAddHole?.Invoke();
+            // Subscribers see the final contact set, never an intermediate state.
+            if (rt) OnRemoveTargetHole?.Invoke();
+            if (at) OnAddTargetHole?.Invoke();
         }
-
-        public void ClearEvents() {
-            OnAddHole = null;
-            OnAddTargetHole = null;
-            
-            OnRemoveHole = null;
-            OnRemoveTargetHole = null;
+        public static HoleDetector Create(Transform parent, float length, HoleCollider.HoleType type) {
+            var obj = new GameObject("Hole Detector"); obj.layer = HoleCollider.HOLE_COLLISIONS_LAYER;
+            obj.transform.position = parent.position; obj.transform.up = parent.forward; obj.transform.SetParent(parent);
+            var detector = obj.AddComponent<HoleDetector>(); detector.capsuleLength = length; detector.targetHoleType = type;
+            HoleWorld.MarkDirty(detector); return detector;
         }
+        public void ClearEvents() { OnAddHole = OnAddTargetHole = OnRemoveHole = OnRemoveTargetHole = null; }
     }
 }

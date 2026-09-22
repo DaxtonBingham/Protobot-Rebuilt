@@ -2,15 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
+using System.Collections.Concurrent;
 using UnityEngine;
 
 namespace Protobot.CustomParts {
     public static class CustomPartMeshBuilder {
-        private const int MeshBuildVersion = 4;
+        private const int MeshBuildVersion = 5;
         private static readonly Dictionary<string, Mesh> RenderMeshCache =
-            new Dictionary<string, Mesh>(StringComparer.Ordinal);
-
-        private static readonly Dictionary<string, Mesh> ColliderMeshCache =
             new Dictionary<string, Mesh>(StringComparer.Ordinal);
 
         private static MethodInfo triangulateWithHolesMethod;
@@ -30,24 +29,96 @@ namespace Protobot.CustomParts {
             public bool isCutout;
         }
 
+        public sealed class GeometryData {
+            public bool Valid { get; internal set; }
+            public string Key { get; internal set; }
+            public Vector3[] Vertices { get; internal set; }
+            public Vector3[] Normals { get; internal set; }
+            public Vector2[] UV { get; internal set; }
+            public int[] Triangles { get; internal set; }
+            public List<HoleRuntimeData> Holes { get; internal set; }
+        }
+        [Serializable]
+        private sealed class GeometryIdentity {
+            public float thickness;
+            public SketchData sketch;
+            public CustomHoleDefinition[] holes;
+        }
+        private static readonly ConcurrentDictionary<string, GeometryData> geometryCache = new ConcurrentDictionary<string, GeometryData>();
+        private static readonly ConcurrentQueue<string> geometryOrder = new ConcurrentQueue<string>();
+        private static readonly object geometryCacheLock = new object();
+        private const long GeometryCacheBudget = 64L * 1024 * 1024;
+        private static long geometryCacheBytes;
+        private static readonly object triangulationLock = new object();
+        [ThreadStatic] private static CancellationToken currentCancellation;
+
+        // Exclude name, library IDs and edit timestamps. Renaming/saving a shape
+        // must not triangulate it again or duplicate identical mesh resources.
+        public static string GeometryKey(CustomPartDefinition definition) {
+            if (definition == null) return string.Empty;
+            var identity = new GeometryIdentity { thickness = definition.thicknessInches, sketch = definition.sketch, holes = definition.holes };
+            string json = JsonUtility.ToJson(identity);
+            using (var md5 = System.Security.Cryptography.MD5.Create())
+                return MeshBuildVersion + ":" + BitConverter.ToString(md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(json)));
+        }
+
+        public static bool TryGetGeometry(string key, out GeometryData data) => geometryCache.TryGetValue(key, out data);
+
+        // Only plain values are touched here. The caller snapshots the definition
+        // and computes its key on the main thread before submitting background work.
+        public static GeometryData Compile(CustomPartDefinition definition, string key, CancellationToken cancellation = default) {
+            cancellation.ThrowIfCancellationRequested();
+            if (geometryCache.TryGetValue(key, out var cached)) return cached;
+            var previous = currentCancellation;
+            currentCancellation = cancellation;
+            try {
+                bool valid = TryCompileGeometry(definition, out var data);
+                cancellation.ThrowIfCancellationRequested();
+                if (!valid) data = new GeometryData { Valid = false };
+                data.Key = key;
+                long bytes = GeometryBytes(data);
+                if (bytes <= GeometryCacheBudget) lock (geometryCacheLock) {
+                    if (geometryCache.TryAdd(key, data)) { geometryOrder.Enqueue(key); geometryCacheBytes += bytes; }
+                    while ((geometryCache.Count > 24 || geometryCacheBytes > GeometryCacheBudget) && geometryOrder.TryDequeue(out string oldest))
+                        if (geometryCache.TryRemove(oldest, out var removed)) geometryCacheBytes -= GeometryBytes(removed);
+                }
+                return data;
+            } finally { currentCancellation = previous; }
+        }
+
+        private static long GeometryBytes(GeometryData data) => 128L + (data.Vertices?.LongLength ?? 0) * 12
+            + (data.Normals?.LongLength ?? 0) * 12 + (data.UV?.LongLength ?? 0) * 8
+            + (data.Triangles?.LongLength ?? 0) * 4 + (data.Holes?.Count ?? 0) * 80;
+
         public static bool BuildMeshes(CustomPartDefinition definition, out Mesh renderMesh, out Mesh colliderMesh, out List<HoleRuntimeData> holes, bool useCache = true) {
-            renderMesh = null;
-            colliderMesh = null;
-            holes = new List<HoleRuntimeData>();
+            renderMesh = colliderMesh = null; holes = new List<HoleRuntimeData>();
+            if (definition == null) return false;
+            var key = GeometryKey(definition);
+            var data = Compile(definition, key);
+            return CreateMeshes(data, definition.name, out renderMesh, out colliderMesh, out holes, useCache);
+        }
 
-            if (definition == null || definition.sketch == null || definition.sketch.outerLoop == null) {
-                return false;
-            }
+        // Unity objects and collider cooking are confined to the main thread.
+        public static bool CreateMeshes(GeometryData data, string name, out Mesh renderMesh, out Mesh colliderMesh, out List<HoleRuntimeData> holes, bool useCache = false) {
+            renderMesh = colliderMesh = null; holes = data != null && data.Holes != null ? data.Holes : new List<HoleRuntimeData>();
+            if (data == null || !data.Valid) return false;
+            if (useCache && RenderMeshCache.TryGetValue(data.Key, out var cached) && cached != null) { renderMesh = colliderMesh = cached; return true; }
+            renderMesh = new Mesh { name = "CustomPart_" + name,
+                indexFormat = data.Vertices.Length > 65535 ? UnityEngine.Rendering.IndexFormat.UInt32 : UnityEngine.Rendering.IndexFormat.UInt16 };
+            renderMesh.vertices = data.Vertices; renderMesh.triangles = data.Triangles;
+            renderMesh.uv = data.UV; renderMesh.normals = data.Normals;
+            renderMesh.RecalculateBounds(); renderMesh.RecalculateTangents();
+            // MeshCollider cooks its own collision representation; it can share
+            // the immutable source mesh with the renderer, as stock parts do.
+            colliderMesh = renderMesh;
+            if (useCache) RenderMeshCache[data.Key] = renderMesh;
+            return true;
+        }
 
-            string hash = $"{MeshBuildVersion}:{definition.GetDeterministicHash()}";
-            if (useCache && RenderMeshCache.TryGetValue(hash, out Mesh cachedRender) && cachedRender != null
-                && ColliderMeshCache.TryGetValue(hash, out Mesh cachedCollider) && cachedCollider != null) {
-                renderMesh = cachedRender;
-                colliderMesh = cachedCollider;
-                holes = BuildHoleRuntimeData(definition);
-                return true;
-            }
-
+        private static bool TryCompileGeometry(CustomPartDefinition definition, out GeometryData data) {
+            data = null;
+            if (definition == null || definition.sketch == null || definition.sketch.outerLoop == null) return false;
+            currentCancellation.ThrowIfCancellationRequested();
             if (!TryCompileLoops(definition, out List<CompiledLoop> loops)) {
                 return false;
             }
@@ -130,6 +201,7 @@ namespace Protobot.CustomParts {
 
             // Side walls for outer and cutout loops.
             foreach (CompiledLoop loop in loops) {
+                currentCancellation.ThrowIfCancellationRequested();
                 List<Vector2> points = loop.points;
                 int pointCount = points.Count;
                 if (pointCount < 2) {
@@ -190,24 +262,7 @@ namespace Protobot.CustomParts {
                 }
             }
 
-            renderMesh = new Mesh {
-                name = $"CustomPart_{definition.definitionId}"
-            };
-            renderMesh.SetVertices(vertices);
-            renderMesh.SetTriangles(triangles, 0);
-            renderMesh.SetUVs(0, uvs);
-            renderMesh.SetNormals(normals);
-            renderMesh.RecalculateBounds();
-            renderMesh.RecalculateTangents();
-
-            colliderMesh = UnityEngine.Object.Instantiate(renderMesh);
-            colliderMesh.name = $"{renderMesh.name}_Collider";
-
-            if (useCache) {
-                RenderMeshCache[hash] = renderMesh;
-                ColliderMeshCache[hash] = colliderMesh;
-            }
-            holes = BuildHoleRuntimeData(definition);
+            data = new GeometryData { Valid = true, Vertices = vertices.ToArray(), Normals = normals.ToArray(), UV = uvs.ToArray(), Triangles = triangles.ToArray(), Holes = BuildHoleRuntimeData(definition) };
             return true;
         }
 
@@ -262,6 +317,7 @@ namespace Protobot.CustomParts {
             }
 
             for (int i = 0; i < definition.holes.Length; i++) {
+                currentCancellation.ThrowIfCancellationRequested();
                 CustomHoleDefinition hole = definition.holes[i];
                 if (hole == null) {
                     continue;
@@ -442,6 +498,7 @@ namespace Protobot.CustomParts {
             foreach (var contour in contours) {
                 if (Mathf.Abs(SignedArea(contour)) < 0.000001f) return false;
                 for (int i = 0; i < contour.Count; i++) {
+                    currentCancellation.ThrowIfCancellationRequested();
                     Vector2 a = contour[i], b = contour[(i + 1) % contour.Count];
                     if (float.IsNaN(a.x) || float.IsNaN(a.y) || float.IsInfinity(a.x) || float.IsInfinity(a.y)) return false;
                     for (int j = i + 1; j < contour.Count; j++) {
@@ -456,6 +513,7 @@ namespace Protobot.CustomParts {
                     if (PointInsideContour(holes[i][0], holes[j]) || PointInsideContour(holes[j][0], holes[i])) return false;
             }
             for (int i = 0; i < contours.Count; i++) for (int j = i + 1; j < contours.Count; j++) {
+                currentCancellation.ThrowIfCancellationRequested();
                 var a = contours[i]; var b = contours[j];
                 for (int u = 0; u < a.Count; u++) for (int v = 0; v < b.Count; v++)
                     if (EdgesIntersect(a[u], a[(u + 1) % a.Count], b[v], b[(v + 1) % b.Count])) return false;
@@ -483,6 +541,10 @@ namespace Protobot.CustomParts {
         }
 
         private static bool TryTriangulate(List<Vector2> outer, List<List<Vector2>> holes, out List<int> indices, out List<Vector2> allPoints) {
+            currentCancellation.ThrowIfCancellationRequested();
+            lock (triangulationLock) {
+            currentCancellation.ThrowIfCancellationRequested();
+
             allPoints = new List<Vector2>(outer);
             if (holes != null) {
                 foreach (List<Vector2> hole in holes) {
@@ -505,6 +567,7 @@ namespace Protobot.CustomParts {
             }
 
             return false;
+            }
         }
 
         private static bool TryTriangulateViaProBuilder(IList<Vector2> outer, IList<List<Vector2>> holes, out List<int> indices) {
@@ -587,6 +650,7 @@ namespace Protobot.CustomParts {
 
             int guard = 0;
             while (vertexIndices.Count > 3 && guard < 5000) {
+                currentCancellation.ThrowIfCancellationRequested();
                 guard++;
                 bool earFound = false;
                 for (int i = 0; i < vertexIndices.Count; i++) {

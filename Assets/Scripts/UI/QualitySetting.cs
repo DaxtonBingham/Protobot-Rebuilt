@@ -20,16 +20,19 @@ namespace Protobot.UI {
 
         public void SetQuality(int newQualityLevel) {
             QualitySettings.SetQualityLevel(newQualityLevel);
+            FrameRatePreferences.Apply();
             OnSetQuality?.Invoke(CurrentQualityLevel);
         }
 
         public void IncQuality() {
             QualitySettings.IncreaseLevel();
+            FrameRatePreferences.Apply();
             OnSetQuality?.Invoke(CurrentQualityLevel);
         }
 
         public void DecQuality() {
             QualitySettings.DecreaseLevel();
+            FrameRatePreferences.Apply();
             OnSetQuality?.Invoke(CurrentQualityLevel);
         }
     }

@@ -74,6 +74,7 @@ namespace Protobot {
             Material mat;
             if (palette.TryGetValue(key, out mat)) return mat;
             mat = new Material(Shader.Find("Standard"));
+            mat.enableInstancing = c[3] >= 1;
             mat.name = "Override " + key;
             mat.color = new Color(c[0],c[1],c[2],c[3]);
             mat.SetFloat("_Glossiness", .35f);

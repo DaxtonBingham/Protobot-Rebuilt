@@ -29,9 +29,9 @@ public class ColorPicker : Selector
             {
                 if (!MouseInput.overUI)
                 {
-                    if (mouseCast.overObj)
+                    GameObject targetGameObject = mouseCast.gameObject;
+                    if (targetGameObject != null)
                     {
-                        GameObject targetGameObject = mouseCast.gameObject;
                         Renderer component;
                         if (targetGameObject != null)
                         {
@@ -60,9 +60,9 @@ public class ColorPicker : Selector
                         {
                             if (component == null)
                                 return;
-                            if (component.material.GetFloat("_Metallic") == .754f)
+                            if (component.sharedMaterial.GetFloat("_Metallic") == .754f)
                             {
-                                ColorTool.Material = component.material;
+                                ColorTool.Material = component.sharedMaterial;
                                 colorToolGameObject.UpdateColorSliders();
                             }
                         }

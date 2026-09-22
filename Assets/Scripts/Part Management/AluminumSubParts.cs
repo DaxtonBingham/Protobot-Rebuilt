@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Rendering;
 using Object = UnityEngine.Object;
@@ -13,7 +14,9 @@ namespace Protobot {
         [SerializeField] private GameObject end;
         [SerializeField] private Material material;
         [SerializeField] private int maxHoleCount = 35;
+        private readonly Dictionary<int, Mesh> meshCache = new Dictionary<int, Mesh>();
         public Mesh GetMesh(int holeCount) {
+            if (meshCache.TryGetValue(holeCount, out var cached) && cached != null) return cached;
             CombineInstance[] combine = new CombineInstance[holeCount];
 
             for (int i = 0; i < holeCount; i++) {
@@ -34,8 +37,14 @@ namespace Protobot {
             newMesh.indexFormat = IndexFormat.UInt32;
             newMesh.CombineMeshes(combine);
             newMesh.RecalculateNormals();
+            if (holeCount > 0 && holeCount <= maxHoleCount) meshCache[holeCount] = newMesh;
 
             return newMesh;
+        }
+
+        private void OnDestroy() {
+            foreach (var mesh in meshCache.Values) if (mesh != null) Destroy(mesh);
+            meshCache.Clear();
         }
 
         public float GetXPos(int holeIndex, int holeCount) => 0.5f * ((-holeCount + 1) / 2f + holeIndex);
@@ -66,7 +75,7 @@ namespace Protobot {
 
                     var rot = holeCollider.transform.rotation;
                     
-                    Instantiate(holeCollider.gameObject, pos, rot, obj.transform);
+                    PartHoles.AddTemplate(obj, holeCollider, pos, rot);
                 }
             }
         }

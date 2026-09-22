@@ -36,10 +36,10 @@ public class ShaftPartGenerator : PartGenerator {
 
         float zScale = float.Parse(param2.value);
 
-        var vertices = new Vector3[mesh.vertexCount];
+        var vertices = mesh.vertices;
 
         for (int i = 0; i < mesh.vertexCount; i++) {
-            var vert = mesh.vertices[i];
+            var vert = vertices[i];
             vert.z *= zScale;
 
             vertices[i] = vert;

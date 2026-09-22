@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using Parts_List;
 using UnityEngine;
@@ -20,10 +20,13 @@ namespace Protobot {
         private int Width => int.Parse(param2.value);
         
         private int HoleCount => Length * Width;
+        private readonly Dictionary<Vector2Int, Mesh> meshCache = new Dictionary<Vector2Int, Mesh>();
 
         private float GetPos(int val, int max) => 0.5f * ((-max + 1) / 2f + val);
 
         public override Mesh GetMesh() {
+            var key = new Vector2Int(Length, Width);
+            if (meshCache.TryGetValue(key, out var cached) && cached != null) return cached;
             CombineInstance[] combine = new CombineInstance[HoleCount];
 
             var i = 0;
@@ -50,8 +53,14 @@ namespace Protobot {
             
             newMesh.CombineMeshes(combine);
             newMesh.RecalculateNormals();
+            if (Length >= 1 && Length <= 25 && Width >= 1 && Width <= 5) meshCache[key] = newMesh;
 
             return newMesh;
+        }
+
+        private void OnDestroy() {
+            foreach (var mesh in meshCache.Values) if (mesh != null) Destroy(mesh);
+            meshCache.Clear();
         }
 
         public override GameObject Generate(Vector3 position, Quaternion rotation) {
@@ -88,7 +97,7 @@ namespace Protobot {
 
                     var rot = plateHole.transform.rotation;
 
-                    Instantiate(plateHole.gameObject, pos, rot, obj.transform);
+                    PartHoles.AddTemplate(obj, plateHole, pos, rot);
                 }
             }
         }

@@ -13,6 +13,7 @@ namespace Protobot.CustomParts {
                 Shader shader = Shader.Find("Standard");
                 runtimeMaterial = new Material(shader) {
                     name = "Custom Part Runtime Material",
+                    enableInstancing = true,
                     color = new Color(0.52f, 0.52f, 0.52f, 1f)
                 };
 
@@ -77,6 +78,8 @@ namespace Protobot.CustomParts {
             savedObject.id = definition.GetPartId();
             savedObject.customDefinitionId = definition.definitionId;
             savedObject.customInstanceId = customInstanceId;
+            PartHoles.Compact(newPart);
+            RobotDocument.Synchronize(savedObject);
 
             PartName partName = newPart.GetComponent<PartName>();
             if (partName == null) {
@@ -112,24 +115,11 @@ namespace Protobot.CustomParts {
                     continue;
                 }
 
-                GameObject holeObject = new GameObject("HoleCollider", typeof(MeshCollider));
-                if (TagExists("HoleCollider")) {
-                    holeObject.tag = "HoleCollider";
-                }
-
-                holeObject.layer = HoleCollider.HOLE_COLLISIONS_LAYER;
-
-                holeObject.transform.SetParent(parent.transform, false);
-                holeObject.transform.localPosition = hole.localPosition;
-                holeObject.transform.localRotation = hole.localRotation;
-                holeObject.transform.localScale = hole.localScale;
-
-                MeshCollider meshCollider = holeObject.GetComponent<MeshCollider>();
-                meshCollider.sharedMesh = shapeMesh;
-
-                HoleCollider holeCollider = holeObject.AddComponent<HoleCollider>();
-                holeCollider.holeType = HoleCollider.HoleType.Normal;
-                holeCollider.twoSided = true;
+                PartHoles.GetOrCreate(parent).Add(new HoleDefinition {
+                    mesh = shapeMesh, localMatrix = Matrix4x4.TRS(hole.localPosition, hole.localRotation, hole.localScale),
+                    localRotation = hole.localRotation, size = hole.localScale,
+                    type = HoleCollider.HoleType.Normal, twoSided = true
+                });
             }
         }
 

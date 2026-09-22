@@ -1,125 +1,82 @@
 using UnityEngine;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using UnityEngine.Serialization;
 
 namespace Protobot {
+    // Authoring adapter for existing prefabs and the single mouse-picking proxy.
+    // Runtime connections and hole poses live in PartHoles/HoleRecord.
     public class HoleCollider : MonoBehaviour {
         public static int HOLE_COLLISIONS_LAYER => 11;
-        public static int HOLE_COLLISIONS_MASK => LayerMask.GetMask("HoleCollisions");
-
+        public static int HOLE_COLLISIONS_MASK => 1 << HOLE_COLLISIONS_LAYER;
+        public enum HoleType { Normal, Threaded, Clamp }
         public HoleData holeData;
-
-        public Action<HoleDetector> OnSetDetector;
-
-        public enum HoleType { 
-            Normal,
-            Threaded,
-            Clamp
-        }
-        
         public HoleType holeType;
-
-        public List<HoleDetector> detectors; // the list of hole detectors attached to this collider
-
-        public bool twoSided = false;
-        private int MaxDetectorLimit => twoSided ? 2 : 1;
-        
-        public bool IsOccupied => detectors.Count == MaxDetectorLimit;
-        public bool IsEmpty => detectors.Count == 0;
-
+        public bool twoSided;
+        public Action<HoleDetector> OnSetDetector;
+        public HoleRecord Record { get; private set; }
+        [SerializeField] internal bool IsPickingProxy;
+        [SerializeField] private PartHoles recordOwner;
+        [SerializeField] private int recordIndex = -1;
+        private readonly List<HoleDetector> emptyDetectors = new List<HoleDetector>();
+        public List<HoleDetector> detectors => Record != null ? Record.detectors : emptyDetectors;
+        public bool IsOccupied => Record != null && Record.IsOccupied;
+        public bool IsEmpty => Record == null || Record.IsEmpty;
         private void Awake() {
-            detectors = new List<HoleDetector>();
-            MeshCollider meshCollider = GetComponent<MeshCollider>();
-
+            // A part can be duplicated while the shared picking proxy is attached.
+            // Its clone is transient and must never become another authored hole.
+            if (IsPickingProxy) { Destroy(gameObject); return; }
+            var collider = GetComponent<MeshCollider>();
             holeData = new HoleData {
-                position = transform.position,
-                rotation = transform.rotation,
-                forward = transform.forward,
-
-                shape = meshCollider.sharedMesh,
+                shape = collider != null ? collider.sharedMesh : null,
                 depth = transform.localScale.z,
                 size = new Vector2(transform.localScale.x, transform.localScale.y),
-                part = transform.parent.gameObject
+                part = transform.parent != null ? transform.parent.gameObject : null
             };
+            holeData.Bind(transform);
+            if (recordOwner != null && recordIndex >= 0 && recordIndex < recordOwner.Holes.Count)
+                BindRecord(recordOwner.Holes[recordIndex]);
         }
-
-        private void Update() {
-            holeData.position = transform.position;
-            holeData.rotation = transform.rotation;
-            holeData.forward = transform.forward;
-
-            RemoveDeletedDetectors();
-        }
-
-        public void RemoveDeletedDetectors() {
-            if (detectors == null || detectors.Count == 0) return;
-
-            var deleteList = detectors.Where(detector =>
-                    detector == null ||
-                    detector.gameObject == null ||
-                    detector.gameObject.IsDeleted())
-                .ToList();
-
-            foreach (var detector in deleteList) {
-                detectors.Remove(detector);
-                if (detector != null) {
-                    detector.RemoveHole(this);
-                }
+        public void BindRecord(HoleRecord record) {
+            if (Record != null) Record.OnSetDetector -= Notify;
+            Record = record;
+            recordOwner = record != null ? record.Owner : null;
+            recordIndex = record != null ? record.Index : -1;
+            if (Record != null) {
+                holeData = Record.holeData; holeType = Record.holeType; twoSided = Record.Definition.twoSided;
+                Record.OnSetDetector += Notify;
             }
         }
-
-        public bool IsOccupiedBy(HoleDetector otherDetector) {
-            return detectors.Contains(otherDetector);
-        }
-        
-        public void AddDetector(HoleDetector newDetector) {
-            if (IsOccupiedBy(newDetector) || IsOccupied) return;
-            
-            detectors.Add(newDetector);
-            OnSetDetector?.Invoke(newDetector);
-        }
-
-        public void RemoveDetector(HoleDetector detector) {
-            detectors.Remove(detector);
-        }
-
-        public void DetachAllDetectors() {
-            if (detectors == null || detectors.Count == 0) return;
-
-            var attachedDetectors = detectors.ToList();
-            detectors.Clear();
-
-            foreach (var detector in attachedDetectors) {
-                if (detector != null) {
-                    detector.RemoveHole(this);
-                }
-            }
-        }
-
-        private void OnDisable() {
-            if (!IsEmpty && gameObject.IsDeleted()) {
-                DetachAllDetectors();
-            }
-        }
-
-        private void OnDestroy() {
-            DetachAllDetectors();
-        }
+        private void Notify(HoleDetector detector) => OnSetDetector?.Invoke(detector);
+        private void OnDestroy() { if (Record != null) Record.OnSetDetector -= Notify; }
+        public void DetachAllDetectors() => Record?.DetachAllDetectors();
     }
 
     [Serializable]
     public class HoleData {
-
-        public Mesh shape = null;
+        public Mesh shape;
         public float depth;
         public Vector2 size;
         public GameObject part;
-
-        public Vector3 position;
-        public Quaternion rotation;
-        public Vector3 forward;
-
-        public bool IsHighStrength() => size == new Vector2(0.25f, 0.25f) && shape == HoleShapes.instance.GetShapeMesh("square");
+        [NonSerialized] private Transform source;
+        [NonSerialized] private HoleRecord record;
+        [SerializeField, FormerlySerializedAs("position")] private Vector3 storedPosition;
+        [SerializeField, FormerlySerializedAs("rotation")] private Quaternion storedRotation;
+        [SerializeField, FormerlySerializedAs("forward")] private Vector3 storedForward;
+        internal void Bind(Transform value) { source = value; record = null; }
+        internal void Bind(HoleRecord value) { record = value; source = null; }
+        public Vector3 position {
+            get { if (record != null) storedPosition = record.Position; else if (source != null) storedPosition = source.position; return storedPosition; }
+            set => storedPosition = value;
+        }
+        public Quaternion rotation {
+            get { if (record != null) storedRotation = record.Rotation; else if (source != null) storedRotation = source.rotation; return storedRotation; }
+            set => storedRotation = value;
+        }
+        public Vector3 forward {
+            get { if (record != null) storedForward = record.Rotation * Vector3.forward; else if (source != null) storedForward = source.forward; return storedForward; }
+            set => storedForward = value;
+        }
+        public bool IsHighStrength() => size == new Vector2(.25f, .25f) && shape == HoleShapes.instance.GetShapeMesh("square");
     }
 }

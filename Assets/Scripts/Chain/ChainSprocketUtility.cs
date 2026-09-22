@@ -494,7 +494,7 @@ namespace Protobot.ChainSystem {
                 }
 
                 Renderer meshRenderer = meshFilter.GetComponent<Renderer>();
-                if (meshRenderer != null && !meshRenderer.enabled) {
+                if (meshRenderer != null && (!meshRenderer.enabled || meshRenderer.shadowCastingMode == UnityEngine.Rendering.ShadowCastingMode.ShadowsOnly)) {
                     continue;
                 }
 

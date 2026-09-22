@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using UnityEngine;
 using System;
 using System.Linq;
@@ -46,7 +46,8 @@ namespace Protobot.Builds {
             Vector3 savedCamPos = new Vector3((float)camData.xPos, (float)camData.yPos, (float)camData.zPos);
             Vector3 savedCamAngle = new Vector3((float)camData.xRot, (float)camData.yRot, (float)camData.zRot);
 
-            PivotCamera.Main.SetTransform(savedCamPos, savedCamAngle, (float)camData.zoom);
+            PivotCamera.Main.SetTransform(savedCamPos, savedCamAngle,
+                PivotCamera.Main.DistanceFromSavedZoom((float)camData.zoom, camData.isOrtho));
 
             var projectionSwitcher = PivotCamera.Main.GetComponent<ProjectionSwitcher>();
 
@@ -144,8 +145,14 @@ namespace Protobot.Builds {
             //Debug.Log(buildData.version);    
             if(!versionsNoColor.Contains(buildData.version) && buildData.version != null)
             { 
-                generatedObject.GetComponent<Renderer>().material.color = objectData.GetColor();
+                var renderer = generatedObject.GetComponent<Renderer>();
+                var color = objectData.GetColor();
+                if (renderer != null && renderer.sharedMaterial != null && renderer.sharedMaterial.color != color)
+                    renderer.material.color = color;
             }
+            var savedView = generatedObject.GetComponent<SavedObject>();
+            RobotDocument.RestoreIdentity(savedView, objectData.instanceId);
+            RobotDocument.Synchronize(savedView);
             return generatedObject;
         }
             
@@ -184,7 +191,7 @@ namespace Protobot.Builds {
                 yRot = cam.lookAngle.y,
                 zRot = cam.lookAngle.z,
 
-                zoom = cam.focusDistance,
+                zoom = cam.SavedZoom(projectionSwitcher.isOrtho),
 
                 isOrtho = projectionSwitcher.isOrtho
             };
@@ -200,30 +207,12 @@ namespace Protobot.Builds {
             for (int i = 0; i < newParts.Length; i++) {
                 Transform tForm = sceneObjs[i].transform;
                 SavedObject savedData = tForm.GetComponent<SavedObject>();
-                Renderer savedColor = tForm.GetComponent<Renderer>();
-
-                var position = tForm.position;
-                var rotation = tForm.rotation;
+                RobotDocument.Synchronize(savedData, PartChange.Pose | PartChange.Appearance | PartChange.Metadata);
+                var record = savedData.DocumentPart;
+                var position = record.Position;
+                var rotation = record.Rotation;
                 if (chainEditor != null) chainEditor.GetCommittedTransform(tForm, ref position, ref rotation);
-                var eulerAngles = rotation.eulerAngles;
-                newParts[i] = new ObjectData {
-                    partId = savedData.id,
-                    states = savedData.state,
-                    customDefinitionId = savedData.customDefinitionId,
-                    customInstanceId = savedData.customInstanceId,
-
-                    xPos = position.x,
-                    yPos = position.y,
-                    zPos = position.z,
-
-                    xRot = eulerAngles.x,
-                    yRot = eulerAngles.y,
-                    zRot = eulerAngles.z,
-
-                    rColor = savedColor.material.color.r,
-                    bColor = savedColor.material.color.b,
-                    gColor = savedColor.material.color.g,
-                };
+                newParts[i] = record.Export(position, rotation);
 
                 if (!string.IsNullOrWhiteSpace(savedData.customDefinitionId)) {
                     customDefinitionIds.Add(savedData.customDefinitionId);

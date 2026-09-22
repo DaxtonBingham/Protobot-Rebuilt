@@ -10,12 +10,13 @@ namespace Protobot.SelectionSystem {
         [SerializeField] private bool checkPrevObj;
 
         private GameObject prevObj;
+        private HoleRecord prevHole;
 
         public void Update() {
             GameObject mouseCastObj = ChainManager.ResolveSelectableObject(mouseCast.gameObject);
 
             if (mouseCastObj != null) {
-                if (prevObj != mouseCastObj || !checkPrevObj) {
+                if (prevObj != mouseCastObj || prevHole != mouseCast.HoverHole || !checkPrevObj) {
                     var selection = new ObjectSelection {
                         gameObject = mouseCastObj,
                         selector = this
@@ -28,6 +29,7 @@ namespace Protobot.SelectionSystem {
                 clearEvent?.Invoke();
 
             prevObj = mouseCastObj;
+            prevHole = mouseCast.HoverHole;
         }
     }
 }

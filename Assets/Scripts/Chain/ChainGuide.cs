@@ -63,10 +63,10 @@ namespace Protobot.ChainSystem {
             Vector3 worldCenter = transform.position;
             bool usedPrimaryHoleCenter = false;
 
-            if (TryResolvePrimaryHole(out PartData primaryHolePartData) && primaryHolePartData.primaryHole != null) {
-                worldAxis = primaryHolePartData.primaryHole.transform.forward;
+            if (TryResolvePrimaryHole(out PartData primaryHolePartData) && primaryHolePartData.PrimaryHole != null) {
+                worldAxis = primaryHolePartData.PrimaryHole.forward;
                 if (!useBoundsCenter) {
-                    worldCenter = primaryHolePartData.primaryHole.transform.position;
+                    worldCenter = primaryHolePartData.PrimaryHole.position;
                     usedPrimaryHoleCenter = true;
                 }
             }
@@ -79,8 +79,8 @@ namespace Protobot.ChainSystem {
             if (useBoundsCenter && TryResolveRendererCenter(out Vector3 renderedCenter)) {
                 worldCenter = renderedCenter;
             }
-            else if (!usedPrimaryHoleCenter && TryResolvePrimaryHole(out PartData fallbackPartData) && fallbackPartData.primaryHole != null) {
-                worldCenter = fallbackPartData.primaryHole.transform.position;
+            else if (!usedPrimaryHoleCenter && TryResolvePrimaryHole(out PartData fallbackPartData) && fallbackPartData.PrimaryHole != null) {
+                worldCenter = fallbackPartData.PrimaryHole.position;
             }
 
             localCenterOffset = transform.InverseTransformPoint(worldCenter);
@@ -143,12 +143,12 @@ namespace Protobot.ChainSystem {
                 return false;
             }
 
-            if (TryGetComponent(out partData) && partData.primaryHole != null) {
+            if (TryGetComponent(out partData) && partData.PrimaryHole != null) {
                 return true;
             }
 
             partData = GetComponentInParent<PartData>();
-            return partData != null && partData.primaryHole != null;
+            return partData != null && partData.PrimaryHole != null;
         }
 
         private bool TryResolveRendererCenter(out Vector3 center) {

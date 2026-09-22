@@ -13,8 +13,16 @@ namespace Protobot {
         [TextArea(0, 100)]
         public string holeData;
 
-        public float PrimaryHoleDepth => primaryHole != null ? primaryHole.holeData.depth : 0;
+        public float PrimaryHoleDepth => PrimaryHole != null ? PrimaryHole.depth : 0;
         public HoleCollider primaryHole;
+        [SerializeField] private PartHoles primaryHoleOwner;
+        [SerializeField] private int primaryHoleIndex = -1;
+        public HoleData PrimaryHole => primaryHoleOwner != null && primaryHoleIndex >= 0 && primaryHoleIndex < primaryHoleOwner.Holes.Count
+            ? primaryHoleOwner.Holes[primaryHoleIndex].holeData : primaryHole != null ? primaryHole.holeData : null;
+        internal void BindHole(HoleCollider source, PartHoles owner, int index) {
+            if (source != primaryHole) return;
+            primaryHoleOwner = owner; primaryHoleIndex = index;
+        }
         public bool allowCenterInserts;
     }
 }

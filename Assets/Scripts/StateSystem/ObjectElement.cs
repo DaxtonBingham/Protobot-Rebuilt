@@ -9,15 +9,20 @@ namespace Protobot.StateSystems {
         public bool existing;
         public Vector3 position;
         public Quaternion rotation;
+        private readonly string documentId;
 
         public ObjectElement(GameObject newObj) {
             obj = newObj;
             existing = newObj.layer != LayerMask.NameToLayer("Deleted");
             position = newObj.transform.position;
             rotation = newObj.transform.rotation;
+            documentId = newObj.GetComponent<SavedObject>()?.DocumentPart?.Id;
         }
         public void Load() {
             ApplyExistence(existing);
+
+            if (documentId != null && RobotDocument.SetPose(documentId, position, rotation, true)) return;
+            if (obj == null) return;
 
             if (obj.transform.position != position)
                 obj.transform.DOMove(position, 0.25f);
@@ -70,6 +75,8 @@ namespace Protobot.StateSystems {
         /// </summary>
         /// <param name="value"></param>
         public void ApplyExistence(bool value) {
+            if (documentId != null && RobotDocument.SetExistence(documentId, value)) return;
+            if (obj == null) return;
             obj.SetActive(value);
             obj.layer = value ? 0 : LayerMask.NameToLayer("Deleted");
         }

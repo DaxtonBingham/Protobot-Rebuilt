@@ -87,19 +87,14 @@ namespace Protobot {
                             return;
                         }
 
-                        GameObject newHoleObj = new GameObject("HoleCollider", typeof(MeshCollider));
-                        newHoleObj.tag = "HoleCollider";
-                        newHoleObj.layer = HoleCollider.HOLE_COLLISIONS_LAYER;
-
-                        newHoleObj.GetComponent<MeshCollider>().sharedMesh = colMesh;
-
-                        newHoleObj.transform.position = v;
-                        newHoleObj.transform.localScale = new Vector3(size, size, depth);
-                        newHoleObj.transform.forward = axis;
-                        newHoleObj.transform.SetParent(obj.transform);
-
-                        HoleCollider holeComponent = newHoleObj.AddComponent<HoleCollider>();
-                        holeComponent.holeType = holeType;
+                        var rotation = Quaternion.LookRotation(axis);
+                        var scale = new Vector3(size, size, depth);
+                        var world = Matrix4x4.TRS(v, rotation, scale);
+                        PartHoles.GetOrCreate(obj).Add(new HoleDefinition {
+                            mesh = colMesh, localMatrix = obj.transform.worldToLocalMatrix * world,
+                            localRotation = Quaternion.Inverse(obj.transform.rotation) * rotation,
+                            size = scale, type = holeType
+                        });
                     }
                 }
             }

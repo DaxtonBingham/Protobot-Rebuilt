@@ -289,8 +289,8 @@ namespace Protobot.ChainSystem {
                 return Vector3.zero;
             }
 
-            if (partObject.TryGetComponent(out PartData partData) && partData.primaryHole != null) {
-                return partData.primaryHole.transform.position;
+            if (partObject.TryGetComponent(out PartData partData) && partData.PrimaryHole != null) {
+                return partData.PrimaryHole.position;
             }
 
             Renderer[] renderers = partObject.GetComponentsInChildren<Renderer>(true);
@@ -308,8 +308,8 @@ namespace Protobot.ChainSystem {
         }
 
         private static Vector3 ResolveGuideAxis(GameObject partObject) {
-            if (partObject != null && partObject.TryGetComponent(out PartData partData) && partData.primaryHole != null) {
-                Vector3 primaryAxis = partData.primaryHole.transform.forward;
+            if (partObject != null && partObject.TryGetComponent(out PartData partData) && partData.PrimaryHole != null) {
+                Vector3 primaryAxis = partData.PrimaryHole.forward;
                 if (primaryAxis.sqrMagnitude > 0.0001f) {
                     return primaryAxis.normalized;
                 }
