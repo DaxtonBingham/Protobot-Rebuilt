@@ -2,6 +2,7 @@ using Models;
 using UnityEngine;
 using Protobot.Outlining;
 using UnityEngine.UIElements;
+using Protobot.StateSystems;
 
 namespace Protobot.SelectionSystem
 {
@@ -30,12 +31,14 @@ namespace Protobot.SelectionSystem
             var material = component.sharedMaterial;
             if (!material.HasProperty("_Metallic") || material.GetFloat("_Metallic") != .754f) return;
             // Reading a selected color must not instantiate a material for every hovered part.
-            if (ColorToolActiveCheck.colorToolActive) {
+            if (ColorToolActiveCheck.colorToolActive && material.color != ColorTool.ColorToSet) {
+                if (StateSystem.instance != null) StateSystem.AddElement(new ColorElement(component));
                 material = component.material;
                 material.color = ColorTool.ColorToSet;
                 var view = component.GetComponent<SavedObject>();
                 if (view != null) RobotDocument.Synchronize(view, PartChange.Appearance);
                 else SceneActivity.Changed();
+                if (StateSystem.instance != null) StateSystem.AddState(new ColorElement(component));
             }
             ColorTool.Material = material;
         }

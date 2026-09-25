@@ -20,8 +20,9 @@ namespace Protobot.CustomParts {
             foreach (string path in Directory.GetFiles(LibraryDirectory, "*.json")) {
                 try {
                     var definition = JsonUtility.FromJson<CustomPartDefinition>(File.ReadAllText(path));
-                    if (definition != null && !string.IsNullOrWhiteSpace(definition.definitionId) && definition.sketch != null)
+                    if (definition != null && !string.IsNullOrWhiteSpace(definition.definitionId) && CustomPartMeshBuilder.HasValidInputs(definition))
                         Library[definition.definitionId] = definition;
+                    else Debug.LogWarning("Could not load custom part library item: " + Path.GetFileName(path) + " (incomplete or invalid dimensions)");
                 } catch (Exception ex) { Debug.LogWarning("Could not load custom part library item: " + Path.GetFileName(path) + " (" + ex.Message + ")"); }
             }
         }

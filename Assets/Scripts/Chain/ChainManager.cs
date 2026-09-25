@@ -479,7 +479,7 @@ namespace Protobot.ChainSystem {
             for (int i = 0; i < chainData.Length; i++) {
                 ChainData data = chainData[i];
                 if (!TryResolveEndpointsFromData(data, indexToObject, out List<ChainEndpoint> endpoints)) {
-                    continue;
+                    throw new InvalidOperationException("Chain " + (i + 1) + " refers to an unavailable sprocket or tensioner.");
                 }
 
                 ChainSettings settings = ChainSettings.FromData(data);

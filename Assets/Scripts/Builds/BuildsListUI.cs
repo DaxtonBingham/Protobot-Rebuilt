@@ -34,9 +34,11 @@ namespace Protobot.UI {
         }
 
         public void AddPath(string path) {
+            // Creating an untitled project must not evict a real recent project.
+            if (string.IsNullOrWhiteSpace(path)) return;
             var paths = ReadPaths();
             
-            if (ReadPaths().Contains(path)) {
+            if (paths.Contains(path)) {
                 paths.Remove(path);
             }
              
@@ -54,7 +56,7 @@ namespace Protobot.UI {
             PlayerPrefs.SetString(PrefsKey, String.Join("\n", paths));
         }
 
-        public List<string> ReadPaths() => PlayerPrefs.GetString(PrefsKey).Split("\n").ToList();
+        public List<string> ReadPaths() => PlayerPrefs.GetString(PrefsKey).Split(new[] {'\n'}, StringSplitOptions.RemoveEmptyEntries).ToList();
 
         public List<string> GetPaths() {
             var paths = ReadPaths();

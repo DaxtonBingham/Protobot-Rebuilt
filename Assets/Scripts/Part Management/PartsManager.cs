@@ -117,71 +117,76 @@ namespace Protobot {
         }
 
         public static PartType GetPartType(string id) {
-            var idSplit = id.Split('-');
-            var typeId = idSplit[0];
-            return partTypes.FirstOrDefault(partType => partType.id == typeId);
+            if (string.IsNullOrWhiteSpace(id) || partTypes == null) return null;
+            string typeId = id.Split('-')[0];
+            PartType first = null;
+            foreach (var candidate in partTypes) {
+                if (candidate.id != typeId) continue;
+                if (first == null) first = candidate;
+                else if (TryResolvePart(id, out var resolved, out _, out _)) return resolved;
+            }
+            return first;
         }
-        
+
         public static GameObject GeneratePart(string id, Vector3 pos, Quaternion rot) {
-            var idSplit = id.Split('-');
-            var typeId = idSplit[0];
-
-            var p1Val = "";
-            var p2Val = "";
-
-            if (idSplit.Length >= 2) p1Val = idSplit[1];
-            if (idSplit.Length == 3) p2Val = idSplit[2];
-    
-            if (id == "NUT") { //VERY TEMPORARY ONLY FOR BETA 1.3.1 PLEASE FIX WITH VERSION CONTROL
-                p1Val = "Lock";
+            if (!TryResolvePart(id, out var type, out string first, out string second)) return null;
+            var generator = type.GetComponent<PartGenerator>();
+            string previous1 = generator.param1.value, previous2 = generator.param2.value;
+            try {
+                generator.param1.value = first;
+                generator.param2.value = second;
+                return generator.Generate(pos, rot);
+            } finally {
+                generator.param1.value = previous1;
+                generator.param2.value = previous2;
             }
+        }
 
-            GameObject partObj = null;
-            
-            foreach (var partType in partTypes) {
-                if (partType.id == typeId) {
-                    var gen = partType.GetComponent<PartGenerator>();
-                    
-                    Parameter p1 = gen.param1;
-                    Parameter p2 = gen.param2;
+        public static bool TryValidateId(string id, out string error) {
+            bool valid = TryResolvePart(id, out _, out _, out _);
+            error = valid ? null : "Unknown or unsupported part: " + id;
+            return valid;
+        }
 
-                    gen.param1.value = p1Val;
-                    gen.param2.value = p2Val;
-                    
-                    //TODO This is awful and should be compared against an array in another file/method to make sure legacy files work but this is a quick fix
-                    if (gen.name == "Omni Wheel" || gen.name == "Traction Wheel")
-                    {
-                        if (p2Val == "")
-                        {
-                            p2.value = p1Val;
-                            p1.value = "V1";
-                        }
-                    }
-                    if (gen.name == "Motor" && p1Val == "")
-                    {
-                        p1.value = "11W";
-                    }
-                    if (gen.name == "Block Bearing" && p1Val == "")
-                    {
-                        p1.value = "Normal";
-                    }
-                    if (gen.name == "Cylinder" && p2Val == "")
-                    {
-                        p2.value = "Normal";
-                    }
-                    if (gen.name == "Ring" && p1Val == "")
-                    {
-                        p1.value = "Red";
-                    }
-
-                    partObj = gen.Generate(pos, rot);
-
-                    gen.param1.value = p1.value;
-                    gen.param2.value = p2.value;
-                }
+        private static bool TryResolvePart(string id, out PartType type, out string first, out string second) {
+            type = null; first = second = "";
+            if (string.IsNullOrWhiteSpace(id) || partTypes == null) return false;
+            var fields = id.Split('-');
+            if (fields.Length > 3 || fields[0] == ChainToolPartId) return false;
+            first = fields.Length > 1 ? fields[1] : "";
+            second = fields.Length > 2 ? fields[2] : "";
+            if (id == "NUT") first = "Lock";
+            if ((fields[0] == "OMNI" || fields[0] == "TWHL") && second == "") { second = first; first = "V1"; }
+            if (fields[0] == "MOTR" && first == "") first = "11W";
+            if (fields[0] == "BLCK" && first == "") first = "Normal";
+            if (fields[0] == "PNMT" && second == "") second = "Normal";
+            if (fields[0] == "RING" && first == "") first = "Red";
+            foreach (var candidate in partTypes) {
+                if (candidate.id != fields[0]) continue;
+                var generator = candidate.GetComponent<PartGenerator>();
+                if (generator == null) continue;
+                string previous1 = generator.param1.value, previous2 = generator.param2.value;
+                try {
+                    generator.param1.value = first;
+                    generator.param2.value = second;
+                    if (!ValidParameter(generator.param1, generator.GetParam1Options(), first, generator.param1.customLimits)) continue;
+                    var secondLimits = generator.param2.customLimits;
+                    if (generator is ShaftPartGenerator) secondLimits.y = first == "High Strength" ? 24 : 12;
+                    if (!ValidParameter(generator.param2, generator.GetParam2Options(), second, secondLimits)) continue;
+                    type = candidate;
+                    return true;
+                } catch (Exception) { }
+                finally { generator.param1.value = previous1; generator.param2.value = previous2; }
             }
+            return false;
+        }
 
-            return partObj;
+        private static bool ValidParameter(Parameter parameter, List<string> options, string value, Vector2 limits) {
+            if (string.IsNullOrEmpty(parameter.name)) return true;
+            if (!parameter.custom) return options != null && options.Contains(value);
+            if (!PartParameterValue.TryParse(value, out float number) || number <= 0) return false;
+            return number >= limits.x && number <= limits.y
+                && (parameter.customUnit != "Holes" || number == Mathf.Floor(number));
         }
 
         /// <Summary> Returns a list of all loaded parts in the current scene </Summary>

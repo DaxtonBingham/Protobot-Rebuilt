@@ -13,7 +13,7 @@ namespace Protobot {
             get {
                 if (int.TryParse(currentValue, out int intResult))
                     return intResult;
-                else if (float.TryParse(currentValue, out float floatResult))
+                else if (PartParameterValue.TryParse(currentValue, out float floatResult))
                     return floatResult;
                 else if (bool.TryParse(currentValue, out bool boolResult))
                     return boolResult;
@@ -77,7 +77,7 @@ namespace Protobot {
         }
 
         public void SetValue(int newValue) => SetValue(newValue.ToString());
-        public void SetValue(float newValue) => SetValue(newValue.ToString());
+        public void SetValue(float newValue) => SetValue(PartParameterValue.Format(newValue));
         public void SetValue(bool newValue) => SetValue(newValue.ToString());
     }
 }

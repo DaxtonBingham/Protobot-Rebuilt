@@ -30,6 +30,7 @@ namespace Protobot.InputEvents {
         }
         
         void UpdateDisplayUI() {
+            rebinding = false;
             actionNameText.text = inputEvent.name;
 
             if (!EventRebindAction.IsEmpty)
@@ -38,6 +39,10 @@ namespace Protobot.InputEvents {
                 rebindText.text = GetBindingDisplayString(inputEvent.defaultAction);
 
             resetButton.interactable = !EventRebindAction.IsEmpty;
+        }
+
+        private void OnDisable() {
+            if (inputEvent != null) inputEvent.rebindAction?.CancelRebind();
         }
 
         public string GetBindingDisplayString(InputAction action) {

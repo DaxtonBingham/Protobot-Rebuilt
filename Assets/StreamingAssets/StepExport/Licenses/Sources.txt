@@ -1,0 +1,9 @@
+Protobot CAD export worker
+
+Open CASCADE Technology 7.9.3: https://github.com/Open-Cascade-SAS/OCCT/tree/V7_9_3
+OCP bindings: https://github.com/CadQuery/OCP
+VTK: https://gitlab.kitware.com/vtk/vtk
+Python: https://www.python.org/
+PyInstaller: https://pyinstaller.org/
+
+CAD model provenance is recorded in Library/sources.json. VEX product geometry belongs to its respective rights holders.

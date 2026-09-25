@@ -17,9 +17,9 @@ namespace Protobot.UI {
             text = GetComponent<TMP_Text>();
             tooltip = GetComponent<Tooltip>();
             
-            SceneBuild.OnGenerateBuild += _ => {
+            buildsManager.OnLoadBuild.AddListener(_ => {
                 UpdateDisplay();
-            };
+            });
 
             buildsManager.OnSaveBuild.AddListener(_ => UpdateDisplay());
             UpdateDisplay();

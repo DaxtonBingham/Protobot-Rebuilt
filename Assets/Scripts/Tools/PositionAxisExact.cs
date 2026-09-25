@@ -10,13 +10,12 @@ namespace Protobot.Tools {
         [SerializeField] private InputField inputField;
 
         public void SetPositionFromInput(string text) {
-            if (float.TryParse(text, out float result))
+            if (PartParameterValue.TryParse(text, out float result))
                 SetPosition(result);
-            else
-                SetPosition(0);
         }
 
         public void SetPosition(float distance) {
+            if (float.IsNaN(distance) || float.IsInfinity(distance) || positionAxis == null || positionAxis.refObj == null) return;
             Vector3 axisOffset = Vector3.Project(Vector3.one * distance, positionAxis.normal.Vector);
             Vector3 newPos = positionAxis.initObjPos + axisOffset;
 

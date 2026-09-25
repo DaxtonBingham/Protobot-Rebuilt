@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -36,21 +36,19 @@ namespace Protobot {
                 OnUpdateValue?.Invoke(dropdown.options[index].text);
             });
 
-            // While the user is typing, only update the parameter value if the input
-            // is a valid number. We do NOT clamp here — clamping on every keystroke
-            // causes a bug where values like "12.2" are immediately cut to "12" because
-            // the mid-type value exceeds the integer limit before the decimal is finished.
+            // Keep text untouched while typing, but only send safe, bounded
+            // dimensions to the generator. Format the text on end edit.
             customInput.onValueChanged.AddListener(inputText => {
-                if (inputText.Length > 0 && float.TryParse(inputText, out _))
-                    OnUpdateValue?.Invoke(inputText);
+                if (parameter != null && PartParameterValue.TryParse(inputText, out _))
+                    OnUpdateValue?.Invoke(ClampCustomInput(parameter, inputText));
             });
 
             // Once the user finishes editing (presses Enter or clicks away),
             // clamp the value to the allowed min/max range and refresh the display.
             customInput.onEndEdit.AddListener(inputText => {
-                if (inputText.Length > 0 && float.TryParse(inputText, out _))
+                if (parameter != null && !customInput.wasCanceled && PartParameterValue.TryParse(inputText, out _))
                     OnUpdateValue?.Invoke(ClampCustomInput(parameter, inputText));
-                customInput.SetTextWithoutNotify(parameter.value);
+                if (parameter != null) customInput.SetTextWithoutNotify(parameter.value);
             });
         }
 
@@ -64,7 +62,7 @@ namespace Protobot {
 
             if (!parameter.custom) {
                 SetDropdownOptions(options);
-                dropdown.value = ParamIndex;
+                dropdown.SetValueWithoutNotify(ParamIndex);
             }
             
 
@@ -88,7 +86,7 @@ namespace Protobot {
 
             if (enable) {
                 customUnit.text = parameter.customUnit;
-                customInput.text = parameter.customDefault;
+                customInput.SetTextWithoutNotify(string.IsNullOrEmpty(parameter.value) ? parameter.customDefault : parameter.value);
 
                 if (p.customUnit == "Holes") {
                     customInput.contentType = InputField.ContentType.IntegerNumber;
@@ -105,13 +103,11 @@ namespace Protobot {
         /// Uses TryParse to safely handle any malformed input without throwing exceptions.
         /// </summary>
         private string ClampCustomInput(Parameter p, string value) {
-            if (!float.TryParse(value, out float valueFloat))
+            if (!PartParameterValue.TryParse(value, out float valueFloat))
                 return p.customDefault;
-
-            if (valueFloat > p.customLimits.y) return p.customLimits.y.ToString();
-            if (valueFloat < p.customLimits.x) return p.customLimits.x.ToString();
-
-            return value;
+            valueFloat = Mathf.Clamp(valueFloat, p.customLimits.x, p.customLimits.y);
+            if (p.customUnit == "Holes") valueFloat = Mathf.Round(valueFloat);
+            return PartParameterValue.Format(valueFloat);
         }
 
         /// <summary>
@@ -120,16 +116,17 @@ namespace Protobot {
         /// or moves to the next/previous dropdown option.
         /// </summary>
         public void OnScroll(PointerEventData eventData) {
-            int dir = (eventData.scrollDelta.y < 1) ? -1 : 1;
+            if (parameter == null || eventData.scrollDelta.y == 0) return;
+            int dir = eventData.scrollDelta.y < 0 ? -1 : 1;
 
             if (parameter.custom) {
                 // Use TryParse to safely read the current value before adding scroll delta
-                if (!float.TryParse(parameter.value, out float currentVal)) return;
+                if (!PartParameterValue.TryParse(parameter.value, out float currentVal)) return;
 
                 float newVal = currentVal + dir;
 
                 if (newVal >= parameter.customLimits.x && newVal <= parameter.customLimits.y)
-                    customInput.text = newVal.ToString();
+                    customInput.text = PartParameterValue.Format(newVal);
             }
             else {
                 int newIndex = dropdown.value + dir;

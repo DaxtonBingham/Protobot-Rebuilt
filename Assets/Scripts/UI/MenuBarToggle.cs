@@ -8,6 +8,8 @@ namespace Protobot.UI {
     public class MenuBarToggle : MonoBehaviour, IPointerEnterHandler, IPointerExitHandler {
         private Toggle toggle;
         [SerializeField] private GameObject menu;
+        public GameObject Menu => menu;
+        public RectTransform Flyout { get; set; }
 
         public bool isMouseOver = false;
         private bool LeftMousePressed => Mouse.current.leftButton.wasReleasedThisFrame;
@@ -22,9 +24,18 @@ namespace Protobot.UI {
         }
 
         private void Update() {
-            if (toggle.isOn && !isMouseOver && LeftMousePressed)
+            if (toggle.isOn && !isMouseOver && LeftMousePressed && !PointerInsideMenu())
                 toggle.group.SetAllTogglesOff();
             }
+
+        private bool PointerInsideMenu() {
+            var canvas = menu.GetComponentInParent<Canvas>();
+            var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            var point = Mouse.current.position.ReadValue();
+            return RectTransformUtility.RectangleContainsScreenPoint((RectTransform)menu.transform, point, camera)
+                || (Flyout != null && Flyout.gameObject.activeInHierarchy
+                    && RectTransformUtility.RectangleContainsScreenPoint(Flyout, point, camera));
+        }
 
         public void OnPointerEnter(PointerEventData eventData) {
             if (AnyMenuTogglesOn && !isMouseOver)

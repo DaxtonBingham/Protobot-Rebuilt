@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Collections;
 using System.Collections.Generic;
 using Protobot.Outlining;
@@ -6,6 +7,22 @@ using UnityEngine;
 using UnityEngine.UI;
 
 namespace Protobot {
+    public static class PartParameterValue {
+        public static bool TryParse(string text, out float value) {
+            // IDs are portable across Windows regional settings. Older versions
+            // also wrote decimal commas; accept those without treating dots as thousands.
+            bool parsed = float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+            if (!parsed && text != null && text.IndexOf('.') < 0)
+                parsed = float.TryParse(text.Replace(',', '.'), NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+            return parsed && !float.IsNaN(value) && !float.IsInfinity(value);
+        }
+        public static float Parse(string text) {
+            if (!TryParse(text, out float value)) throw new FormatException("Invalid part dimension: " + text);
+            return value;
+        }
+        public static string Format(float value) => value.ToString("R", CultureInfo.InvariantCulture);
+    }
+
     [Serializable]
     public class Parameter {
         public string name;

@@ -35,6 +35,13 @@ namespace Protobot.ChainSystem {
         private BoxCollider pickProxy;
         public int LinkCount => linkCount;
         public long DisplayTriangleCount { get; private set; }
+        // Export original link geometry, independent of display LOD, camera culling,
+        // or the temporary combined renderer used for selection outlines.
+        public void VisitExportGeometry(System.Action<int, Mesh, int, Material, Matrix4x4, Matrix4x4> visitor) {
+            RefreshPose();
+            foreach (var part in parts) for (int i = 0; i < linkCount; i++)
+                visitor(i, part.mesh, part.submesh, part.material, links[i].world, part.local);
+        }
         public void AppendSnapshot(Protobot.Rendering.RenderSceneSnapshot snapshot) {
             if (!visible || !isActiveAndEnabled) return;
             RefreshPose();

@@ -48,7 +48,7 @@ namespace Protobot {
             
             if (placementData.TryParse(out PartPlacementData partPlacement)) {
                 var gen = partPlacement.partGenerator;
-                length = float.Parse(gen.param2.value);
+                length = PartParameterValue.Parse(gen.param2.value);
                 highStrength = gen.param1.value.Contains("High");
             }
 

@@ -23,6 +23,8 @@ namespace Protobot.InputEvents {
         public Action OnCancelRebind;
         
         public static bool Rebinding { get; private set; }
+        private static RebindAction activeRebind;
+        private IDisposable pendingInput;
         
         private List<InputControl> IgnoredInputs => new() {
             Keyboard.current.leftCtrlKey,
@@ -62,15 +64,20 @@ namespace Protobot.InputEvents {
         }
 
         public void AttemptRebind() {
+            activeRebind?.CancelRebind();
+            activeRebind = this;
             Rebinding = true;
-            
-            InputSystem.onAnyButtonPress.CallOnce(input => {
+            WaitForInput();
+        }
+
+        private void WaitForInput() {
+            pendingInput?.Dispose();
+            pendingInput = InputSystem.onAnyButtonPress.CallOnce(input => {
                 if (input == CancelInput) {
-                    OnCancelRebind?.Invoke();
-                    OnEndRebind?.Invoke();
+                    CancelRebind();
                 }
                 else if (IgnoredInputs.Contains(input)) {
-                    AttemptRebind();
+                    WaitForInput();
                 }
                 else {
                     var keyPaths = GetPressedModifiers();
@@ -88,14 +95,26 @@ namespace Protobot.InputEvents {
                     
                     SaveRebinds();
                     OnCompleteRebind?.Invoke();
+                    activeRebind = null;
+                    pendingInput = null;
                     OnEndRebind?.Invoke();
                 }
             });
         }
 
+        public void CancelRebind() {
+            pendingInput?.Dispose();
+            pendingInput = null;
+            if (activeRebind != this) return;
+            activeRebind = null;
+            OnCancelRebind?.Invoke();
+            OnEndRebind?.Invoke();
+        }
+
         public string ConvertToBindingPath(string path) {
-            var bindingPath = "<" + path[1..];
-            return bindingPath.Replace("/", ">/");
+            if (string.IsNullOrEmpty(path) || path[0] != '/') return path;
+            int separator = path.IndexOf('/', 1);
+            return separator < 0 ? path : "<" + path.Substring(1, separator - 1) + ">" + path.Substring(separator);
         }
 
         public List<string> GetPressedModifiers() {
@@ -132,11 +151,15 @@ namespace Protobot.InputEvents {
         public bool LoadRebinds() {
             if (!IsEmpty) {
                 action.Enable();
-
-                action.LoadBindingOverridesFromJson(SavedRebinds);
+                try { action.LoadBindingOverridesFromJson(SavedRebinds); }
+                catch (Exception ex) {
+                    action.RemoveAllBindingOverrides();
+                    PlayerPrefs.DeleteKey(id);
+                    Debug.LogWarning("Ignoring invalid saved shortcut for " + id + ": " + ex.Message);
+                }
             }
 
-            OnLoadRebinds?.Invoke(IsEmpty);
+            OnLoadRebinds?.Invoke(!IsEmpty);
 
             return IsEmpty;
         }

@@ -1,0 +1,10 @@
+# Windows x64 / Python 3.12. Runtime users do not install these packages.
+cadquery-ocp==7.9.3.1.1
+pyinstaller==6.22.3
+pefile==2024.8.26
+# Only the offline source-registration tool needs the following:
+cadquery==2.8.0
+numpy==2.5.2
+scipy==1.18.1
+trimesh==5.0.0
+rtree==1.4.1

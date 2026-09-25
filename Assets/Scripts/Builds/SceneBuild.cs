@@ -29,6 +29,33 @@ namespace Protobot.Builds {
         /// Generates all the objects into the scene using given BuildData
         /// </summary>
         public static void GenerateBuild(BuildData buildData) {
+            if (!TryValidateBuild(buildData, out string error)) throw new ArgumentException(error, nameof(buildData));
+            var previous = ToBuildData();
+            try { GenerateContents(buildData); }
+            catch {
+                // A generator failure must not leave the user's previous project destroyed.
+                GenerateContents(previous);
+                OnGenerateBuild?.Invoke(previous);
+                throw;
+            }
+            OnGenerateBuild?.Invoke(buildData);
+        }
+
+        public static bool TryValidateBuild(BuildData buildData, out string error) {
+            if (!BuildDataValidation.TryValidate(buildData, out error)) return false;
+            foreach (var part in buildData.parts ?? Array.Empty<ObjectData>()) {
+                if (part.partId == "Error" || !string.IsNullOrWhiteSpace(part.customDefinitionId)) continue;
+                if (!PartsManager.TryValidateId(part.partId, out error)) return false;
+            }
+            return true;
+        }
+
+        private static void GenerateContents(BuildData buildData) {
+            var chainEditor = UnityEngine.Object.FindObjectOfType<InsertChainTool>();
+            if (chainEditor != null) {
+                chainEditor.EndGesture(false);
+                chainEditor.CancelSelection();
+            }
             Debug.Log("Generating a build with " +
                       (buildData.parts == null ? 0 : buildData.parts.Length) + " parts");
 
@@ -41,7 +68,7 @@ namespace Protobot.Builds {
             PartsManager.DestroyLoadedObjects();
 
             //Camera Data
-            CameraData camData = buildData.camera;
+            CameraData camData = buildData.camera ?? DefaultBuild.camera;
 
             Vector3 savedCamPos = new Vector3((float)camData.xPos, (float)camData.yPos, (float)camData.zPos);
             Vector3 savedCamAngle = new Vector3((float)camData.xRot, (float)camData.yRot, (float)camData.zRot);
@@ -107,8 +134,6 @@ namespace Protobot.Builds {
 
             }
             
-            OnGenerateBuild?.Invoke(buildData);
-
             if (AppPlatform.OnMac)
             {
                 try
@@ -137,7 +162,7 @@ namespace Protobot.Builds {
             }
 
             if (generatedObject == null) {
-                return null;
+                throw new InvalidOperationException("Unable to generate part " + objectData.partId);
             }
 
             //there are only 2 versions of Protobot legacy publicly released that I could find most before Beta 1.3.1 are just guesses
@@ -151,6 +176,7 @@ namespace Protobot.Builds {
                     renderer.material.color = color;
             }
             var savedView = generatedObject.GetComponent<SavedObject>();
+            savedView.state = objectData.states ?? string.Empty;
             RobotDocument.RestoreIdentity(savedView, objectData.instanceId);
             RobotDocument.Synchronize(savedView);
             return generatedObject;

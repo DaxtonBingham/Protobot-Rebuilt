@@ -79,8 +79,10 @@ namespace Protobot.Builds {
         }
 
         private string[] GetNormalizedSockets() {
-            if (endpointSockets != null && endpointSockets.Length > 0) {
-                return endpointSockets.Select(socket => string.IsNullOrWhiteSpace(socket) ? "main" : socket).ToArray();
+            if (endpointIndices != null && endpointIndices.Length > 0) {
+                return Enumerable.Range(0, endpointIndices.Length).Select(i =>
+                    endpointSockets != null && i < endpointSockets.Length && !string.IsNullOrWhiteSpace(endpointSockets[i])
+                        ? endpointSockets[i] : "main").ToArray();
             }
 
             return new[] {

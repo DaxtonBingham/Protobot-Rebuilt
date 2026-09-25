@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace Protobot.CustomParts {
     public static class CustomPartMeshBuilder {
-        private const int MeshBuildVersion = 5;
+        private const int MeshBuildVersion = 6;
         private static readonly Dictionary<string, Mesh> RenderMeshCache =
             new Dictionary<string, Mesh>(StringComparer.Ordinal);
 
@@ -56,6 +56,7 @@ namespace Protobot.CustomParts {
         // must not triangulate it again or duplicate identical mesh resources.
         public static string GeometryKey(CustomPartDefinition definition) {
             if (definition == null) return string.Empty;
+            if (!HasValidInputs(definition)) return MeshBuildVersion + ":invalid";
             var identity = new GeometryIdentity { thickness = definition.thicknessInches, sketch = definition.sketch, holes = definition.holes };
             string json = JsonUtility.ToJson(identity);
             using (var md5 = System.Security.Cryptography.MD5.Create())
@@ -68,6 +69,7 @@ namespace Protobot.CustomParts {
         // and computes its key on the main thread before submitting background work.
         public static GeometryData Compile(CustomPartDefinition definition, string key, CancellationToken cancellation = default) {
             cancellation.ThrowIfCancellationRequested();
+            if (!HasValidInputs(definition)) return new GeometryData { Valid = false, Key = key };
             if (geometryCache.TryGetValue(key, out var cached)) return cached;
             var previous = currentCancellation;
             currentCancellation = cancellation;
@@ -117,7 +119,7 @@ namespace Protobot.CustomParts {
 
         private static bool TryCompileGeometry(CustomPartDefinition definition, out GeometryData data) {
             data = null;
-            if (definition == null || definition.sketch == null || definition.sketch.outerLoop == null) return false;
+            if (!HasValidInputs(definition)) return false;
             currentCancellation.ThrowIfCancellationRequested();
             if (!TryCompileLoops(definition, out List<CompiledLoop> loops)) {
                 return false;
@@ -143,7 +145,7 @@ namespace Protobot.CustomParts {
                 return false;
             }
 
-            float thickness = Mathf.Max(0.001f, definition.thicknessInches);
+            float thickness = definition.thicknessInches;
             float halfThickness = thickness * 0.5f;
 
             int capPointCount = allCapPoints.Count;
@@ -263,6 +265,43 @@ namespace Protobot.CustomParts {
             }
 
             data = new GeometryData { Valid = true, Vertices = vertices.ToArray(), Normals = normals.ToArray(), UV = uvs.ToArray(), Triangles = triangles.ToArray(), Holes = BuildHoleRuntimeData(definition) };
+            return true;
+        }
+
+        private static bool Finite(float value) => !float.IsNaN(value) && !float.IsInfinity(value);
+        private static bool Finite(Vector2 value) => Finite(value.x) && Finite(value.y);
+
+        // Validate before sampling: NaN distances can otherwise silently drop an
+        // anchor, and skipping a malformed hole changes the manufactured shape.
+        internal static bool HasValidInputs(CustomPartDefinition definition) {
+            if (definition?.sketch?.outerLoop == null || !Finite(definition.thicknessInches)
+                || definition.thicknessInches <= 0) return false;
+            if (!ValidLoop(definition.sketch.outerLoop)) return false;
+            if (definition.sketch.cutoutLoops != null)
+                foreach (var loop in definition.sketch.cutoutLoops) if (!ValidLoop(loop)) return false;
+            if (definition.holes != null) foreach (var hole in definition.holes) {
+                if (hole == null || !Finite(hole.position) || !Finite(hole.size)
+                    || hole.size.x <= 0 || hole.size.y <= 0 || !Finite(hole.rotationDegrees)
+                    || !Finite(hole.depthInches) || hole.depthInches <= 0) return false;
+            }
+            return true;
+        }
+
+        private static bool ValidLoop(LoopData loop) {
+            if (loop?.anchors == null || !loop.closed || loop.anchors.Length < 3) return false;
+            foreach (var anchor in loop.anchors)
+                if (anchor == null || !Finite(anchor.position) || !Finite(anchor.inHandle) || !Finite(anchor.outHandle)) return false;
+            return true;
+        }
+
+        // Use the very same contours in the mesh and 2D files, including rotated
+        // rectangular/elliptical holes and the curve sampling tolerance.
+        public static bool TryGetContours(CustomPartDefinition definition, out List<List<Vector2>> contours) {
+            contours = null;
+            if (!HasValidInputs(definition) || !TryCompileLoops(definition, out var loops)) return false;
+            var result = loops.Select(loop => loop.points).ToList();
+            if (!ValidateContours(result[0], result.Skip(1).ToList())) return false;
+            contours = result;
             return true;
         }
 
@@ -495,17 +534,22 @@ namespace Protobot.CustomParts {
         private static bool ValidateContours(List<Vector2> outer, List<List<Vector2>> holes) {
             var contours = new List<List<Vector2>> { outer };
             contours.AddRange(holes);
+            var bounds = new List<Rect>(contours.Count);
             foreach (var contour in contours) {
-                if (Mathf.Abs(SignedArea(contour)) < 0.000001f) return false;
+                float area = SignedArea(contour);
+                if (!Finite(area) || Mathf.Abs(area) < 0.000001f) return false;
+                Vector2 min = contour[0], max = contour[0];
                 for (int i = 0; i < contour.Count; i++) {
                     currentCancellation.ThrowIfCancellationRequested();
                     Vector2 a = contour[i], b = contour[(i + 1) % contour.Count];
                     if (float.IsNaN(a.x) || float.IsNaN(a.y) || float.IsInfinity(a.x) || float.IsInfinity(a.y)) return false;
+                    min = Vector2.Min(min, a); max = Vector2.Max(max, a);
                     for (int j = i + 1; j < contour.Count; j++) {
                         if (j == i + 1 || (i == 0 && j == contour.Count - 1)) continue;
                         if (EdgesIntersect(a, b, contour[j], contour[(j + 1) % contour.Count])) return false;
                     }
                 }
+                bounds.Add(Rect.MinMaxRect(min.x, min.y, max.x, max.y));
             }
             for (int i = 0; i < holes.Count; i++) {
                 if (!PointInsideContour(holes[i][0], outer)) return false;
@@ -514,6 +558,11 @@ namespace Protobot.CustomParts {
             }
             for (int i = 0; i < contours.Count; i++) for (int j = i + 1; j < contours.Count; j++) {
                 currentCancellation.ThrowIfCancellationRequested();
+                // Most holes in a perforated plate are far apart. Only compare
+                // individual edges when their contour bounds can touch.
+                const float epsilon = 0.000001f;
+                if (bounds[i].xMax < bounds[j].xMin - epsilon || bounds[j].xMax < bounds[i].xMin - epsilon
+                    || bounds[i].yMax < bounds[j].yMin - epsilon || bounds[j].yMax < bounds[i].yMin - epsilon) continue;
                 var a = contours[i]; var b = contours[j];
                 for (int u = 0; u < a.Count; u++) for (int v = 0; v < b.Count; v++)
                     if (EdgesIntersect(a[u], a[(u + 1) % a.Count], b[v], b[(v + 1) % b.Count])) return false;

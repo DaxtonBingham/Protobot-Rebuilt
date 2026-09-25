@@ -26,6 +26,10 @@ namespace Protobot.CustomParts {
         public void RequestGeometry(CustomPartDefinition definition, string key, Action<CustomPartMeshBuilder.GeometryData> apply) {
             if (disposed) return;
             Cancel();
+            if (!CustomPartMeshBuilder.HasValidInputs(definition)) {
+                apply?.Invoke(new CustomPartMeshBuilder.GeometryData { Valid = false, Key = key });
+                return;
+            }
             pending = new Request { snapshot = definition.CloneDeep(), key = key, version = version, apply = apply };
             Tick();
         }
