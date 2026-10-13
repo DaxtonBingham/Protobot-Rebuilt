@@ -35,10 +35,10 @@ namespace Protobot.Builds {
             if (data == null) {
                 return false;
             }
-             
+
             if (data.GetPos() != GetPos()) return false;
             if (data.GetRot() != GetRot()) return false;
-            if (data.partId != partId) return false;
+            if (PartCatalogCompatibility.CanonicalId(data.partId) != PartCatalogCompatibility.CanonicalId(partId)) return false;
             if (data.customDefinitionId != customDefinitionId) return false;
             if (data.customInstanceId != customInstanceId) return false;
             if ((data.states ?? "") != (states ?? "")) return false;
@@ -49,6 +49,6 @@ namespace Protobot.Builds {
         }
 
         // Pose and color comparisons use Unity tolerances; don't hash their raw floats.
-        public override int GetHashCode() => (partId ?? "").GetHashCode() ^ (customDefinitionId ?? "").GetHashCode() ^ (customInstanceId ?? "").GetHashCode() ^ (states ?? "").GetHashCode();
+        public override int GetHashCode() => (PartCatalogCompatibility.CanonicalId(partId) ?? "").GetHashCode() ^ (customDefinitionId ?? "").GetHashCode() ^ (customInstanceId ?? "").GetHashCode() ^ (states ?? "").GetHashCode();
     }
 }

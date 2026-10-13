@@ -117,6 +117,7 @@ namespace Protobot {
 
         public static PartType GetPartType(string id) {
             if (string.IsNullOrWhiteSpace(id) || partTypes == null) return null;
+            id = PartCatalogCompatibility.CanonicalId(id);
             string typeId = id.Split('-')[0];
             PartType first = null;
             foreach (var candidate in partTypes) {
@@ -150,6 +151,7 @@ namespace Protobot {
         private static bool TryResolvePart(string id, out PartType type, out string first, out string second) {
             type = null; first = second = "";
             if (string.IsNullOrWhiteSpace(id) || partTypes == null) return false;
+            id = PartCatalogCompatibility.CanonicalId(id);
             var fields = id.Split('-');
             if (fields.Length > 3 || fields[0] == ChainToolPartId) return false;
             first = fields.Length > 1 ? fields[1] : "";

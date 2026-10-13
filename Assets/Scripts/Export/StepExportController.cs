@@ -40,6 +40,9 @@ namespace Protobot.Export {
         string activeFormat = "STEP";
         public bool IsExporting { get; private set; }
         public string LastStatus { get; private set; }
+        public static bool SupportsStepExport => IsStepPlatform(Application.platform, IntPtr.Size);
+        public static bool IsStepPlatform(RuntimePlatform platform, int pointerSize) => pointerSize == 8
+            && (platform == RuntimePlatform.WindowsEditor || platform == RuntimePlatform.WindowsPlayer);
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         static void Install() {
@@ -91,13 +94,18 @@ namespace Protobot.Export {
             layout.padding = new RectOffset(2, 2, 2, 2);
             layout.childControlWidth = layout.childControlHeight = true;
             layout.childForceExpandWidth = true; layout.childForceExpandHeight = false;
-            var step = MenuButton(popup, source, "STEP...", () => ChooseExport(false));
-            commands.Add(step);
-            commands.Add(MenuButton(popup, source, "STL...", () => ChooseExport(true)));
-            exportMenu.Initialize(popup, step);
+            Button first = null;
+            if (SupportsStepExport) {
+                first = MenuButton(popup, source, "STEP...", () => ChooseExport(false));
+                commands.Add(first);
+            } else popup.sizeDelta = new Vector2(popup.sizeDelta.x, 24);
+            var stl = MenuButton(popup, source, "STL...", () => ChooseExport(true));
+            commands.Add(stl);
+            exportMenu.Initialize(popup, first != null ? first : stl);
         }
 
         void ChooseExport(bool stl) {
+            if (!stl && !SupportsStepExport) return;
             exportMenu.Close();
             foreach (var menuToggle in FindObjectsOfType<MenuBarToggle>()) menuToggle.GetComponent<Toggle>().isOn = false;
             fileMenu.gameObject.SetActive(false);
@@ -175,6 +183,10 @@ namespace Protobot.Export {
         }
 
         void BeginExportDialog(bool selectionOnly, bool stl) {
+            if (!stl && !SupportsStepExport) {
+                ShowStatus("STEP export is available on 64-bit Windows. Use STL on this platform.", 0, false);
+                return;
+            }
             if (IsExporting) return;
             var manager = GetComponent<BuildsManager>();
             string title = Path.GetFileNameWithoutExtension(manager != null ? manager.buildPath : "");

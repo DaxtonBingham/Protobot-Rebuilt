@@ -192,8 +192,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 
   state: 
-  customDefinitionId: 
-  customInstanceId: 
+  customDefinitionId:
+  customInstanceId:
 --- !u!114 &1804615781742623758
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -399,8 +399,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   id: 
   state: 
-  customDefinitionId: 
-  customInstanceId: 
+  customDefinitionId:
+  customInstanceId:
 --- !u!114 &2052812590298840205
 MonoBehaviour:
   m_ObjectHideFlags: 0
