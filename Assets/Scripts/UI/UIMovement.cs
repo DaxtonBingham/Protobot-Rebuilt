@@ -39,6 +39,8 @@ namespace Protobot.UI {
         }
 
         void Update() {
+            var previousPosition = rTransform.anchoredPosition;
+            var previousRotation = rTransform.localRotation;
             if (positioning) {
                 rTransform.anchoredPosition = Vector3.Lerp(rTransform.anchoredPosition, targetPos, Time.deltaTime * 10);
                 if (Vector3.Distance(rTransform.anchoredPosition, targetPos) < 2) {
@@ -60,6 +62,8 @@ namespace Protobot.UI {
 
             atActivePos = (targetPos == activePos);
             atInactivePos = (targetPos == inactivePos);
+            if (previousPosition != rTransform.anchoredPosition || previousRotation != rTransform.localRotation)
+                IdleRendering.Changed();
         }
 
         //POSITION FUNCTIONS

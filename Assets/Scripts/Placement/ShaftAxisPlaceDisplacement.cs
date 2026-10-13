@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
@@ -9,7 +9,6 @@ namespace Protobot {
     public class ShaftAxisPlaceDisplacement : PlaceDisplacement {
         [SerializeField] private MouseCast mouseCast;
         [SerializeField] private InputEvent flipInput;
-        private GameObject HoverObj => mouseCast.gameObject;
         public override bool ModifyRotation => true;
         
 
@@ -41,20 +40,22 @@ namespace Protobot {
         }
 
         public override bool TryGetDisplacement(PlacementData placementData, out Displacement displacement) {
+            var hit = mouseCast.hit;
+            var HoverObj = hit.collider != null ? hit.collider.gameObject : null;
             if (HoverObj != null && (placementData.objectId.Contains("Hole") || GetOffset(placementData) > 0)) {
                 if (HoverObj.tag.Contains("Shaft")) {
                     ConnectingPart connectingPart = HoverObj.GetComponent<ConnectingPart>();
                     Transform shaftTransform = HoverObj.transform;
 
-                    Vector3 mouseDirPos = Vector3.Project(mouseCast.hit.point, shaftTransform.forward); //the position on the shaft of mouse only in forward direction
+                    Vector3 mouseDirPos = Vector3.Project(hit.point, shaftTransform.forward); //the position on the shaft of mouse only in forward direction
                     Vector3 shaftDirPos = Vector3.Project(shaftTransform.position, shaftTransform.forward); //the position of the shaft only in its forward direction
                     Vector3 shaftMousePos = shaftTransform.position - shaftDirPos + mouseDirPos;
 
                     var rayForward = new Ray(shaftMousePos, shaftTransform.forward);
                     var rayBackward = new Ray(shaftMousePos, -shaftTransform.forward);
 
-                    var forwardCast = Physics.Raycast(rayForward, out RaycastHit forwardHit, 12, HoleCollider.HOLE_COLLISIONS_MASK);
-                    var backwardCast = Physics.Raycast(rayBackward, out RaycastHit backwardHit, 12, HoleCollider.HOLE_COLLISIONS_MASK);
+                    var forwardCast = HoleWorld.Raycast(rayForward, out HoleHit forwardHit, 12);
+                    var backwardCast = HoleWorld.Raycast(rayBackward, out HoleHit backwardHit, 12);
 
                     float forwardDistance = 12;
                     float backwardDistance = 12;

@@ -12,7 +12,7 @@ namespace Protobot {
         }
 
         public void Execute() {
-            RaycastHit mouseHit = mousecast.hit;
+            var mouseHit = mousecast.hit;
 
             if (mouseHit.collider != null)
                 cam.MoveFocusPosition(mouseHit.point);

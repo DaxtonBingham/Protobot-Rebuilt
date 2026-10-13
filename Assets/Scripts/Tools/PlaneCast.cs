@@ -3,7 +3,7 @@ using UnityEngine;
 namespace Protobot {
     public class PlaneCast : MonoBehaviour {
         [SerializeField] private new Camera camera = null;
-        public Ray ray => camera.ScreenPointToRay(MouseInput.Position);
+        public Ray ray => ProjectionSwitcher.ScreenPointToRay(camera, MouseInput.Position);
         public RaycastHit hit {
             get {
                 if (gameObject.GetComponent<Collider>().Raycast(ray, out RaycastHit lastHit, Mathf.Infinity))

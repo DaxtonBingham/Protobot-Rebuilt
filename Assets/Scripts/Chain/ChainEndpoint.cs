@@ -61,9 +61,9 @@ namespace Protobot.ChainSystem {
             Vector3 worldCenter = transform.position;
             bool usedPrimaryHoleCenter = false;
 
-            if (TryGetComponent(out PartData partData) && partData.primaryHole != null) {
-                worldAxis = partData.primaryHole.transform.forward;
-                worldCenter = partData.primaryHole.transform.position;
+            if (TryGetComponent(out PartData partData) && partData.PrimaryHole != null) {
+                worldAxis = partData.PrimaryHole.forward;
+                worldCenter = partData.PrimaryHole.position;
                 usedPrimaryHoleCenter = true;
             }
 

@@ -40,6 +40,9 @@ namespace Protobot {
         [SerializeField] private UnityEvent OnStopRotate;
 
         private Displacement currentDisplacement;
+        private Matrix4x4 previewPose;
+        private Mesh previewMesh;
+        private bool previewVisible;
 
         [SerializeField] private Camera refCamera = null; //used for dot product angle comparison
 
@@ -137,12 +140,24 @@ namespace Protobot {
                 }
             }
 
-            meshRenderer.enabled = placing;
+            if (meshRenderer.enabled != placing) meshRenderer.enabled = placing;
+        }
+
+        private void LateUpdate() {
+            if (!placing && !previewVisible) return;
+            var pose = transform.localToWorldMatrix;
+            var mesh = meshFilter.sharedMesh;
+            if (previewVisible != placing || previewPose != pose || previewMesh != mesh) {
+                previewVisible = placing; previewPose = pose; previewMesh = mesh;
+                ViewportPresentation.Changed();
+                WorldShadowCache.Changed();
+            }
         }
 
         public void StartPlacing(PlacementData newPlacementData) {
             currentPlacementData = newPlacementData;
             placing = true;
+            ViewportPresentation.Changed();
             rotating = false;
             meshFilter.mesh = newPlacementData.GetDisplayMesh();
 
@@ -165,6 +180,7 @@ namespace Protobot {
                 
                 if (!value && x.layer == PLACEMENT_LAYER)
                     x.layer = 0;
+                RobotRenderer.Invalidate(x);
             });
         }
 

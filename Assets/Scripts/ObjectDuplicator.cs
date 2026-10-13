@@ -54,7 +54,7 @@ namespace Protobot {
                     clone.DisableOutline();
                     if(clone.name != "MultiPivot(Clone)")
                     {
-                        clone.GetComponent<Renderer>().material = new Material(obj.GetComponent<Renderer>().material);
+                        clone.GetComponent<Renderer>().material = new Material(obj.GetComponent<Renderer>().sharedMaterial);
                     }
                     prevDuplicatedObjs.Add(clone);
                 }

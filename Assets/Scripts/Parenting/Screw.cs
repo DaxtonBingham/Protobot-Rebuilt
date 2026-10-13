@@ -6,7 +6,7 @@ using System;
 
 namespace Protobot {
     public class Screw : ConnectingPart {
-        public float ScrewLength => GetComponent<MeshFilter>().mesh.bounds.size.z - 0.087f;
+        public float ScrewLength => GetComponent<MeshFilter>().sharedMesh.bounds.size.z - 0.087f;
 
         public override bool CanFormConnection => holeDetector.TargetHoleFound;
 
@@ -50,24 +50,22 @@ namespace Protobot {
             for (int i = 0; i < hits.Length; i++) {
                 var hit = hits[i];
 
-                if (hit.collider.CompareTag("HoleCollider"))
-                    attachedParts.Add(hit.transform.parent.gameObject);
+                attachedParts.Add(hit.hole.holeData.part);
             }
 
             return attachedParts;
         }
 
 
-        private RaycastHit[] GetRaycastHits(Vector3 position, Vector3 direction) {
+        private HoleHit[] GetRaycastHits(Vector3 position, Vector3 direction) {
             Ray lowRay = new Ray(position + (direction * 0.1f), -direction);
-            return Physics.RaycastAll(lowRay, ScrewLength);
+            return HoleWorld.RaycastAll(lowRay, ScrewLength).ToArray();
         }
 
         private List<GameObject> GetAttachedPartsOrdered() {
             return GetRaycastHits(transform.position, transform.forward)
                 .OrderBy(hit => Vector3.Distance(hit.point, transform.position))
-                .Where(hit => hit.collider.CompareTag("HoleCollider"))
-                .Select(hit => hit.transform.parent.gameObject)
+                .Select(hit => hit.hole.holeData.part)
                 .ToList();
         }
 
@@ -84,10 +82,10 @@ namespace Protobot {
             GameObject attPart = GetAttachedPartsOrdered()[attachedPartsIndex];
             Ray lowRay = new Ray(transform.position - (transform.forward * ScrewLength), transform.forward);
             Debug.DrawLine(lowRay.origin, transform.position);
-            RaycastHit[] hits = Physics.RaycastAll(lowRay, ScrewLength);
+            var hits = HoleWorld.RaycastAll(lowRay, ScrewLength);
 
-            foreach (RaycastHit hit in hits) {
-                if (hit.collider.CompareTag("HoleCollider") && hit.transform.parent.gameObject == attPart)
+            foreach (var hit in hits) {
+                if (hit.hole.holeData.part == attPart)
                     return hit.point;
             }
             return transform.position;

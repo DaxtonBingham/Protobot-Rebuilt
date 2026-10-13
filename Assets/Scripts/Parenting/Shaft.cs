@@ -13,12 +13,12 @@ namespace Protobot {
             return HoleDetector.Create(transform, ShaftLength, HoleCollider.HoleType.Clamp);
         }
 
-        private List<HoleCollider> GetOrderedHoles() {
+        private List<HoleRecord> GetOrderedHoles() {
             var furthestPos = transform.position + transform.forward * ShaftLength;
 
             return holeDetector
                 .holes
-                .OrderBy(x => Vector3.Distance(furthestPos, x.transform.position))
+                .OrderBy(x => Vector3.Distance(furthestPos, x.Position))
                 .ToList();
         }
 
@@ -40,7 +40,7 @@ namespace Protobot {
                     }
                     
                     if (betweenTwoTargets || isTarget)
-                        attachedObjs.Add(hole.transform.parent.gameObject);
+                        attachedObjs.Add(hole.holeData.part);
                 }
 
                 return attachedObjs;

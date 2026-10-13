@@ -16,6 +16,7 @@ namespace Protobot.Builds {
         [OptionalField] public string meshId;
         [OptionalField] public string customDefinitionId;
         [OptionalField] public string customInstanceId;
+        [OptionalField] public string instanceId;
         public Vector3 GetPos() => new Vector3((float)xPos, (float)yPos, (float)zPos);
         public Quaternion GetRot() => Quaternion.Euler((float)xRot, (float)yRot, (float)zRot);
         public Color GetColor() => new Color((float)rColor, (float)gColor, (float)bColor, 1);

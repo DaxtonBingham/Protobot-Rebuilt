@@ -406,11 +406,13 @@ namespace Protobot.ChainSystem {
             partObject = null;
             anchorPoint = Vector3.zero;
 
-            if (!ToolActive || pendingEndpoints.Count < 1 || mouseCast == null || !mouseCast.overObj || IsPointerOverUi()) {
+            if (!ToolActive || pendingEndpoints.Count < 1 || mouseCast == null || IsPointerOverUi()) {
                 return false;
             }
 
-            partObject = ResolveGuideablePart(mouseCast.gameObject);
+            var hoveredObject = mouseCast.gameObject;
+            if (hoveredObject == null) return false;
+            partObject = ResolveGuideablePart(hoveredObject);
             if (partObject == null) {
                 return false;
             }
@@ -497,12 +499,15 @@ namespace Protobot.ChainSystem {
             }
 
             bool interactionEnabled = ToolActive || allowHotkeyBypass;
-            if (!interactionEnabled || mouseCast == null || IsPointerOverUi() || !mouseCast.overObj) {
+            if (!interactionEnabled || mouseCast == null || IsPointerOverUi()) {
                 return false;
             }
 
+            var hit = mouseCast.hit;
+            if (hit.collider == null) return false;
+            var hoveredObject = hit.collider.gameObject;
             if (pendingEndpoints.Count == 0) {
-                ChainConnection hoveredConnection = mouseCast.gameObject.GetComponentInParent<ChainConnection>();
+                ChainConnection hoveredConnection = hoveredObject.GetComponentInParent<ChainConnection>();
                 if (TryBeginEditingExistingChain(hoveredConnection)) {
                     lastSelectionFrame = Time.frameCount;
                     RefreshOrderMarkers();
@@ -510,11 +515,11 @@ namespace Protobot.ChainSystem {
                 }
             }
 
-            ChainEndpoint hoveredEndpoint = ChainSprocketUtility.GetOrCreateEndpoint(mouseCast.gameObject, mouseCast.hit.point);
+            ChainEndpoint hoveredEndpoint = ChainSprocketUtility.GetOrCreateEndpoint(hoveredObject, hit.point);
             bool remove = Keyboard.current != null && (Keyboard.current.leftShiftKey.isPressed || Keyboard.current.rightShiftKey.isPressed);
             if (hoveredEndpoint == null) {
                 if (remove) return false;
-                if (TryAddGuideForPart(mouseCast.gameObject)) {
+                if (TryAddGuideForPart(hoveredObject)) {
                     lastSelectionFrame = Time.frameCount;
                     return true;
                 }
@@ -1044,7 +1049,7 @@ namespace Protobot.ChainSystem {
                 return;
             }
 
-            Camera activeCamera = Camera.main;
+            Camera activeCamera = PivotCamera.Main != null ? PivotCamera.Main.camera : Camera.main;
             Vector3 centroid = Vector3.zero;
             for (int i = 0; i < pendingEndpoints.Count; i++) {
                 centroid += pendingEndpoints[i].WorldCenter;
@@ -1080,10 +1085,8 @@ namespace Protobot.ChainSystem {
                 marker.transform.position = markerPosition;
 
                 if (activeCamera != null) {
-                    marker.transform.rotation = Quaternion.LookRotation(markerPosition - activeCamera.transform.position, activeCamera.transform.up);
-                    float distance = Vector3.Distance(activeCamera.transform.position, markerPosition);
-                    float scale = Mathf.Clamp(distance * 0.0045f, 0.03f, 0.18f);
-                    marker.transform.localScale = Vector3.one * scale;
+                    // Labels face the view plane in perspective and orthographic views.
+                    marker.transform.rotation = activeCamera.transform.rotation;
                 }
             }
         }
@@ -1106,6 +1109,12 @@ namespace Protobot.ChainSystem {
             marker.outlineColor = new Color(0.1f, 0.1f, 0.1f, 1f);
             marker.outlineWidth = 0.15f;
             marker.raycastTarget = false;
+            // Keep the original default-lens size without world-space clamps that
+            // change the label's screen size when FOV moves the camera or we zoom.
+            var scaler = markerObject.AddComponent<DistanceScaler>();
+            var camera = PivotCamera.Main != null ? PivotCamera.Main.camera : Camera.main;
+            scaler.target = camera != null ? camera.transform : null;
+            scaler.scaleFactor = 0.0045f;
             return marker;
         }
 
@@ -1150,8 +1159,8 @@ namespace Protobot.ChainSystem {
                 return Vector3.zero;
             }
 
-            if (partObject.TryGetComponent(out PartData partData) && partData.primaryHole != null) {
-                return partData.primaryHole.transform.position;
+            if (partObject.TryGetComponent(out PartData partData) && partData.PrimaryHole != null) {
+                return partData.PrimaryHole.position;
             }
 
             Renderer[] renderers = partObject.GetComponentsInChildren<Renderer>(true);

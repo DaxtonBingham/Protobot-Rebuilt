@@ -119,6 +119,10 @@ namespace Protobot.CustomParts {
         private string librarySearch = string.Empty;
         private Action pendingStudioAction;
         private string validatedHash;
+        private string requestedGeometryHash;
+        private bool geometryPending;
+        private CustomPartMeshBuilder.GeometryData validatedGeometry;
+        private readonly CustomGeometryWorker geometryWorker = new CustomGeometryWorker();
         private bool geometryValid;
         private float nextValidationTime;
         private bool fitOnNextCanvas;
@@ -351,6 +355,7 @@ namespace Protobot.CustomParts {
         }
 
         private void OnDestroy() {
+            geometryWorker.Dispose();
             if (studioOpen) {
                 studioOpen = false;
                 IsStudioOpen = false;
@@ -368,6 +373,7 @@ namespace Protobot.CustomParts {
         }
 
         private void Update() {
+            geometryWorker.Tick();
             EnsureReferences();
 
             if (!studioOpen) {
@@ -995,7 +1001,7 @@ namespace Protobot.CustomParts {
             GUILayout.Label($"{workingDefinition.sketch.outerLoop.anchors.Length} outline points", mutedLabelStyle);
             GUILayout.Label($"{workingDefinition.sketch.cutoutLoops.Length} cutouts   /   {workingDefinition.holes.Length} holes", mutedLabelStyle);
             GUILayout.Space(12);
-            GUILayout.Label(geometryValid ? "Ready to insert. Your part will follow the cursor until you place it." : "Check for crossing edges, overlapping holes, or cutouts outside the outline.", wrappedMutedLabelStyle);
+            GUILayout.Label(geometryPending ? "Checking geometry..." : geometryValid ? "Ready to insert. Your part will follow the cursor until you place it." : "Check for crossing edges, overlapping holes, or cutouts outside the outline.", wrappedMutedLabelStyle);
             GUILayout.Space(20);
             if (IsStandaloneDefinitionMode && GUILayout.Button("Update all placed copies", buttonStyle, GUILayout.Height(32))) {
                 if (RefreshGeometryValidation(true)) { SaveWorkingDefinition(); CustomPartRuntimeUpdater.ApplyDefinitionToAllInstances(workingDefinition.definitionId); }
@@ -1030,21 +1036,43 @@ namespace Protobot.CustomParts {
             DrawFilledRect(new Rect(0, rect.y, rect.width, 1), UiBorder);
             var old = GUI.contentColor;
             GUI.contentColor = geometryValid ? OuterLoopColor : UiWarning;
-            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.", labelStyle);
+            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), geometryPending ? "Checking geometry...  /  All dimensions in inches" : geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.", labelStyle);
             GUI.contentColor = old;
             GUI.Label(new Rect(Screen.width - 180, rect.y + 10, 166, 24), hasUnsavedChanges ? "Unsaved design" : "Saved to library", mutedLabelStyle);
+        }
+
+        private void InvalidateGeometry() {
+            geometryWorker.Cancel();
+            validatedHash = requestedGeometryHash = null;
+            validatedGeometry = null;
+            geometryPending = true;
+            geometryValid = false;
+            nextValidationTime = 0;
+        }
+
+        private void AcceptGeometry(CustomPartMeshBuilder.GeometryData data, string hash) {
+            if (!studioOpen || requestedGeometryHash != hash) return;
+            validatedHash = hash;
+            validatedGeometry = data;
+            geometryPending = false;
+            geometryValid = data != null && data.Valid;
         }
 
         private bool RefreshGeometryValidation(bool force) {
             if (workingDefinition == null) return false;
             if (!force && Time.unscaledTime < nextValidationTime) return geometryValid;
-            nextValidationTime = Time.unscaledTime + 0.2f;
-            string hash = workingDefinition.GetDeterministicHash();
+            nextValidationTime = Time.unscaledTime + .2f;
+            string hash = CustomPartMeshBuilder.GeometryKey(workingDefinition);
             if (hash == validatedHash) return geometryValid;
-            validatedHash = hash;
-            geometryValid = CustomPartMeshBuilder.BuildMeshes(workingDefinition, out Mesh render, out Mesh collider, out _, false);
-            if (render != null) Destroy(render);
-            if (collider != null && collider != render) Destroy(collider);
+            if (force) {
+                geometryWorker.Cancel(); requestedGeometryHash = hash;
+                AcceptGeometry(CustomPartMeshBuilder.Compile(workingDefinition, hash), hash);
+                return geometryValid;
+            }
+            if (requestedGeometryHash == hash) return false;
+            requestedGeometryHash = hash; geometryPending = true; geometryValid = false;
+            if (CustomPartMeshBuilder.TryGetGeometry(hash, out var cached)) AcceptGeometry(cached, hash);
+            else geometryWorker.RequestGeometry(workingDefinition, hash, data => AcceptGeometry(data, hash));
             return geometryValid;
         }
 
@@ -1383,7 +1411,7 @@ namespace Protobot.CustomParts {
 
             ResetHistoryWithCurrentDefinition();
             fitOnNextCanvas = true;
-            validatedHash = null;
+            InvalidateGeometry();
         }
 
         private void RequestCloseStudio() {
@@ -1399,6 +1427,7 @@ namespace Protobot.CustomParts {
         }
 
         private void ForceCloseStudio() {
+            geometryWorker.Cancel();
             RestoreLivePreviewTargetIfNeeded();
             studioOpen = false;
             IsStudioOpen = false;
@@ -1495,7 +1524,7 @@ namespace Protobot.CustomParts {
         private void CreateNewWorkingDefinition() {
             RestoreLivePreviewTargetIfNeeded();
             fitOnNextCanvas = true;
-            validatedHash = null;
+            InvalidateGeometry();
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1528,7 +1557,7 @@ namespace Protobot.CustomParts {
             EnsureWorkingDefinition();
             RestoreLivePreviewTargetIfNeeded();
             fitOnNextCanvas = true;
-            validatedHash = null;
+            InvalidateGeometry();
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1562,7 +1591,7 @@ namespace Protobot.CustomParts {
 
             RestoreLivePreviewTargetIfNeeded();
             fitOnNextCanvas = true;
-            validatedHash = null;
+            InvalidateGeometry();
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -1711,7 +1740,7 @@ namespace Protobot.CustomParts {
 
             RestoreLivePreviewTargetIfNeeded();
             fitOnNextCanvas = true;
-            validatedHash = null;
+            InvalidateGeometry();
             launchMode = StudioLaunchMode.Definition;
             editTargetObject = null;
             editSurfaceTransform = null;
@@ -3269,7 +3298,7 @@ namespace Protobot.CustomParts {
 
                 Vector2 screenPixels = GuiToScreenPixels(screen);
                 Vector3 unityScreen = new Vector3(screenPixels.x, screenPixels.y, 0f);
-                Ray ray = cam.ScreenPointToRay(unityScreen);
+                Ray ray = ProjectionSwitcher.ScreenPointToRay(cam, unityScreen);
                 float localZ = GetSceneSketchLocalZOffset();
                 Vector3 planePoint = surface.TransformPoint(new Vector3(0f, 0f, localZ));
                 Vector3 planeNormal = surface.forward;
@@ -3642,7 +3671,7 @@ namespace Protobot.CustomParts {
             hasUnsavedChanges = true;
             historyPending = false;
             applyingHistory = false;
-            validatedHash = null;
+            InvalidateGeometry();
             QueueLivePreviewUpdate();
         }
 
@@ -3662,12 +3691,12 @@ namespace Protobot.CustomParts {
             hasUnsavedChanges = true;
             historyPending = false;
             applyingHistory = false;
-            validatedHash = null;
+            InvalidateGeometry();
             QueueLivePreviewUpdate();
         }
 
         private void MarkDirty() {
-            validatedHash = null;
+            InvalidateGeometry();
             fieldCache.Remove("outline_width");
             fieldCache.Remove("outline_height");
             hasUnsavedChanges = true;
@@ -3698,7 +3727,9 @@ namespace Protobot.CustomParts {
                 return;
             }
 
-            bool applied = CustomPartRuntimeUpdater.ApplyDefinitionPreviewToObject(editTargetObject, workingDefinition);
+            if (force) RefreshGeometryValidation(true);
+            if (geometryPending || !geometryValid || validatedGeometry == null) return;
+            bool applied = CustomPartRuntimeUpdater.ApplyCompiledPreview(editTargetObject, workingDefinition, validatedGeometry);
             if (applied) {
                 ResolveEditSurface(editTargetObject);
                 livePreviewDirty = false;

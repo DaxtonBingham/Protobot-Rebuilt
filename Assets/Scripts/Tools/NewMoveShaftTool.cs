@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using DG.Tweening;
@@ -42,25 +42,12 @@ namespace Protobot.Tools {
             curShaft = newShaft;
         }
 
-        public float GetShaftLength() => shaftObjLink.obj.GetComponent<MeshFilter>().mesh.bounds.extents.z;
+        public float GetShaftLength() => shaftObjLink.obj.GetComponent<MeshFilter>().sharedMesh.bounds.extents.z;
         public Vector3 GetShaftExtents() => shaftObjLink.obj.GetComponent<MeshCollider>().bounds.extents;
 
         //<Summary> Returns the next object on the shaft in a certain direction from a starting position </Summary>
         public GameObject GetNextObjOnShaft(Vector3 startPos, Vector3 dir) {
-            var holeColliders = Physics.RaycastAll(startPos, dir)
-                                .Where(x => x.collider.tag == "HoleCollider")
-                                .OrderBy(o => Vector3.Distance(o.point, startPos))
-                                .Select(x => x.collider.gameObject)
-                                .ToList();
-
-            foreach (GameObject holeCollider in holeColliders) {
-                GameObject obj = holeCollider.transform.parent.gameObject;
-
-                return obj;
-            }
-
-            print("No next object on shaft found or next object was already in pivot!");
-            return null;
+            return HoleWorld.Raycast(new Ray(startPos, dir), out var hit) ? hit.hole.holeData.part : null;
         }
 
         public void SetPivotObjects(Vector3 startPos, Vector3 endPos) {
@@ -68,18 +55,7 @@ namespace Protobot.Tools {
             moveShaftPivot.transform.position = shaftObjLink.tform.position;
             moveShaftPivot.transform.forward = shaftObjForward;
 
-            Vector3 center = (endPos + startPos) / 2;
-
-            Vector3 shaftExtents = GetShaftExtents();
-
-            Vector3 forwardExtents = Vector3.Project(shaftExtents, shaftObjForward);
-
-            Vector3 extents = (shaftExtents - forwardExtents) + (Vector3.Distance(endPos, startPos) * shaftObjForward) / 2;
-
-            var objectsWithin = Physics.OverlapBox(center, extents)
-                                .Where(x => x.CompareTag("HoleCollider"))
-                                .Select(x => x.transform.parent.gameObject)
-                                .ToList();
+            var objectsWithin = HoleWorld.PartsAlongSegment(startPos, endPos, .01f);
 
             moveShaftPivot.AddObjects(objectsWithin);
             moveShaftPivot.AddObject(shaftObjLink.obj);
@@ -105,28 +81,36 @@ namespace Protobot.Tools {
         }
 
         public void AddNextUp() {
-            var nextObjPos = GetNextObjOnShaft(positiveBracket.position, shaftObjForward).transform.position;
+            var nextObject = GetNextObjOnShaft(positiveBracket.position, shaftObjForward);
+            if (nextObject == null) return;
+            var nextObjPos = nextObject.transform.position;
             positiveBracket.DOMove(nextObjPos, 0.25f);
 
             SetPivotObjects(nextObjPos, negativeBracket.position);
         }
 
         public void RemoveNextDown() {
-            var nextObjPos = GetNextObjOnShaft(positiveBracket.position, -shaftObjForward).transform.position;
+            var nextObject = GetNextObjOnShaft(positiveBracket.position, -shaftObjForward);
+            if (nextObject == null) return;
+            var nextObjPos = nextObject.transform.position;
             positiveBracket.DOMove(nextObjPos, 0.25f);
 
             SetPivotObjects(nextObjPos, negativeBracket.position);
         }
 
         public void AddNextDown() {
-            var nextObjPos = GetNextObjOnShaft(negativeBracket.position, -shaftObjForward).transform.position;
+            var nextObject = GetNextObjOnShaft(negativeBracket.position, -shaftObjForward);
+            if (nextObject == null) return;
+            var nextObjPos = nextObject.transform.position;
             negativeBracket.DOMove(nextObjPos, 0.25f);
 
             SetPivotObjects(nextObjPos, positiveBracket.position);
         }
 
         public void RemoveNextUp() {
-            var nextObjPos = GetNextObjOnShaft(negativeBracket.position, shaftObjForward).transform.position;
+            var nextObject = GetNextObjOnShaft(negativeBracket.position, shaftObjForward);
+            if (nextObject == null) return;
+            var nextObjPos = nextObject.transform.position;
             negativeBracket.DOMove(nextObjPos, 0.25f);
 
             SetPivotObjects(nextObjPos, positiveBracket.position);

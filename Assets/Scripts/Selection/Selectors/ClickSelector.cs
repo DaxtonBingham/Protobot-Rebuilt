@@ -17,8 +17,9 @@ namespace Protobot.SelectionSystem {
 
         private void OnPerformInput() {
             if (!MouseInput.overUI) {
-                if (mouseCast.overObj) {
-                    GameObject selectedObject = ChainManager.ResolveSelectableObject(mouseCast.gameObject);
+                var hoveredObject = mouseCast.gameObject;
+                if (hoveredObject != null) {
+                    GameObject selectedObject = ChainManager.ResolveSelectableObject(hoveredObject);
                     var selection = new ObjectSelection {
                         gameObject = selectedObject,
                         selector = this

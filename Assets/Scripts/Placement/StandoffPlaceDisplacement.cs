@@ -6,7 +6,6 @@ using Protobot.Transformations;
 namespace Protobot {
     public class StandoffPlaceDisplacement : PlaceDisplacement {
         [SerializeField] private MouseCast mouseCast;
-        private GameObject HoverObj => mouseCast.gameObject;
         [SerializeField] private HoleFace currentHoleFace;
         public override bool ModifyRotation => true;
 
@@ -29,6 +28,7 @@ namespace Protobot {
 
         public override bool TryGetDisplacement(PlacementData placementData, out Displacement displacement) {
             if (placementData.TryGetPartData(out PartData partData)) {
+                var HoverObj = mouseCast.gameObject;
                 if (HoverObj != null && IsIdAllowed(placementData)) {
                     if (currentHoleFace.direction != Vector3.zero && currentHoleFace.gameObject.activeInHierarchy) {
                         var offset = currentHoleFace.direction * (partData.PrimaryHoleDepth / 2);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Protobot.Outlining;
@@ -57,6 +57,8 @@ namespace Protobot {
                 savedObj = obj.AddComponent<SavedObject>();
             
             savedObj.id = GetId();
+            PartHoles.Compact(obj);
+            RobotDocument.Synchronize(savedObj);
         }
         public abstract Mesh GetMesh();
         public abstract GameObject Generate(Vector3 position, Quaternion rotation);

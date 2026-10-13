@@ -4,6 +4,7 @@ using Protobot.Builds;
 using UnityEngine;
 
 namespace Protobot.ChainSystem {
+    [DefaultExecutionOrder(9100)]
     public class ChainConnection : MonoBehaviour {
         [SerializeField] private List<ChainEndpoint> endpoints = new List<ChainEndpoint>();
         [SerializeField] private ChainEndpoint endpointA;
@@ -16,11 +17,15 @@ namespace Protobot.ChainSystem {
 
         private ChainDimensions dimensions;
 
-        private readonly List<Transform> linkInstances = new List<Transform>();
+        private readonly List<Matrix4x4> linkMatrices = new List<Matrix4x4>();
+        private ChainInstances instanceGeometry;
+        public ChainInstances InstanceGeometry => instanceGeometry;
         private readonly List<Vector3> previousPositions = new List<Vector3>();
         private readonly List<Quaternion> previousRotations = new List<Quaternion>();
         private GameObject linkPrototype;
         private Material chainMaterial;
+        private static Material sharedChainMaterial;
+        private static int sharedChainMaterialUsers;
         private bool usingResourcePrototype;
         private Vector3 resourcePrototypeBaseSize = Vector3.one;
         private Vector3 resourcePrototypeScale = Vector3.one;
@@ -62,6 +67,26 @@ namespace Protobot.ChainSystem {
         private readonly List<Transform> bindingBuffer = new List<Transform>();
         private readonly List<int> changedBuffer = new List<int>();
         private readonly List<Matrix4x4> previousMatrices = new List<Matrix4x4>();
+        private readonly List<RobotPart> dependencies = new List<RobotPart>();
+        private bool bindingsDirty = true;
+
+        private void OnPartChanged(RobotPart part, PartChange change) {
+            if ((change & (PartChange.Pose | PartChange.Geometry | PartChange.Existence)) != 0) bindingsDirty = true;
+            if ((change & (PartChange.Geometry | PartChange.Existence)) != 0) pendingRebuild = true;
+        }
+
+        private void BindDependencies() {
+            foreach (var part in dependencies) part.Changed -= OnPartChanged;
+            dependencies.Clear();
+            foreach (var endpoint in endpoints) {
+                var view = endpoint != null ? endpoint.GetComponentInParent<SavedObject>() : null;
+                var part = view != null ? view.DocumentPart : null;
+                if (part != null && !dependencies.Contains(part)) {
+                    dependencies.Add(part); part.Changed += OnPartChanged;
+                }
+            }
+            bindingsDirty = true;
+        }
 
         public IReadOnlyList<ChainEndpoint> Endpoints => endpoints;
         public ChainEndpoint EndpointA => endpoints.Count > 0 ? endpoints[0] : endpointA;
@@ -80,12 +105,25 @@ namespace Protobot.ChainSystem {
         }
 
         private void OnDestroy() {
+            foreach (var part in dependencies) part.Changed -= OnPartChanged;
+            dependencies.Clear();
+            SceneActivity.Changed();
             ChainManager.Unregister(this);
 
             if (chainMaterial != null) {
-                Destroy(chainMaterial);
+                if (chainMaterial == sharedChainMaterial) {
+                    sharedChainMaterialUsers--;
+                    if (sharedChainMaterialUsers == 0) {
+                        Destroy(sharedChainMaterial);
+                        sharedChainMaterial = null;
+                    }
+                }
+                else Destroy(chainMaterial);
             }
         }
+
+        private void OnEnable() { bindingsDirty = true; pendingRebuild = true; SceneActivity.Changed(); }
+        private void OnDisable() => SceneActivity.Changed();
 
         public void SetPreviewMode(bool value) {
             if (previewMode == value) {
@@ -96,15 +134,6 @@ namespace Protobot.ChainSystem {
             selectableLayer = ResolveSelectableLayer(previewMode);
             SetLayerRecursive(gameObject, selectableLayer);
 
-            for (int i = 0; i < linkInstances.Count; i++) {
-                Transform link = linkInstances[i];
-                if (link == null) {
-                    continue;
-                }
-
-                SetLayerRecursive(link.gameObject, selectableLayer);
-                ConfigureLinkSelectableCollider(link.gameObject);
-            }
         }
 
         public bool Initialize(ChainEndpoint newEndpointA, ChainEndpoint newEndpointB, ChainSettings newSettings) {
@@ -141,6 +170,7 @@ namespace Protobot.ChainSystem {
             CachePreviousTransforms();
 
             initialized = true;
+            BindDependencies();
             pendingRebuild = true;
             return RebuildVisual();
         }
@@ -150,9 +180,12 @@ namespace Protobot.ChainSystem {
                 return;
             }
 
+            if (!bindingsDirty && !pendingRebuild) return;
+            bindingsDirty = false;
+
             if (!AreEndpointsValid()) {
                 SetLinksActive(false);
-                pendingRebuild = true;
+                pendingRebuild = false;
                 return;
             }
 
@@ -195,6 +228,7 @@ namespace Protobot.ChainSystem {
         }
 
         private bool RebuildVisual() {
+            SceneActivity.Changed();
             pendingRebuild = false;
 
             Vector3 normal = GetPlaneNormal();
@@ -231,10 +265,13 @@ namespace Protobot.ChainSystem {
 
             transform.position = centroid;
 
-            EnsureLinkInstances(poses.Count);
+            if (linkPrototype == null) BuildLinkPrototype();
+            if (instanceGeometry == null) instanceGeometry = gameObject.AddComponent<ChainInstances>();
+            instanceGeometry.Configure(linkPrototype, new Vector3(Mathf.Max(dimensions.plateHeight, .05f), Mathf.Max(dimensions.width, .05f), Mathf.Max(dimensions.pitch * .95f, .05f)));
+            linkMatrices.Clear();
 
             for (int i = 0; i < poses.Count; i++) {
-                Transform linkTransform = linkInstances[i];
+
                 int nextIndex = (i + 1) % poses.Count;
                 Vector3 backPosition = poses[i].position;
                 Vector3 frontPosition = poses[nextIndex].position;
@@ -250,7 +287,7 @@ namespace Protobot.ChainSystem {
 
                 // Place each link at the midpoint between consecutive pitch points so curved
                 // wraps sit correctly on sprocket teeth instead of offsetting outward.
-                linkTransform.position = (backPosition + frontPosition) * 0.5f;
+                Vector3 linkPosition = (backPosition + frontPosition) * 0.5f;
 
                 Quaternion rotation = Quaternion.LookRotation(segmentDirection, normal);
                 // Rotate links 90 degrees about travel direction so chain plates lay flat
@@ -263,52 +300,17 @@ namespace Protobot.ChainSystem {
                     rotation = rotation * Quaternion.AngleAxis(180f, Vector3.forward);
                 }
 
-                linkTransform.rotation = rotation;
-                if (usingResourcePrototype) {
-                    float stretch = dimensions.pitch > 0.0001f
-                        ? Mathf.Clamp(segmentLength / dimensions.pitch, 0.9f, 1.1f)
-                        : 1f;
-                    linkTransform.localScale = Vector3.Scale(resourcePrototypeScale, new Vector3(1f, 1f, stretch));
-                }
-                else {
-                    float stretch = dimensions.pitch > 0.0001f
-                        ? Mathf.Clamp(segmentLength / dimensions.pitch, 0.9f, 1.1f)
-                        : 1f;
-                    linkTransform.localScale = new Vector3(1f, 1f, stretch);
-                }
-                linkTransform.gameObject.SetActive(true);
+                float stretch = dimensions.pitch > .0001f ? Mathf.Clamp(segmentLength / dimensions.pitch, .9f, 1.1f) : 1f;
+                var scale = usingResourcePrototype ? Vector3.Scale(resourcePrototypeScale, new Vector3(1, 1, stretch)) : new Vector3(1, 1, stretch);
+                linkMatrices.Add(Matrix4x4.TRS(linkPosition, rotation, scale));
             }
-
-            for (int i = poses.Count; i < linkInstances.Count; i++) {
-                linkInstances[i].gameObject.SetActive(false);
-            }
+            instanceGeometry.SetMatrices(linkMatrices);
 
             return true;
         }
 
-        private void EnsureLinkInstances(int targetCount) {
-            if (linkPrototype == null) {
-                BuildLinkPrototype();
-            }
-
-            while (linkInstances.Count < targetCount) {
-                GameObject clone = Instantiate(linkPrototype, transform);
-                clone.name = "Chain Link";
-                SetLayerRecursive(clone, selectableLayer);
-                ConfigureLinkSelectableCollider(clone);
-                clone.SetActive(true);
-                linkInstances.Add(clone.transform);
-            }
-
-            // Retain inactive links when a route gets shorter; reuse them on the next edit.
-        }
-
         private void SetLinksActive(bool value) {
-            for (int i = 0; i < linkInstances.Count; i++) {
-                if (linkInstances[i] != null) {
-                    linkInstances[i].gameObject.SetActive(value);
-                }
-            }
+            if (instanceGeometry != null) instanceGeometry.SetVisible(value);
         }
 
         private void BuildLinkPrototype() {
@@ -827,33 +829,13 @@ namespace Protobot.ChainSystem {
             return primitive;
         }
 
-        private void ConfigureLinkSelectableCollider(GameObject linkObject) {
-            if (linkObject == null) {
-                return;
-            }
-
-            BoxCollider collider = linkObject.GetComponent<BoxCollider>();
-            if (previewMode) {
-                if (collider != null) {
-                    Destroy(collider);
-                }
-                return;
-            }
-
-            if (collider == null) {
-                collider = linkObject.AddComponent<BoxCollider>();
-            }
-
-            float height = Mathf.Max(dimensions.plateHeight, 0.05f);
-            float width = Mathf.Max(dimensions.width, 0.05f);
-            float pitch = Mathf.Max(dimensions.pitch * 0.95f, 0.05f);
-
-            collider.center = Vector3.zero;
-            collider.size = new Vector3(height, width, pitch);
-            collider.isTrigger = false;
-        }
-
         private Material BuildChainMaterial() {
+            // Every chain uses the same finish. Sharing it lets Unity instance links
+            // across separate routes as well as within one route.
+            if (sharedChainMaterial != null) {
+                sharedChainMaterialUsers++;
+                return sharedChainMaterial;
+            }
             Shader shader = Shader.Find("Standard");
             if (shader == null) {
                 shader = Shader.Find("Legacy Shaders/Diffuse");
@@ -884,6 +866,8 @@ namespace Protobot.ChainSystem {
                 material.SetFloat("_Glossiness", 0.35f);
             }
 
+            sharedChainMaterial = material;
+            sharedChainMaterialUsers = 1;
             return material;
         }
 

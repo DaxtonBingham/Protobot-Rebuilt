@@ -22,37 +22,22 @@ namespace Protobot.SelectionSystem
         }
         public void ChangeColor(GameObject targetGameObject)
         {
-            Renderer component;
-            if (targetGameObject != null)
-            {
-                targetGameObject.TryGetComponent<Renderer>(out component);
-
-                if (component == null)
-                {
-                    if (targetGameObject.transform.parent != null)
-                    {
-                        targetGameObject.transform.parent.gameObject.TryGetComponent<Renderer>(out component);
-                        if (targetGameObject.transform.parent.gameObject != null)
-                        {
-                            targetGameObject.transform.parent.gameObject.TryGetComponent<Renderer>(out component);
-                        }
-                    }
-                }
-                if (component == null)
-                    return;
+            if (targetGameObject == null) return;
+            var component = targetGameObject.GetComponent<Renderer>();
+            if (component == null && targetGameObject.transform.parent != null)
+                component = targetGameObject.transform.parent.GetComponent<Renderer>();
+            if (component == null || component.sharedMaterial == null) return;
+            var material = component.sharedMaterial;
+            if (!material.HasProperty("_Metallic") || material.GetFloat("_Metallic") != .754f) return;
+            // Reading a selected color must not instantiate a material for every hovered part.
+            if (ColorToolActiveCheck.colorToolActive) {
+                material = component.material;
+                material.color = ColorTool.ColorToSet;
+                var view = component.GetComponent<SavedObject>();
+                if (view != null) RobotDocument.Synchronize(view, PartChange.Appearance);
+                else SceneActivity.Changed();
             }
-            if (targetGameObject.TryGetComponent<Renderer>(out component) ||
-                targetGameObject.transform.parent.gameObject.TryGetComponent<Renderer>(out component))
-            {
-                if (component == null)
-                    return;
-                if (component.material.GetFloat("_Metallic") == .754f)
-                {
-                    ColorTool.Material = component.material;
-                    if (ColorToolActiveCheck.colorToolActive)
-                        component.material.color = ColorTool.ColorToSet;
-                }
-            }
+            ColorTool.Material = material;
         }
 
         public override void OnClear(ClearInfo info)

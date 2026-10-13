@@ -413,10 +413,21 @@ namespace EPOOutline
 
         private void SetupOutline(Camera cameraToUse, OutlineParameters parametersToUse, bool isEditor)
         {
-            UpdateBuffer(cameraToUse, parametersToUse.Buffer, false);
             UpdateParameters(parametersToUse, cameraToUse, isEditor);
 
             parametersToUse.Buffer.Clear();
+            if (parametersToUse.OutlinablesToRender.Count == 0)
+            {
+                // Keep the same camera target path, but omit empty effect buffers.
+                // Clear/remove the old buffer so deselection cannot leave stale outlines.
+                if (renderingStrategy == OutlineRenderingStrategy.Default)
+                    cameraToUse.forceIntoRenderTexture = true;
+                UpdateBuffer(cameraToUse, parametersToUse.Buffer, true);
+                parametersToUse.BlitMesh = null;
+                parametersToUse.MeshPool.ReleaseAllMeshes();
+                return;
+            }
+            UpdateBuffer(cameraToUse, parametersToUse.Buffer, false);
             if (renderingStrategy == OutlineRenderingStrategy.Default)
             {
                 OutlineEffect.SetupOutline(parametersToUse);

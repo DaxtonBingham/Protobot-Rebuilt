@@ -179,7 +179,7 @@ namespace Protobot.ChainSystem {
         static bool SliceGuide(ChainEndpoint endpoint, Vector3 origin, Vector3 normal, Vector3 x, Vector3 y, out Vector2[] hull) {
             var part = ChainSprocketUtility.ResolvePartObject(endpoint.gameObject);
             var guide = endpoint.GetComponent<ChainGuide>();
-            var filters = part.GetComponentsInChildren<MeshFilter>();
+            var filters = Array.FindAll(part.GetComponentsInChildren<MeshFilter>(), filter => filter.GetComponent<ShadowRenderProxy>() == null);
             var cached = guide.RouteGeometryCache as SliceCache;
             bool reusable = cached != null && cached.origin == origin && cached.normal == normal && cached.meshes.Length == filters.Length;
             if (reusable) for (int i = 0; i < filters.Length; i++) {
