@@ -14,6 +14,7 @@ public class PartListOutput : MonoBehaviour
 {
     [SerializeField] string partsList;
     [SerializeField] static Dictionary<string, int> partCount = new Dictionary<string, int>();
+    private readonly Dictionary<string, float> partWeights = new Dictionary<string, float>();
     [SerializeField] private WeightDisplay weightDisplay; // Reference to WeightDisplay component
     private float totalWeight = 0f; // Total weight of parts
 
@@ -31,7 +32,8 @@ public class PartListOutput : MonoBehaviour
         //instead of
         //"part name"
         //"part name"
-        partCount = new Dictionary<string, int>();
+        partCount.Clear();
+        partWeights.Clear();
         totalWeight = 0f;
 
         foreach (PartName part in parts)
@@ -46,7 +48,10 @@ public class PartListOutput : MonoBehaviour
             }
 
             // Calculate total weight
-            totalWeight += part.GetWeight(); // Add the weight of this part
+            float weight = part.GetWeight();
+            totalWeight += weight;
+            partWeights.TryGetValue(part.name, out float accumulated);
+            partWeights[part.name] = accumulated + weight;
         }
         // Notify subscribers about the weight update
         OnWeightUpdated?.Invoke(totalWeight);
@@ -71,11 +76,10 @@ public class PartListOutput : MonoBehaviour
             foreach (string key in sortedDict.Keys)
             {
                 // Find the weight of the part by getting the PartName component
-                PartName part = FindObjectsOfType<PartName>().FirstOrDefault(p => p.name == key);
-                if (part.GetWeight() != 0)
+                float partWeight = partWeights[key];
+                if (partWeight != 0)
                 {
-                    float partWeight = part.GetWeight(); // Get the weight in pounds
-                    partsList += $"{key} x{sortedDict[key]} ({(partWeight * sortedDict[key]):F6} lbs)\n"; // Include total weight for this part type
+                    partsList += $"{key} x{sortedDict[key]} ({partWeight:F6} lbs)\n";
                 }
                 else
                 {

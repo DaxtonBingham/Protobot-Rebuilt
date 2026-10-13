@@ -5,6 +5,7 @@ using UnityEngine;
 using Protobot.StateSystems;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using Protobot.ChainSystem;
 
 namespace Protobot {
     public class ObjectDeletor : ObjectLinkAction {
@@ -20,7 +21,15 @@ namespace Protobot {
                 obj = holeFace.hole.part;
             }
 
+            ChainConnection selectedChain = obj.GetComponentInParent<ChainConnection>();
+            if (selectedChain != null) {
+                ObjectElement.SetExistence(selectedChain.gameObject, true, false);
+                return;
+            }
+
             Pivot pivot = obj.GetComponent<Pivot>();
+
+            ChainManager.NotifyEndpointObjectDeleted(obj);
 
             if (pivot != null && pivot.tag != "Group")
                 ObjectElement.SetExistence(pivot, true, false);

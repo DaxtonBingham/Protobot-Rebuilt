@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using Protobot.ChainSystem;
 
 namespace Protobot.SelectionSystem {
     public class HoverSelector : Selector {
@@ -11,7 +12,7 @@ namespace Protobot.SelectionSystem {
         private GameObject prevObj;
 
         public void Update() {
-            GameObject mouseCastObj = mouseCast.gameObject;
+            GameObject mouseCastObj = ChainManager.ResolveSelectableObject(mouseCast.gameObject);
 
             if (mouseCastObj != null) {
                 if (prevObj != mouseCastObj || !checkPrevObj) {

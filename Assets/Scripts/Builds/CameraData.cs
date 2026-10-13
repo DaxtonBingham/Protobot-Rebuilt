@@ -1,13 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 using System;
+using System.Runtime.Serialization;
 
 namespace Protobot.Builds {
     [Serializable]
     public class CameraData {
-        public double xPos, yPos, zPos;
-        public double xRot, yRot, zRot;
-        public double zoom;
-        public bool isOrtho;
+        [OptionalField] public double xPos, yPos, zPos;
+        [OptionalField] public double xRot, yRot, zRot;
+        [OptionalField] public double zoom;
+        [OptionalField] public bool isOrtho;
     }
 }

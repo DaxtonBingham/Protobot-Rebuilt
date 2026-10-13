@@ -75,3 +75,11 @@ Packages/Grpc.Core.2.31.0/native/ios/universal/libgrpc.a
 
 # WebGL Builds
 WebGL/*
+
+# Windows player distributions are attached to GitHub Releases.
+/MonoBleedingEdge/
+/Protobot Rebuilt.exe
+/Protobot Rebuilt_Data/
+/UnityCrashHandler64.exe
+/UnityPlayer.dll
+/Protobot-Rebuilt-*-Windows-x64.zip

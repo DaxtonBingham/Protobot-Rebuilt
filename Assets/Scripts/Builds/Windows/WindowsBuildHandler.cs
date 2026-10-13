@@ -2,18 +2,12 @@
 using System;
 using System.Collections;
 using System.IO;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace Protobot.Builds.Windows {
     public class WindowsBuildHandler : MonoBehaviour, IBuildHandler {
         public void Save(BuildData buildData) {
-            BinaryFormatter bf = new BinaryFormatter();
-
             string fileLocation = GetFileLocation(buildData);
-
-            FileStream file = File.Create(fileLocation);
-            bf.Serialize(file, buildData);
-            file.Close();
+            BuildSerialization.TrySerializeBuild(fileLocation, buildData);
         }
 
         public void Delete(BuildData buildData) {

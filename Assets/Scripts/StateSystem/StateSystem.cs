@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using Protobot.InputEvents;
 using System;
+using Protobot.CustomParts;
 
 namespace Protobot.StateSystems {
     public class StateSystem : MonoBehaviour {
@@ -94,6 +95,10 @@ namespace Protobot.StateSystems {
         /// Changes the current state to the previous one
         /// </summary>
         public void Undo() {
+            if (CustomPartStudioController.IsStudioOpen) {
+                return;
+            }
+
             if (curIndex - 1 >= 0) {
                 curIndex--;
                 states[curIndex].Load();
@@ -105,6 +110,10 @@ namespace Protobot.StateSystems {
         /// Changes the current state to the next one if not at the last created state
         /// </summary>
         public void Redo() {
+            if (CustomPartStudioController.IsStudioOpen) {
+                return;
+            }
+
             if (curIndex + 1 <= lastStateIndex) {
                 curIndex++;
                 states[curIndex].Load();

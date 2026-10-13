@@ -8,5 +8,7 @@ namespace Protobot {
         public string id;
         public string nameId => id.Split('-')[0];
         public string state;
+        public string customDefinitionId;
+        public string customInstanceId;
     }
 }

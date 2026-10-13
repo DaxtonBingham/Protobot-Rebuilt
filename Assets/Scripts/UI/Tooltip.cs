@@ -13,6 +13,13 @@ namespace Protobot.UI {
         [SerializeField] private TooltipUI tooltipRef;
         public string text;
 
+        public void Initialize(TooltipUI reference, TooltipUI.Direction direction, string label) {
+            tooltipRef = reference;
+            dir = direction;
+            text = label;
+            rect = GetComponent<RectTransform>();
+        }
+
         private void Start() {
             rect = GetComponent<RectTransform>(); // since this is only getting the rect transform of the object this script is attached to
         }

@@ -33,7 +33,14 @@ namespace Protobot.Tools {
         public UnityEvent OnActivate;
         public UnityEvent OnDeactivate;
 
+        public void EnsureEventsInitialized() {
+            OnToggle ??= new UnityEvent();
+            OnActivate ??= new UnityEvent();
+            OnDeactivate ??= new UnityEvent();
+        }
+
         void Awake() {
+            EnsureEventsInitialized();
             requirements = GetComponents<IToolRequirement>();
             OnDeactivate?.Invoke();
 
@@ -56,6 +63,7 @@ namespace Protobot.Tools {
         }
 
         public void Toggle(bool value) {
+            EnsureEventsInitialized();
             if (value) {
                 toggled = true;
                 OnToggle?.Invoke();
