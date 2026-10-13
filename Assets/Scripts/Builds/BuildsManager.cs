@@ -37,6 +37,7 @@ namespace Protobot.Builds {
 
         private bool avoidingQuit = false;
         private bool forceQuit = false;
+        private bool loadingBuild;
 
         private bool IsNotSaved => buildPath == "";
 
@@ -48,18 +49,11 @@ namespace Protobot.Builds {
             buildPath = "";
             
             SceneBuild.OnGenerateBuild += (data) => {
-                OnLoadBuild.Invoke(data);
+                if (!loadingBuild) OnLoadBuild.Invoke(data);
             };
             
 
-            Application.wantsToQuit += () => {
-                avoidingQuit = HasUnsavedChanges() && !forceQuit;
-                if (avoidingQuit) {
-                    unsavedChangesMenu.Enable(IsNotSaved);
-                }
-
-                return !avoidingQuit;
-            };
+            Application.wantsToQuit += WantsToQuit;
 
             unsavedChangesMenu.OnPressDiscard += () => {
                 if (avoidingQuit) 
@@ -76,44 +70,70 @@ namespace Protobot.Builds {
             };
             
             string[] arguments = Environment.GetCommandLineArgs();
-            string initPath = arguments[0];
-            var initData = ParsePath(initPath);
-
-            if (initData != null)
-                AttemptLoad(initData, initPath);
+            // Argument zero is the executable, not the document opened by Windows.
+            for (int i = 1; i < arguments.Length; i++) {
+                var initData = ParsePath(arguments[i]);
+                if (initData == null) continue;
+                AttemptLoad(initData, arguments[i]);
+                break;
+            }
         }
 
         public string GetFileName() => PathToFileName(buildPath);
+
+        private bool WantsToQuit() {
+            if (CustomPartStudioController.IsStudioOpen) {
+                var studio = FindObjectOfType<CustomPartStudioController>();
+                if (studio != null) {
+                    forceQuit = false;
+                    studio.RequestCloseBeforeAction(AttemptQuit);
+                    return false;
+                }
+            }
+            avoidingQuit = HasUnsavedChanges() && !forceQuit;
+            if (avoidingQuit) unsavedChangesMenu.Enable(IsNotSaved);
+            return !avoidingQuit;
+        }
+
+        private void OnDestroy() {
+            Application.wantsToQuit -= WantsToQuit;
+        }
         
-        public static string PathToFileName(string path) => (path.Length > 0) ? path.Split('\\')[^1] : "";
+        public static string PathToFileName(string path) => string.IsNullOrEmpty(path) ? "" : path.Replace('\\', '/').Split('/')[^1];
         
         public void Save() {
-            if (buildPath == "") {
-                SaveAs();
-                return;
-            }
+            TrySave();
+        }
 
+        public bool TrySave() {
+            return IsNotSaved ? TrySaveAs() : TrySaveTo(buildPath);
+        }
+
+        private bool TrySaveTo(string path) {
             var sceneBuildData = SceneBuild.ToBuildData();
-            if (!BuildSerialization.TrySerializeBuild(buildPath, sceneBuildData)) {
-                return;
+            if (!BuildSerialization.TrySerializeBuild(path, sceneBuildData)) {
+                FindObjectOfType<FeedbackDisplay>()?.ShowAlert("Couldn't save the build. Your current project is still open. Check the file location and try again.");
+                return false;
             }
 
+            buildPath = path;
             savedBuildData = sceneBuildData;
             OnSaveBuild?.Invoke(sceneBuildData);
+            return true;
         }
 
         public void SaveAs() {
+            TrySaveAs();
+        }
+
+        public bool TrySaveAs() {
             var path = StandaloneFileBrowser.SaveFilePanel("Save Build File", "", "", "pbb");
-
-            if (path == "") return;
-
-            buildPath = path;
-            Save();
+            return !string.IsNullOrEmpty(path) && TrySaveTo(path);
         }
 
         public void SaveAndQuit() {
-            Save();
-            Quit();
+            if (TrySave()) Quit();
+            else unsavedChangesMenu.Enable(IsNotSaved);
         }
 
         public void Quit() {
@@ -144,6 +164,7 @@ namespace Protobot.Builds {
 
             var build = ParsePath(path);
             if (build == null) {
+                FindObjectOfType<FeedbackDisplay>()?.ShowAlert("Couldn't open this build. The file is invalid or unreadable; your current project is unchanged.");
                 return;
             }
 
@@ -165,8 +186,13 @@ namespace Protobot.Builds {
         /// <param name="newData"></param>
         /// <param name="newPath"></param>
         public void AttemptLoad(BuildData newData, string newPath) {
+            if (!SceneBuild.TryValidateBuild(newData, out string error)) {
+                FindObjectOfType<FeedbackDisplay>()?.ShowAlert("Couldn't open this build: " + error);
+                return;
+            }
+            avoidingQuit = false;
             attemptData = newData;
-            attemptPath = newPath;
+            attemptPath = newPath ?? "";
 
             if (HasUnsavedChanges()) {
                 unsavedChangesMenu.Enable(IsNotSaved);
@@ -177,14 +203,31 @@ namespace Protobot.Builds {
         }
 
         public void SaveAndLoadAttempt() {
-            Save();
-            LoadAttempt();
+            if (TrySave()) LoadAttempt();
+            else unsavedChangesMenu.Enable(IsNotSaved);
         }
 
         public void LoadAttempt() {
-            savedBuildData = attemptData;
+            if (!SceneBuild.TryValidateBuild(attemptData, out string error)) {
+                FindObjectOfType<FeedbackDisplay>()?.ShowAlert("Couldn't open this build: " + error);
+                return;
+            }
+            loadingBuild = true;
+            try { SceneBuild.GenerateBuild(attemptData); }
+            catch (Exception ex) {
+                // SceneBuild restored the previous document. Refresh selections/history
+                // against its replacement views, keeping the previous file identity.
+                OnLoadBuild?.Invoke(SceneBuild.ToBuildData());
+                FindObjectOfType<FeedbackDisplay>()?.ShowAlert("Couldn't open this build: " + ex.Message);
+                return;
+            }
+            finally { loadingBuild = false; }
             buildPath = attemptPath;
-            SceneBuild.GenerateBuild(attemptData);
+            // Compare to the loaded document, including legacy defaults and new stable IDs.
+            savedBuildData = SceneBuild.ToBuildData();
+            OnLoadBuild?.Invoke(attemptData);
+            attemptData = null;
+            avoidingQuit = false;
 
             // Call OutputPartsList to update the weight display after placing a part
                 PartListOutput partListOutput = FindObjectOfType<PartListOutput>();
@@ -204,11 +247,8 @@ namespace Protobot.Builds {
     public static class BuildSerialization {
         public static bool TryDeserializeBuild(string filePath, out BuildData buildData) {
             buildData = null;
-            if (!IsSupportedBuildPath(filePath) || !File.Exists(filePath)) {
-                return false;
-            }
-
             try {
+                if (!IsSupportedBuildPath(filePath) || !File.Exists(filePath)) return false;
                 using (var file = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read)) {
                     if (file.Length <= 0) {
                         Debug.LogWarning($"Build load failed: '{filePath}' is empty.");
@@ -223,6 +263,10 @@ namespace Protobot.Builds {
                     }
 
                     NormalizeBuildData(parsed);
+                    if (!BuildDataValidation.TryValidate(parsed, out string error)) {
+                        Debug.LogWarning($"Build load failed for '{filePath}': {error}");
+                        return false;
+                    }
                     buildData = parsed;
                 }
                 return true;
@@ -238,27 +282,26 @@ namespace Protobot.Builds {
                 return false;
             }
 
-            string tempPath = filePath + ".tmp";
+            string tempPath = filePath + ".pending-" + Guid.NewGuid().ToString("N");
             try {
+                if (!BuildDataValidation.TryValidate(buildData, out string error)) {
+                    Debug.LogWarning("Build save failed: " + error);
+                    return false;
+                }
                 string directory = Path.GetDirectoryName(filePath);
                 if (!string.IsNullOrWhiteSpace(directory) && !Directory.Exists(directory)) {
                     Directory.CreateDirectory(directory);
                 }
 
-                using (var file = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None)) {
+                using (var file = new FileStream(tempPath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
                     BinaryFormatter formatter = CreateFormatter();
                     formatter.Serialize(file, buildData);
-                    file.Flush();
+                    file.Flush(true);
                 }
 
                 if (File.Exists(filePath)) {
-                    try {
-                        File.Replace(tempPath, filePath, null);
-                    }
-                    catch {
-                        File.Delete(filePath);
-                        File.Move(tempPath, filePath);
-                    }
+                    // Never delete the last good save to make room for a replacement.
+                    File.Replace(tempPath, filePath, null);
                 }
                 else {
                     File.Move(tempPath, filePath);

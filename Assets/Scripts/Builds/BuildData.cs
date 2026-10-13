@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 using System;
@@ -51,61 +51,55 @@ namespace Protobot.Builds {
         }
 
         public bool CompareData(BuildData data) {
-            if (data == null) {
-                return false;
-            }
-
-            int thisPartCount = parts == null ? 0 : parts.Length;
-            int dataPartCount = data.parts == null ? 0 : data.parts.Length;
-            if (thisPartCount != dataPartCount) {
-                return false;
-            }
-
-            if (parts != null) {
-                foreach (ObjectData part in parts) {
-                    if (!data.parts.Contains(part))
-                        return false;
+            if (data == null) return false;
+            var left = parts ?? Array.Empty<ObjectData>();
+            var right = data.parts ?? Array.Empty<ObjectData>();
+            if (left.Length != right.Length) return false;
+            var matched = new bool[right.Length];
+            var indices = new int[left.Length];
+            for (int i = 0; i < left.Length; i++) {
+                int found = -1;
+                for (int j = 0; j < right.Length; j++) {
+                    if (!matched[j] && Equals(left[i], right[j])) { found = j; break; }
                 }
+                if (found < 0) return false;
+                matched[found] = true;
+                indices[i] = found;
             }
-
-            int thisChainCount = chains == null ? 0 : chains.Length;
-            int dataChainCount = data.chains == null ? 0 : data.chains.Length;
-            if (thisChainCount != dataChainCount) {
-                return false;
-            }
-
-            if (chains != null) {
-                foreach (ChainData chain in chains) {
-                    if (!data.chains.Contains(chain)) {
-                        return false;
-                    }
+            var remappedChains = (chains ?? Array.Empty<ChainData>()).Select(chain => {
+                if (chain == null) return null;
+                int count = chain.OrderedEndpointCount;
+                var references = new int[count];
+                var sockets = new string[count];
+                for (int i = 0; i < count; i++) {
+                    chain.TryGetEndpointReference(i, out int index, out sockets[i]);
+                    references[i] = index >= 0 && index < indices.Length ? indices[index] : -1;
                 }
-            }
+                return new ChainData { endpointIndices = references, endpointSockets = sockets, standard = chain.standard, slack = chain.slack };
+            }).ToArray();
+            var remappedGuides = (chainGuides ?? Array.Empty<ChainGuideData>()).Select(guide => guide == null ? null : new ChainGuideData {
+                partIndex = guide.partIndex >= 0 && guide.partIndex < indices.Length ? indices[guide.partIndex] : -1,
+                socketId = guide.socketId, localX = guide.localX, localY = guide.localY, localZ = guide.localZ,
+                rotX = guide.rotX, rotY = guide.rotY, rotZ = guide.rotZ, rotW = guide.rotW,
+                radius = guide.radius, routingBias = guide.routingBias, flipSide = guide.flipSide,
+                contactX = guide.contactX, contactY = guide.contactY, contactZ = guide.contactZ
+            }).ToArray();
+            return SameMultiset(remappedChains, data.chains)
+                && SameMultiset(remappedGuides, data.chainGuides)
+                && CustomPartDefinitionUtility.SequenceEquivalent(customDefinitions, data.customDefinitions);
+        }
 
-            int thisGuideCount = chainGuides == null ? 0 : chainGuides.Length;
-            int dataGuideCount = data.chainGuides == null ? 0 : data.chainGuides.Length;
-            if (thisGuideCount != dataGuideCount) {
-                return false;
+        private static bool SameMultiset<T>(T[] left, T[] right) {
+            left ??= Array.Empty<T>(); right ??= Array.Empty<T>();
+            if (left.Length != right.Length) return false;
+            var used = new bool[right.Length];
+            foreach (var item in left) {
+                int found = -1;
+                for (int i = 0; i < right.Length; i++)
+                    if (!used[i] && Equals(item, right[i])) { found = i; break; }
+                if (found < 0) return false;
+                used[found] = true;
             }
-
-            if (chainGuides != null) {
-                foreach (ChainGuideData guide in chainGuides) {
-                    if (!data.chainGuides.Contains(guide)) {
-                        return false;
-                    }
-                }
-            }
-
-            int thisCustomCount = customDefinitions == null ? 0 : customDefinitions.Length;
-            int dataCustomCount = data.customDefinitions == null ? 0 : data.customDefinitions.Length;
-            if (thisCustomCount != dataCustomCount) {
-                return false;
-            }
-
-            if (!CustomPartDefinitionUtility.SequenceEquivalent(customDefinitions, data.customDefinitions)) {
-                return false;
-            }
-
             return true;
         }
     }

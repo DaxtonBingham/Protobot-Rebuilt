@@ -19,6 +19,7 @@ namespace Protobot {
 
         public Action OnStartMoving;
         public Action OnFinishMoving;
+        public Action OnMovementRecorded;
 
         List<GameObject> movingObjs;
 
@@ -31,6 +32,7 @@ namespace Protobot {
             OnFinishMoving += () => {
                 StateSystem.AddEmptyState();
                 ObjectElement.AddObjectElements(GetMovingConnectedObjs());
+                OnMovementRecorded?.Invoke();
             };
 
             movementPivot = Pivot.Create("Movement Pivot");

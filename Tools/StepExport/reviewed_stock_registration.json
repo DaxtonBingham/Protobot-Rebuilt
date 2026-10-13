@@ -1,0 +1,247 @@
+{
+  "GEAR-High Strength-12T": {
+    "source": "62019S/Karl CAD Lib/Gears/HS/Metal_12-Tooth_Pinion_276-2251.STEP",
+    "sourceSHA256": "6b49e0396ea36df2db576d97e7b93d495876c819f580332bf405a63f96261e53",
+    "sourceRoots": 1,
+    "registration": [
+      -0.17365333222181908,
+      0.0,
+      0.9848068441111986,
+      -1.2107864716903068e-13,
+      -0.9848068441111986,
+      0.0,
+      -0.17365333222181908,
+      -8.056244872658869e-14,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.007197291560710249,
+      "surface_max_mm": 0.007474435423672337
+    }
+  },
+  "SPKT-Normal-10T": {
+    "source": "62019S/Karl CAD Lib/Sprockets/LS/VEX-10-TOOTH-SPROCKET.STEP",
+    "sourceSHA256": "058ab576ee32d6b5be8032aed892a9c77ac00a4680bd75f359287e0fe0e21b72",
+    "sourceRoots": 1,
+    "registration": [
+      0.9848169748626581,
+      0.17359586983094594,
+      0.0,
+      9.114302981733232e-12,
+      0.17359586983094594,
+      -0.9848169748626581,
+      0.0,
+      1.6065983775690078e-12,
+      0.0,
+      0.0,
+      -1.0,
+      1.0030500000000004,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.009340138893369015,
+      "surface_max_mm": 0.018550653113916068
+    }
+  },
+  "SPKT-Normal-40T": {
+    "source": "62019S/Karl CAD Lib/Sprockets/LS/VEX-40-TOOTH-SPROCKET.STEP",
+    "sourceSHA256": "fce7fea2cf07da4d09beb7662575a7c8b2ee8876ed628942c89f1bce1cd10c50",
+    "sourceRoots": 1,
+    "registration": [
+      -0.1737261774721242,
+      0.9847939963570675,
+      0.0,
+      0.0,
+      -0.9847939963570675,
+      -0.1737261774721242,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      -1.0,
+      0.9905999999999997,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.011231880659804551,
+      "surface_max_mm": 0.4086168338507775
+    }
+  },
+  "SPKT-Normal-48T": {
+    "source": "62019S/Karl CAD Lib/Sprockets/LS/VEX-48-TOOTH-SPROCKET.STEP",
+    "sourceSHA256": "c401f2b19bdd606894d8ca0c4f2e40c7ad6fa699050109db10792e5b2fc78082",
+    "sourceRoots": 1,
+    "registration": [
+      -0.1736379030612849,
+      0.9848095646471351,
+      0.0,
+      0.0,
+      0.9848095646471351,
+      0.1736379030612849,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      -0.9969500000000013,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.0117675139853946,
+      "surface_max_mm": 0.6792617546095289
+    }
+  },
+  "OMNI-V2-2.00in": {
+    "source": "TlorschCode/Wheels/Omni/2\u201d Omni-Directional Wheel (276-9044).step",
+    "sourceSHA256": "d014aa1a677d7b04c46dc22d3926e839d57dbae7c018aaa5ad1916e26ec78b8d",
+    "sourceRoots": 1,
+    "registration": [
+      0.0,
+      -0.9238675015426911,
+      0.3827124764013652,
+      -8.205591775324905e-15,
+      0.0,
+      0.3827124764013652,
+      0.9238675015426911,
+      3.39916962489686e-15,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.02823898828467679,
+      "surface_max_mm": 0.052952007823956496
+    }
+  },
+  "LMTK-Linear Slide Bracket": {
+    "source": "TlorschCode/Misc. Metal/Rack Gearbox Bracket v2 (276-5771).step",
+    "sourceSHA256": "39c3c4a2d5b7559d362059909e081595210689cfe1271afa7cdcd5000415ffb6",
+    "sourceRoots": 1,
+    "registration": [
+      -0.0,
+      -1.0,
+      -0.0,
+      0.0,
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.0011613154096557757,
+      "surface_max_mm": 0.004975292522898553
+    }
+  },
+  "MECN": {
+    "source": "VEX/4 Mecanum Wheel (276-1447) .step",
+    "sourceSHA256": "273123a97d0ab978768d5ea9ef8c32009ed42e185a7684c20cb39ba87bae2a3b",
+    "sourceRoots": 1,
+    "registration": [
+      -1.0,
+      -0.0,
+      -0.0,
+      0.01859500000000125,
+      -0.0,
+      -0.0,
+      -1.0,
+      -0.013700000000000045,
+      0.0,
+      1.0,
+      0.0,
+      -0.028710000000000235,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.44317037809284915,
+      "surface_max_mm": 0.6448379112924513
+    },
+    "notes": "Original VEX 276-1447 CAD with nominal dimensions preserved. The legacy display mesh differs at the roller envelope by up to 0.69 mm; the CAD is not stretched to fit that mesh."
+  },
+  "SCRW-2.25in": {
+    "source": "VEX/#8-32 x 2.250 Star Drive Screw (276-8015).step",
+    "sourceSHA256": "66b973ad63342f92822831b3c892a2a4c137b69fd5cde25de892db92b18b677c",
+    "sourceRoots": 1,
+    "registration": [
+      -1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "validation": {
+      "surface_p95_mm": 0.3778096288298349,
+      "surface_max_mm": 0.3880947829102729
+    },
+    "notes": "Original VEX 276-8015 CAD at nominal 2.250-inch shank length; aligned at the underside of the head. The legacy display mesh is about 0.54 mm shorter and slightly undersized. CAD dimensions are not scaled to that mesh."
+  },
+  "TWHL-V1-2.75in": {
+    "source": "VEX/2.75 Wheel (276-1496) .step",
+    "sourceSHA256": "5c5ee4df4b16539b95a3501e6e8863fe9acfd523a7936bc56017d63c400df22c",
+    "sourceRoots": 1,
+    "registration": [
+      -1.0,
+      -0.0,
+      -0.0,
+      25.125197341002888,
+      0.0,
+      1.0,
+      0.0,
+      -39.05554297330792,
+      0.0,
+      0.0,
+      1.0,
+      -36.906958207584665,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "validation": {
+      "surface_p95_mm": 0.02062541195399907,
+      "surface_max_mm": 0.03219223862256793
+    }
+  }
+}

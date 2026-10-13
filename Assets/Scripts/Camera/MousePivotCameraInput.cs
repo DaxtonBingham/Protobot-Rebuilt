@@ -23,6 +23,8 @@ namespace Protobot {
         [SerializeField] private InputEvent orbitInput;
         [SerializeField] private InputEvent panInput;
 
+        internal bool UsesNavigationInput(InputEvent input) => input == orbitInput || input == panInput;
+
         bool disableOrbitInput = false;
         bool disablePanInput = false;
 

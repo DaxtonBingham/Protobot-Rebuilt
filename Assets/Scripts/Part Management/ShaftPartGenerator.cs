@@ -34,7 +34,7 @@ public class ShaftPartGenerator : PartGenerator {
             normals = refMesh.normals
         };
 
-        float zScale = float.Parse(param2.value);
+        float zScale = PartParameterValue.Parse(param2.value);
 
         var vertices = mesh.vertices;
 
@@ -61,24 +61,24 @@ public class ShaftPartGenerator : PartGenerator {
         }
 
         Vector3 scale = temp.transform.localScale;
-        scale.z = float.Parse(param2.value);
-        temp.transform.localScale = scale;
+        scale.z = PartParameterValue.Parse(param2.value);
 
         GameObject newObj = Instantiate(temp, position, rotation);
+        newObj.transform.localScale = scale;
         string shaftType;
         var partList = newObj.AddComponent<PartName>();
 
         if(param1.value == "High Strength") 
         { 
             shaftType = "\" HS Shaft"; 
-            partList.weightInGrams = float.Parse(param2.value) * 6.5f;
+            partList.weightInGrams = scale.z * 6.5f;
         } else 
         { 
             shaftType = "\" Shaft"; 
-            partList.weightInGrams = float.Parse(param2.value) * 1.9f;
+            partList.weightInGrams = scale.z * 1.9f;
         }
 
-        partList.name = float.Parse(param2.value) + shaftType;
+        partList.name = PartParameterValue.Format(scale.z) + shaftType;
 
         SetId(newObj);
         RemoveDataScripts(newObj);

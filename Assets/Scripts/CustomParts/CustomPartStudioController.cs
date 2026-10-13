@@ -114,6 +114,12 @@ namespace Protobot.CustomParts {
 
         private bool studioOpen;
         private bool hasUnsavedChanges;
+        private string savedHistoryKey;
+        private CustomPartDefinition discardDefinition;
+        private string fileStatus = string.Empty;
+        private uint copiesRevision = uint.MaxValue;
+        private string copiesDefinitionId;
+        private bool hasPlacedCopies;
         private bool showCloseDialog;
         private bool showLibrary;
         private string librarySearch = string.Empty;
@@ -384,16 +390,7 @@ namespace Protobot.CustomParts {
                 RefreshGeometryValidation(false);
                 ApplyLivePreviewIfNeeded(force: false);
             }
-            HandleUndoRedoHotkeys();
             CommitHistoryIfReady();
-
-            if (Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame) {
-                if (showCloseDialog) {
-                    showCloseDialog = false;
-                    return;
-                }
-                RequestCloseStudio();
-            }
         }
 
         private void EnsureReferences() {
@@ -627,6 +624,9 @@ namespace Protobot.CustomParts {
             if (!studioOpen) return;
             EnsureGuiResources();
 
+            HandleUndoRedoHotkeys();
+            if (!studioOpen) return;
+
             EnsureWorkingDefinition();
             GUI.enabled = !showCloseDialog;
             DrawStudioBackdrop();
@@ -671,7 +671,10 @@ namespace Protobot.CustomParts {
             GUI.enabled = !showCloseDialog && geometryValid;
             if (GUI.Button(new Rect(right - 220, 16, 144, 32), IsStandaloneDefinitionMode ? "Insert part" : "Apply changes", primaryButtonStyle)) FinishAndInsert();
             GUI.enabled = !showCloseDialog;
-            if (GUI.Button(new Rect(right - 362, 16, 134, 32), "Save to library", buttonStyle)) SaveWorkingDefinition();
+            var saveLabel = UpdatesPlacedCopies()
+                ? new GUIContent("Save + update copies", "Saving this library design also updates its placed copies. Open a selected part to edit just that instance.")
+                : new GUIContent("Save to library");
+            if (GUI.Button(new Rect(right - 362, 16, 134, 32), saveLabel, buttonStyle)) SaveWorkingDefinition();
             if (Screen.width > 950) GUI.Label(new Rect(LeftPanelWidth + 16, 21, Screen.width - LeftPanelWidth - 402, 24), workingDefinition.name + (hasUnsavedChanges ? "  *" : ""), labelStyle);
         }
 
@@ -1004,7 +1007,9 @@ namespace Protobot.CustomParts {
             GUILayout.Label(geometryPending ? "Checking geometry..." : geometryValid ? "Ready to insert. Your part will follow the cursor until you place it." : "Check for crossing edges, overlapping holes, or cutouts outside the outline.", wrappedMutedLabelStyle);
             GUILayout.Space(20);
             if (IsStandaloneDefinitionMode && GUILayout.Button("Update all placed copies", buttonStyle, GUILayout.Height(32))) {
-                if (RefreshGeometryValidation(true)) { SaveWorkingDefinition(); CustomPartRuntimeUpdater.ApplyDefinitionToAllInstances(workingDefinition.definitionId); }
+                if (RefreshGeometryValidation(true)) {
+                    SaveWorkingDefinition();
+                }
             }
         }
 
@@ -1036,7 +1041,8 @@ namespace Protobot.CustomParts {
             DrawFilledRect(new Rect(0, rect.y, rect.width, 1), UiBorder);
             var old = GUI.contentColor;
             GUI.contentColor = geometryValid ? OuterLoopColor : UiWarning;
-            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), geometryPending ? "Checking geometry...  /  All dimensions in inches" : geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.", labelStyle);
+            string status = !string.IsNullOrEmpty(fileStatus) ? fileStatus : geometryPending ? "Checking geometry...  /  All dimensions in inches" : geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.";
+            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), new GUIContent(status, status), labelStyle);
             GUI.contentColor = old;
             GUI.Label(new Rect(Screen.width - 180, rect.y + 10, 166, 24), hasUnsavedChanges ? "Unsaved design" : "Saved to library", mutedLabelStyle);
         }
@@ -1390,7 +1396,6 @@ namespace Protobot.CustomParts {
             studioOpen = true;
             IsStudioOpen = true;
             showCloseDialog = false;
-            hasUnsavedChanges = false;
             canvasZoom = 1f;
             canvasOrigin = Vector2.zero;
             ResetDragState();
@@ -1416,6 +1421,21 @@ namespace Protobot.CustomParts {
 
         private void RequestCloseStudio() {
             RequestStudioAction(ForceCloseStudio);
+        }
+
+        public void RequestCloseBeforeAction(Action action) {
+            RequestStudioAction(() => {
+                ForceCloseStudio();
+                StartCoroutine(ContinueAfterClose(action));
+            });
+        }
+
+        private IEnumerator ContinueAfterClose(Action action) {
+            // Restore the project camera and inputs before continuing its save/quit
+            // flow, and don't recursively quit from inside wantsToQuit callbacks.
+            yield return null;
+            while (restoreAfterCloseRoutine != null) yield return null;
+            action?.Invoke();
         }
 
         private void RequestStudioAction(Action action) {
@@ -1450,7 +1470,9 @@ namespace Protobot.CustomParts {
             GUILayout.BeginArea(rect, panelStyle);
             GUILayout.Label("Keep your changes?", headerStyle);
             GUILayout.Space(12);
-            GUILayout.Label("Save this design to your library before continuing, or discard these changes.", wrappedMutedLabelStyle);
+            GUILayout.Label(UpdatesPlacedCopies()
+                ? "Save this library design and update its placed copies before continuing, or discard these changes."
+                : "Save this design to your library before continuing, or discard these changes.", wrappedMutedLabelStyle);
             GUILayout.FlexibleSpace();
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Save & continue", primaryButtonStyle, GUILayout.Height(34))) {
@@ -1460,7 +1482,7 @@ namespace Protobot.CustomParts {
                 var next = pendingStudioAction; pendingStudioAction = null; next?.Invoke();
             }
             if (GUILayout.Button("Discard", buttonStyle, GUILayout.Height(34))) {
-                hasUnsavedChanges = false;
+                DiscardWorkingChanges();
                 showCloseDialog = false;
                 var next = pendingStudioAction; pendingStudioAction = null; next?.Invoke();
             }
@@ -1473,6 +1495,15 @@ namespace Protobot.CustomParts {
             disabledBehaviours.Clear();
             DisableBehaviourIfEnabled<GraphicRaycaster>();
             DisableBehaviourIfEnabled<BaseInputModule>();
+            // Studio handles its own editing shortcuts. Keep camera navigation
+            // available, but do not let Ctrl+S, Delete, or tool hotkeys reach the
+            // underlying project while this workspace has keyboard focus.
+            var cameras = FindObjectsOfType<MousePivotCameraInput>(true);
+            foreach (var input in FindObjectsOfType<Protobot.InputEvents.InputEvent>(true)) {
+                if (!input.enabled || cameras.Any(camera => camera.UsesNavigationInput(input))) continue;
+                input.enabled = false;
+                disabledBehaviours.Add(input);
+            }
         }
 
         private void RestoreAfterClose() {
@@ -1618,9 +1649,30 @@ namespace Protobot.CustomParts {
             ResetHistoryWithCurrentDefinition();
         }
 
+        private bool UpdatesPlacedCopies() {
+            if (launchMode != StudioLaunchMode.Definition || workingDefinition == null) return false;
+            string id = workingDefinition.definitionId;
+            if (copiesDefinitionId == id && copiesRevision == RobotDocument.Revision) return hasPlacedCopies;
+            copiesDefinitionId = id;
+            copiesRevision = RobotDocument.Revision;
+            hasPlacedCopies = false;
+            var records = RobotDocument.ActiveSnapshot(out int count);
+            for (int i = 0; i < count; i++) {
+                if (records[i].View != null && records[i].View.customDefinitionId == id) {
+                    hasPlacedCopies = true; break;
+                }
+            }
+            return hasPlacedCopies;
+        }
+
         private void SaveWorkingDefinition() {
             EnsureWorkingDefinition();
             EnsureDefinitionIntegrity(workingDefinition);
+            bool updateCopies = UpdatesPlacedCopies();
+            if (updateCopies && !RefreshGeometryValidation(true)) {
+                fileStatus = "Fix the geometry before updating placed copies. Your changes are still open.";
+                return;
+            }
             CustomPartDefinition definitionToSave = workingDefinition.CloneDeep();
 
             // In selected-instance mode, saving should not overwrite the shared source definition.
@@ -1632,11 +1684,21 @@ namespace Protobot.CustomParts {
 
             definitionToSave.Touch();
 
-            if (!CustomPartRegistry.SaveToLibrary(definitionToSave)) return;
+            if (!CustomPartRegistry.SaveToLibrary(definitionToSave)) {
+                fileStatus = "Could not save the library. Your changes are still open.";
+                return;
+            }
+
+            // PBBs store the definition by ID. Its visible instances must change
+            // with it, otherwise reopening the file changes the robot silently.
+            if (updateCopies) CustomPartRuntimeUpdater.ApplyDefinitionToAllInstances(definitionToSave.definitionId);
 
             workingDefinition = definitionToSave.CloneDeep();
             sourceDefinitionId = workingDefinition.definitionId;
             hasUnsavedChanges = false;
+            savedHistoryKey = HistoryKey(workingDefinition);
+            discardDefinition = workingDefinition.CloneDeep();
+            fileStatus = string.Empty;
         }
 
         private void FinishAndInsert() {
@@ -1728,6 +1790,7 @@ namespace Protobot.CustomParts {
             }
 
             if (!importedOk || imported == null) {
+                fileStatus = string.IsNullOrEmpty(CustomPartImportExport.LastError) ? "Unsupported file type." : CustomPartImportExport.LastError;
                 return;
             }
 
@@ -1780,17 +1843,19 @@ namespace Protobot.CustomParts {
             }
 
             string extension = Path.GetExtension(path).ToLowerInvariant();
+            bool exported = false;
             switch (extension) {
             case ".json":
-                CustomPartImportExport.ExportJson(workingDefinition, path);
+                exported = CustomPartImportExport.ExportJson(workingDefinition, path);
                 break;
             case ".svg":
-                CustomPartImportExport.ExportSvg(workingDefinition, path);
+                exported = CustomPartImportExport.ExportSvg(workingDefinition, path);
                 break;
             case ".dxf":
-                CustomPartImportExport.ExportDxf(workingDefinition, path);
+                exported = CustomPartImportExport.ExportDxf(workingDefinition, path);
                 break;
             }
+            fileStatus = exported ? "Exported " + Path.GetFileName(path) : string.IsNullOrEmpty(CustomPartImportExport.LastError) ? "Choose a JSON, SVG, or DXF filename." : CustomPartImportExport.LastError;
         }
 
         private void DrawCanvas() {
@@ -3511,7 +3576,8 @@ namespace Protobot.CustomParts {
             GUI.SetNextControlName(key);
             string edited = GUILayout.TextField(current, textFieldStyle, GUILayout.Height(24f));
             fieldCache[key] = edited;
-            if (float.TryParse(edited, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsed)) {
+            if (float.TryParse(edited, NumberStyles.Float, CultureInfo.InvariantCulture, out float parsed)
+                && !float.IsNaN(parsed) && !float.IsInfinity(parsed)) {
                 value = parsed;
             }
             GUILayout.EndHorizontal();
@@ -3583,22 +3649,38 @@ namespace Protobot.CustomParts {
         }
 
         private void HandleUndoRedoHotkeys() {
-            Keyboard key = Keyboard.current;
-            if (key == null || showCloseDialog) return;
-            bool ctrl = key.leftCtrlKey.isPressed || key.rightCtrlKey.isPressed;
-            if (ctrl && key.sKey.wasPressedThisFrame) { SaveWorkingDefinition(); return; }
-            if (typingInField) return;
-            if (ctrl) {
-                if (key.zKey.wasPressedThisFrame) { if (key.leftShiftKey.isPressed || key.rightShiftKey.isPressed) RedoHistory(); else UndoHistory(); }
-                if (key.yKey.wasPressedThisFrame) RedoHistory();
-                if (key.enterKey.wasPressedThisFrame) FinishAndInsert();
-                return;
+            // Use the modifiers attached to the key event. At a low frame cap,
+            // Ctrl can already be released by the time Update polls its state.
+            Event evt = Event.current;
+            if (evt == null || evt.type != EventType.KeyDown) return;
+            if (evt.keyCode == KeyCode.Escape) {
+                if (showCloseDialog) { showCloseDialog = false; pendingStudioAction = null; }
+                else RequestCloseStudio();
+                evt.Use(); return;
             }
-            if (key.vKey.wasPressedThisFrame) SetActiveTool(CanvasTool.Select);
-            if (key.pKey.wasPressedThisFrame) SetActiveTool(CanvasTool.AddPoint);
-            if (key.bKey.wasPressedThisFrame) SetActiveTool(CanvasTool.ToggleBezier);
-            if (key.hKey.wasPressedThisFrame) { SetActiveTool(CanvasTool.AddHole); activeTab = StudioTab.Holes; }
-            if (key.fKey.wasPressedThisFrame) fitOnNextCanvas = true;
+            if (showCloseDialog) return;
+            bool ctrl = evt.control || evt.command;
+            if (ctrl && evt.keyCode == KeyCode.S) { SaveWorkingDefinition(); evt.Use(); return; }
+            if (!string.IsNullOrEmpty(GUI.GetNameOfFocusedControl())) return;
+            if (ctrl) {
+                switch (evt.keyCode) {
+                    case KeyCode.Z: if (evt.shift) RedoHistory(); else UndoHistory(); break;
+                    case KeyCode.Y: RedoHistory(); break;
+                    case KeyCode.Return: case KeyCode.KeypadEnter: FinishAndInsert(); break;
+                    default: return;
+                }
+            } else {
+                if (evt.alt) return;
+                switch (evt.keyCode) {
+                    case KeyCode.V: SetActiveTool(CanvasTool.Select); break;
+                    case KeyCode.P: SetActiveTool(CanvasTool.AddPoint); break;
+                    case KeyCode.B: SetActiveTool(CanvasTool.ToggleBezier); break;
+                    case KeyCode.H: SetActiveTool(CanvasTool.AddHole); activeTab = StudioTab.Holes; break;
+                    case KeyCode.F: fitOnNextCanvas = true; break;
+                    default: return;
+                }
+            }
+            evt.Use();
         }
 
         private void ResetHistoryWithCurrentDefinition() {
@@ -3613,6 +3695,29 @@ namespace Protobot.CustomParts {
 
             history.Add(workingDefinition.CloneDeep());
             historyIndex = 0;
+            savedHistoryKey = hasUnsavedChanges ? null : HistoryKey(workingDefinition);
+            discardDefinition = workingDefinition.CloneDeep();
+            fileStatus = string.Empty;
+        }
+
+        private static string HistoryKey(CustomPartDefinition definition) {
+            var snapshot = definition.CloneDeep();
+            // Saving timestamps and forking a selected instance are not sketch edits.
+            snapshot.metadata = new DefinitionMetadata {
+                createdAtUtc = string.Empty, modifiedAtUtc = string.Empty,
+                appVersion = string.Empty, notes = definition.metadata?.notes ?? string.Empty
+            };
+            snapshot.definitionId = string.Empty;
+            return snapshot.GetDeterministicHash();
+        }
+
+        private void DiscardWorkingChanges() {
+            workingDefinition = discardDefinition?.CloneDeep();
+            hasUnsavedChanges = savedHistoryKey == null;
+            historyPending = false;
+            fieldCache.Clear();
+            InvalidateGeometry();
+            QueueLivePreviewUpdate();
         }
 
         private void CommitHistoryIfReady() {
@@ -3635,9 +3740,9 @@ namespace Protobot.CustomParts {
                 return;
             }
 
-            string currentHash = workingDefinition.GetDeterministicHash();
+            string currentHash = HistoryKey(workingDefinition);
             if (historyIndex >= 0 && historyIndex < history.Count) {
-                string previousHash = history[historyIndex].GetDeterministicHash();
+                string previousHash = HistoryKey(history[historyIndex]);
                 if (string.Equals(currentHash, previousHash, StringComparison.Ordinal)) {
                     return;
                 }
@@ -3656,19 +3761,25 @@ namespace Protobot.CustomParts {
         }
 
         private void UndoHistory() {
+            // The shortcut runs before the ordinary end-of-edit commit in Update.
+            // Include that pending edit so Ctrl+Z never skips the most recent action.
+            ResetDragState();
+            if (historyPending) { CommitHistorySnapshot(); historyPending = false; }
             if (historyIndex <= 0 || history.Count == 0) {
                 return;
             }
 
             applyingHistory = true;
             historyIndex--;
+            string currentId = workingDefinition.definitionId;
             workingDefinition = history[historyIndex].CloneDeep();
+            workingDefinition.definitionId = currentId;
             EnsureDefinitionIntegrity(workingDefinition);
             selectedAnchorIndex = -1;
             selectedHoleIndex = -1;
             ClearSegmentSelection();
             fieldCache.Clear();
-            hasUnsavedChanges = true;
+            hasUnsavedChanges = savedHistoryKey == null || HistoryKey(workingDefinition) != savedHistoryKey;
             historyPending = false;
             applyingHistory = false;
             InvalidateGeometry();
@@ -3676,19 +3787,23 @@ namespace Protobot.CustomParts {
         }
 
         private void RedoHistory() {
+            ResetDragState();
+            if (historyPending) { CommitHistorySnapshot(); historyPending = false; }
             if (historyIndex < 0 || historyIndex >= history.Count - 1) {
                 return;
             }
 
             applyingHistory = true;
             historyIndex++;
+            string currentId = workingDefinition.definitionId;
             workingDefinition = history[historyIndex].CloneDeep();
+            workingDefinition.definitionId = currentId;
             EnsureDefinitionIntegrity(workingDefinition);
             selectedAnchorIndex = -1;
             selectedHoleIndex = -1;
             ClearSegmentSelection();
             fieldCache.Clear();
-            hasUnsavedChanges = true;
+            hasUnsavedChanges = savedHistoryKey == null || HistoryKey(workingDefinition) != savedHistoryKey;
             historyPending = false;
             applyingHistory = false;
             InvalidateGeometry();
@@ -3697,8 +3812,9 @@ namespace Protobot.CustomParts {
 
         private void MarkDirty() {
             InvalidateGeometry();
-            fieldCache.Remove("outline_width");
-            fieldCache.Remove("outline_height");
+            if (!IsControlFocused("outline_width")) fieldCache.Remove("outline_width");
+            if (!IsControlFocused("outline_height")) fieldCache.Remove("outline_height");
+            fileStatus = string.Empty;
             hasUnsavedChanges = true;
             if (!applyingHistory) {
                 historyPending = true;

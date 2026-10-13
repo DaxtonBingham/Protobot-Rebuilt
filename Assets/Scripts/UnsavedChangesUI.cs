@@ -22,12 +22,13 @@ namespace Protobot.UI {
 
         private void OnEnable() {
             saveButton.onClick.AddListener(() => {
-                OnPressSave?.Invoke();
                 gameObject.SetActive(false);
+                // A failed/cancelled save can reopen this prompt for retry or cancel.
+                OnPressSave?.Invoke();
             });
             discardButton.onClick.AddListener(() => {
-                OnPressDiscard?.Invoke();
                 gameObject.SetActive(false);
+                OnPressDiscard?.Invoke();
             });
         }
         

@@ -1,0 +1,398 @@
+{
+  "BLOK-Red": {
+    "source": "VEX/276-9142 V5RC Push Back.STEP",
+    "sourceSHA256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "sourceLabel": "0:1:1:71",
+    "registration": [
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      -0.0,
+      -0.0,
+      -1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 3626,
+      "cadVertices": 3701,
+      "referenceToCAD_p95_mm": 8.889177488328151,
+      "cadToReference_p95_mm": 0.5131422146929636,
+      "extentError_mm": [
+        3.999999999848569e-05,
+        3.999999999848569e-05,
+        3.999999999848569e-05
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "surface_p95_mm": 0.011243572066263053,
+      "surface_max_mm": 0.016076938887569846
+    }
+  },
+  "BLOK-Blue": {
+    "source": "VEX/276-9142 V5RC Push Back.STEP",
+    "sourceSHA256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "sourceLabel": "0:1:1:72",
+    "registration": [
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      -0.0,
+      -0.0,
+      -1.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 3626,
+      "cadVertices": 3701,
+      "referenceToCAD_p95_mm": 8.889177488328151,
+      "cadToReference_p95_mm": 0.5131422146929636,
+      "extentError_mm": [
+        3.999999999848569e-05,
+        3.999999999848569e-05,
+        3.999999999848569e-05
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "surface_p95_mm": 0.011243572066263053,
+      "surface_max_mm": 0.016076938887569846
+    }
+  },
+  "SAKE": {
+    "source": "VEX/276-8868-000 2024-09-16.STEP",
+    "sourceSHA256": "f9ba2b33fda20407df5c5d702ec98f9f7fa99196a284ec17314e0ff60fddd10f",
+    "sourceLabel": "0:1:1:34",
+    "registration": [
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.05033804029562816,
+      0.0,
+      0.0,
+      1.0,
+      -0.009600634501353511,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 142873,
+      "cadVertices": 209599,
+      "referenceToCAD_p95_mm": 0.7576946462893083,
+      "cadToReference_p95_mm": 2.9122835431637393,
+      "extentError_mm": [
+        0.09129148199798465,
+        0.13252290615491802,
+        0.11895070200273494
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "surface_p95_mm": 0.06773250453938362,
+      "surface_max_mm": 0.09172425262672391
+    }
+  },
+  "RING-Red": {
+    "source": "VEX/276-8868-000 2024-09-16.STEP",
+    "sourceSHA256": "f9ba2b33fda20407df5c5d702ec98f9f7fa99196a284ec17314e0ff60fddd10f",
+    "sourceLabel": "0:1:1:74",
+    "registration": [
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      -0.0,
+      -1.0,
+      -0.0,
+      0.0,
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 37811,
+      "cadVertices": 49809,
+      "referenceToCAD_p95_mm": 1.6066571360747748,
+      "cadToReference_p95_mm": 1.8604355547229243,
+      "extentError_mm": [
+        2.3336400000000026,
+        0.6835199999999872,
+        2.428634478172455
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "surface_p95_mm": 1.1749563301316077,
+      "surface_max_mm": 1.2173372019771707
+    },
+    "notes": "Original VEX 276-8868-001 ring CAD. The legacy mesh is approximately 1.3 percent undersized (up to 1.22 mm radial surface deviation); preserve manufacturer dimensions without stretching CAD."
+  },
+  "RING-Blue": {
+    "source": "VEX/276-8868-000 2024-09-16.STEP",
+    "sourceSHA256": "f9ba2b33fda20407df5c5d702ec98f9f7fa99196a284ec17314e0ff60fddd10f",
+    "sourceLabel": "0:1:1:73",
+    "registration": [
+      -0.0,
+      -0.0,
+      -1.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      0.0,
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 37811,
+      "cadVertices": 40982,
+      "referenceToCAD_p95_mm": 1.5969400298371736,
+      "cadToReference_p95_mm": 1.9220311438449615,
+      "extentError_mm": [
+        2.3336400000000026,
+        0.6835199999999872,
+        2.428634478172455
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "surface_p95_mm": 1.176829759809147,
+      "surface_max_mm": 1.2183533270119296
+    },
+    "notes": "Original VEX 276-8868-001 ring CAD. The legacy mesh is approximately 1.3 percent undersized (up to 1.22 mm radial surface deviation); preserve manufacturer dimensions without stretching CAD."
+  },
+  "LGOL": {
+    "source": "VEX/276-9142 V5RC Push Back.STEP",
+    "sourceSHA256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "sourceLabel": "0:1:1:34",
+    "registration": [
+      -1.0,
+      -0.0,
+      -0.0,
+      0.0,
+      0.0,
+      1.0,
+      0.0,
+      -389.358255,
+      0.0,
+      0.0,
+      1.0,
+      7.500000003801688e-05,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 112226,
+      "cadVertices": 131622,
+      "referenceToCAD_p95_mm": 0.7210158645249702,
+      "cadToReference_p95_mm": 0.24247808399402734,
+      "extentError_mm": [
+        0.00010839025338782449,
+        0.0032109419389030336,
+        0.0006500000017695129
+      ],
+      "centerError_mm": [
+        1.3358203432289883e-12,
+        -4.7097384481276094e-07,
+        -9.094947017729282e-13
+      ],
+      "surface_p95_mm": 0.010584713073239799,
+      "surface_max_mm": 0.01677168835769183
+    },
+    "excludedSourceLabels": [
+      "39",
+      "40",
+      "41"
+    ]
+  },
+  "CGOL": {
+    "source": "VEX/276-9142 V5RC Push Back.STEP",
+    "sourceSHA256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "sourceLabel": "0:1:1:45",
+    "registration": [
+      0.7071048847206559,
+      -2.2028025872809643e-06,
+      -0.7071086776439224,
+      0.003947099309649984,
+      2.1548489103434743e-06,
+      0.9999999999972168,
+      -9.603875859397501e-07,
+      -12.700475513159157,
+      -0.7071086776440684,
+      8.446176107054247e-07,
+      -0.7071048847234341,
+      -0.004211667534204118,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 69256,
+      "cadVertices": 80530,
+      "referenceToCAD_p95_mm": 1.242410786107547,
+      "cadToReference_p95_mm": 0.23743521641401996,
+      "extentError_mm": [
+        3.859338471556839e-05,
+        0.00048765320190113925,
+        3.617463789851172e-06
+      ],
+      "centerError_mm": [
+        0.003403439493240512,
+        -0.0005056653119765997,
+        -0.004191375992036228
+      ],
+      "surface_p95_mm": 0.010948705294689977,
+      "surface_max_mm": 0.02149169623829078
+    },
+    "excludedSourceLabels": [
+      "39",
+      "40",
+      "41"
+    ]
+  },
+  "LOAD": {
+    "source": "VEX/276-9142 V5RC Push Back.STEP",
+    "sourceSHA256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "sourceLabel": "0:1:1:69",
+    "registration": [
+      -1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 61932,
+      "cadVertices": 71185,
+      "referenceToCAD_p95_mm": 1.2386290763537913,
+      "cadToReference_p95_mm": 2.223362150147212,
+      "extentError_mm": [
+        0.03288703020285766,
+        0.00034999999968476914,
+        0.009736052416371876
+      ],
+      "centerError_mm": [
+        -7.105427357601002e-15,
+        -5.684341886080802e-14,
+        7.105427357601002e-15
+      ],
+      "surface_p95_mm": 0.00704791564994346,
+      "surface_max_mm": 0.04122518938005651
+    },
+    "includedSourceLabels": [
+      "70",
+      "73",
+      "54"
+    ]
+  },
+  "DISC": {
+    "source": "VEX/276-7500-000 Spin Up - Competition Field.STEP",
+    "sourceSHA256": "424c98d7434048b75775c9e27a4c9055e997822e560f9cecbf359a2e485d55c6",
+    "sourceLabel": "0:1:1:62",
+    "registration": [
+      -0.7073492440556867,
+      0.0,
+      -0.7068642351497554,
+      0.018805563626172743,
+      0.0,
+      1.0,
+      0.0,
+      -4.999999999988347e-05,
+      -0.7068642351497554,
+      0.0,
+      0.7073492440556867,
+      -0.018805636057760436,
+      0.0,
+      0.0,
+      0.0,
+      1.0
+    ],
+    "sourceRoots": 1,
+    "validation": {
+      "referenceVertices": 2571,
+      "cadVertices": 25486,
+      "referenceToCAD_p95_mm": 12.219486371346767,
+      "cadToReference_p95_mm": 8.59195952828247,
+      "extentError_mm": [
+        0.018608932692870894,
+        0.010200000000001097,
+        0.009504443981995792
+      ],
+      "centerError_mm": [
+        0.0,
+        0.0,
+        7.105427357601002e-15
+      ],
+      "surface_p95_mm": 0.44738606180515983,
+      "surface_max_mm": 0.7033004384378212
+    },
+    "notes": "Original VEX 276-7500-001 disc CAD at nominal dimensions. Molded details differ from the legacy display mesh by up to 0.71 mm; the outer envelope agrees within 0.02 mm."
+  }
+}

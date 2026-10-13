@@ -1,0 +1,1589 @@
+[
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Angles/Aluminum/1x1x35 Aluminum Angle (217-6484).step",
+    "size": 1771131,
+    "file": "TlorschCode/Angles/Aluminum/1x1x35 Aluminum Angle (217-6484).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Angles/Aluminum/1x1x35%20Aluminum%20Angle%20%28217-6484%29.step",
+    "sha256": "aa1bfe9f158d55d96369c8e6b9a4d1fe113817f071a2ffd7d8d0b355118aff2e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Angles/Steel/2x2x35 Steel Angle (275-1143).step",
+    "size": 4666431,
+    "file": "TlorschCode/Angles/Steel/2x2x35 Steel Angle (275-1143).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Angles/Steel/2x2x35%20Steel%20Angle%20%28275-1143%29.step",
+    "sha256": "83f0921e6f879a12cb70f3136a1429a8a418eb5b0af63d910f8f1c22b1a66d4b"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Angles/Steel/3x3x35 Steel Angle (275-1144).step",
+    "size": 7537712,
+    "file": "TlorschCode/Angles/Steel/3x3x35 Steel Angle (275-1144).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Angles/Steel/3x3x35%20Steel%20Angle%20%28275-1144%29.step",
+    "sha256": "e34a86e3a4282dcbbed77fe45fb77ffdd1b0e59d8868bc1b9731eeb8002d131f"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bars/Drive Shaft Bar Lock (275-1065).step",
+    "size": 63784,
+    "file": "TlorschCode/Bars/Drive Shaft Bar Lock (275-1065).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bars/Drive%20Shaft%20Bar%20Lock%20%28275-1065%29.step",
+    "sha256": "6e7375941dedb98ce044b3d9bb1ef84edc599f9ddbf0f9553c2fd0f1a6ac5a50"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/Bearing Blocks (276-2016-001).step",
+    "size": 269883,
+    "file": "TlorschCode/Bearings/Bearing Blocks (276-2016-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/Bearing%20Blocks%20%28276-2016-001%29.step",
+    "sha256": "f10817581f544a2b1cca5ad9a00a4d66865848b1033a49ab3ebab5b7185a9234"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/Flat Bearing (276-1209).step",
+    "size": 318396,
+    "file": "TlorschCode/Bearings/Flat Bearing (276-1209).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/Flat%20Bearing%20%28276-1209%29.step",
+    "sha256": "4f4af27ceda019acac1059fad84efa66d38c712e8912a974fe2c0c1eea60f35a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/High Strength Pillow Block Bearing (276-8383).step",
+    "size": 1330643,
+    "file": "TlorschCode/Bearings/High Strength Pillow Block Bearing (276-8383).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/High%20Strength%20Pillow%20Block%20Bearing%20%28276-8383%29.step",
+    "sha256": "b69b7ebd636a2a7579105c85b883ea28d3e79a24050e7ceb2199b5e1f96a1ef7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/High Strength Shaft Bearing (276-3521).step",
+    "size": 946055,
+    "file": "TlorschCode/Bearings/High Strength Shaft Bearing (276-3521).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/High%20Strength%20Shaft%20Bearing%20%28276-3521%29.step",
+    "sha256": "dcc987ddc2cdb1f063a752e12252552e3a10d54ad782aecbd1a574cecb928522"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/Lock Bar (276-2016-002).step",
+    "size": 1035378,
+    "file": "TlorschCode/Bearings/Lock Bar (276-2016-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/Lock%20Bar%20%28276-2016-002%29.step",
+    "sha256": "e077de4a0236b8ee933677df942da38ce971a6e9ed0932c63b772e4dba386181"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Bearings/Low Profile Bearing Flat (276-8023).step",
+    "size": 658322,
+    "file": "TlorschCode/Bearings/Low Profile Bearing Flat (276-8023).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Bearings/Low%20Profile%20Bearing%20Flat%20%28276-8023%29.step",
+    "sha256": "3599a885916dd637b7219a9d4a2c6f71ab91f9a184f953989e3287567376ebd0"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "C Channels/Aluminum/1x2x1x35 Aluminum C-Channel (276-2289).step",
+    "size": 4256806,
+    "file": "TlorschCode/C Channels/Aluminum/1x2x1x35 Aluminum C-Channel (276-2289).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/C%20Channels/Aluminum/1x2x1x35%20Aluminum%20C-Channel%20%28276-2289%29.step",
+    "sha256": "26b4f8a6f52869e96b693c6a1c7011691041cfce78e505df22ece751bc80c101"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "C Channels/Aluminum/1x3x1x35 Aluminum C-Channel (276-4359).step",
+    "size": 4161720,
+    "file": "TlorschCode/C Channels/Aluminum/1x3x1x35 Aluminum C-Channel (276-4359).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/C%20Channels/Aluminum/1x3x1x35%20Aluminum%20C-Channel%20%28276-4359%29.step",
+    "sha256": "9aedcefaa3944f92350dc79f617bec23da81a3e506b8d3868213a62a7472d742"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "C Channels/Aluminum/1x5x1x35 Aluminum C-Channel (276-2298).step",
+    "size": 5840317,
+    "file": "TlorschCode/C Channels/Aluminum/1x5x1x35 Aluminum C-Channel (276-2298).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/C%20Channels/Aluminum/1x5x1x35%20Aluminum%20C-Channel%20%28276-2298%29.step",
+    "sha256": "ae01629a94959320e6636d37e10aaacc1023bc872fa672006bffdd17b81c0702"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "C Channels/U-Channel 2x2x2x20 (276-7285).step",
+    "size": 3979549,
+    "file": "TlorschCode/C Channels/U-Channel 2x2x2x20 (276-7285).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/C%20Channels/U-Channel%202x2x2x20%20%28276-7285%29.step",
+    "sha256": "15363d9d86750ead36e321e5f2b9cb50e91cf33d80e52d32e4a5fa12d50754fb"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Chains/High Strength Chain Links (276-2252-001).stp",
+    "size": 268417,
+    "file": "TlorschCode/Chains/High Strength Chain Links (276-2252-001).stp",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Chains/High%20Strength%20Chain%20Links%20%28276-2252-001%29.stp",
+    "sha256": "9f0df1152b6ffc74c6f2cb7eb87a2759abffa547f8272e646a4b5032f4f49df1"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Chassis Rails/2x1x25 Steel Chassis Rail (275-1145).step",
+    "size": 2116614,
+    "file": "TlorschCode/Chassis Rails/2x1x25 Steel Chassis Rail (275-1145).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Chassis%20Rails/2x1x25%20Steel%20Chassis%20Rail%20%28275-1145%29.step",
+    "sha256": "d051b9bb787ad8fcf397efcf6b5501ac56ec86dd499a5df5cf2d6a7255dbe423"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Chassis Rails/2x1x35 Steel Chassis Rail (275-1146).step",
+    "size": 2953198,
+    "file": "TlorschCode/Chassis Rails/2x1x35 Steel Chassis Rail (275-1146).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Chassis%20Rails/2x1x35%20Steel%20Chassis%20Rail%20%28275-1146%29.step",
+    "sha256": "95b6ef33a84d41ac1f4eab448a770ad851e5749263a2c24efea0952ac198fdc7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Flex Wheel Inserts/1_2 VersaHex Adapters (1_4 Square Bore, 1_4 Long) (6 Pack) (217-5950).step",
+    "size": 161561,
+    "file": "TlorschCode/Flex Wheel Inserts/1_2 VersaHex Adapters (1_4 Square Bore, 1_4 Long) (6 Pack) (217-5950).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Flex%20Wheel%20Inserts/1_2%20VersaHex%20Adapters%20%281_4%20Square%20Bore%2C%201_4%20Long%29%20%286%20Pack%29%20%28217-5950%29.step",
+    "sha256": "dce22abf8cfc51c4e15f7872056ac69e53ea3f98f6bbbacc9c6789f9770334ca"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Flex Wheel Inserts/1_2 VersaHex Adapters (1_4 Square Bore, 1_8 Long) (6 Pack) (217-5949).step",
+    "size": 161487,
+    "file": "TlorschCode/Flex Wheel Inserts/1_2 VersaHex Adapters (1_4 Square Bore, 1_8 Long) (6 Pack) (217-5949).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Flex%20Wheel%20Inserts/1_2%20VersaHex%20Adapters%20%281_4%20Square%20Bore%2C%201_8%20Long%29%20%286%20Pack%29%20%28217-5949%29.step",
+    "sha256": "a57c8a2d223e97806dda1122a69e9648c8caab6697813fb3ab676bc19f25e51e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Flex Wheel Inserts/1_2\u201d Hex Bore Plastic VersaHub v2 (217-8079).step",
+    "size": 1789103,
+    "file": "TlorschCode/Flex Wheel Inserts/1_2\u201d Hex Bore Plastic VersaHub v2 (217-8079).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Flex%20Wheel%20Inserts/1_2%E2%80%9D%20Hex%20Bore%20Plastic%20VersaHub%20v2%20%28217-8079%29.step",
+    "sha256": "40d66a050d4e37c674aa19dfed5231e2554aac3f665d093e2c5b849026796e14"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/12T Gear (276-2169-001).step",
+    "size": 338120,
+    "file": "TlorschCode/Gears & Pinions/12T Gear (276-2169-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/12T%20Gear%20%28276-2169-001%29.step",
+    "sha256": "45fd2670cf1176e56dbee08998c27e479f03148ddd02b8a3397b57586d329b39"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/36T Gear (276-2169-002).step",
+    "size": 1000883,
+    "file": "TlorschCode/Gears & Pinions/36T Gear (276-2169-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/36T%20Gear%20%28276-2169-002%29.step",
+    "sha256": "6b11a85afe25f11f59500d4cee9c5fc16b543fdbb175c63af4d13fd2af87458a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/36T High Strength Gear (276-5034).step",
+    "size": 611299,
+    "file": "TlorschCode/Gears & Pinions/36T High Strength Gear (276-5034).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/36T%20High%20Strength%20Gear%20%28276-5034%29.step",
+    "sha256": "39708bbe131cde7a2478e8d43c3f43eca376411b9b57c0f7a33ed407e521c50d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/36T High Strength Gear v2 (8-pack) (276-7747).step",
+    "size": 4496925,
+    "file": "TlorschCode/Gears & Pinions/36T High Strength Gear v2 (8-pack) (276-7747).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/36T%20High%20Strength%20Gear%20v2%20%288-pack%29%20%28276-7747%29.step",
+    "sha256": "09ff75ce256987c4c05f3bf9a0e29878bb9f51e011e1d858769bc87ddf17b30f"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/48T High Strength Gear v2 (276-7573).step",
+    "size": 5770103,
+    "file": "TlorschCode/Gears & Pinions/48T High Strength Gear v2 (276-7573).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/48T%20High%20Strength%20Gear%20v2%20%28276-7573%29.step",
+    "sha256": "9d44a731b810ae77cb9b4df053ca67621a7e4be10c31be0b55e25fe911146ce5"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/60T Gear (276-2169-003).step",
+    "size": 1320306,
+    "file": "TlorschCode/Gears & Pinions/60T Gear (276-2169-003).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/60T%20Gear%20%28276-2169-003%29.step",
+    "sha256": "6d6ba4a7be178423d5e277fac25be3adddf0a6c13ec6fd5074631ee63e5e23f3"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/60T High Strength Gear (276-5035).step",
+    "size": 1090693,
+    "file": "TlorschCode/Gears & Pinions/60T High Strength Gear (276-5035).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/60T%20High%20Strength%20Gear%20%28276-5035%29.step",
+    "sha256": "37fb91f8d4d82fbb2bf5ecfa69634dc4098e8d22a2f3b09193f9ab792a676f44"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/60T High Strength Gear v2 (8-pack) (276-7748).step",
+    "size": 7726566,
+    "file": "TlorschCode/Gears & Pinions/60T High Strength Gear v2 (8-pack) (276-7748).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/60T%20High%20Strength%20Gear%20v2%20%288-pack%29%20%28276-7748%29.step",
+    "sha256": "9d2e3d3b366512ed514e67e30b546ccc48242d6b39df832c235a25d6f7125ac1"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/72T High Strength Gear v2 (6-Pack) (276-7574).step",
+    "size": 9464265,
+    "file": "TlorschCode/Gears & Pinions/72T High Strength Gear v2 (6-Pack) (276-7574).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/72T%20High%20Strength%20Gear%20v2%20%286-Pack%29%20%28276-7574%29.step",
+    "sha256": "ba12a42804b91272843d8c56c2552fc102daf4d04581cd79d16b4cd24da4489c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/84T Gear (276-2169-004).step",
+    "size": 1735511,
+    "file": "TlorschCode/Gears & Pinions/84T Gear (276-2169-004).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/84T%20Gear%20%28276-2169-004%29.step",
+    "sha256": "5071a875a3c962f32c42c958095a1ec5a3b25233d44c50c40b1a537b0d4fe5fc"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/84T High Strength Gear (276-3438).step",
+    "size": 12535340,
+    "file": "TlorschCode/Gears & Pinions/84T High Strength Gear (276-3438).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/84T%20High%20Strength%20Gear%20%28276-3438%29.step",
+    "sha256": "03347ae000fbcf704e7d760422132057c93e5790c2982ed53d7a12f1092f276e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/84T High Strength Gear v2 (4-pack) (276-7749).step",
+    "size": 11955598,
+    "file": "TlorschCode/Gears & Pinions/84T High Strength Gear v2 (4-pack) (276-7749).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/84T%20High%20Strength%20Gear%20v2%20%284-pack%29%20%28276-7749%29.step",
+    "sha256": "79045aa578cf6cd880477d12454b606aa4a01fe35967832bb4ddd829094d41f0"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Bevel/16t Bevel Gear (276-2045-051).step",
+    "size": 1381091,
+    "file": "TlorschCode/Gears & Pinions/Bevel/16t Bevel Gear (276-2045-051).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Bevel/16t%20Bevel%20Gear%20%28276-2045-051%29.step",
+    "sha256": "5a31aeb5bf493c4a2f8cc47e834ef5a06b78fa0657703b98030e806c27076637"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Bevel/32t Bevel Gear (276-2045-052).step",
+    "size": 1988294,
+    "file": "TlorschCode/Gears & Pinions/Bevel/32t Bevel Gear (276-2045-052).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Bevel/32t%20Bevel%20Gear%20%28276-2045-052%29.step",
+    "sha256": "90fc7af032614d11abf17075a0a01d7575a6ccc4f0aa74a63fc7e572ba575978"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Drop Off Cam (276-2045-061).step",
+    "size": 1985500,
+    "file": "TlorschCode/Gears & Pinions/Drop Off Cam (276-2045-061).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Drop%20Off%20Cam%20%28276-2045-061%29.step",
+    "sha256": "9394c455126d42ef18540ca7dcd7265fb4bf2dc0b7984d39a799abe2f5776240"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Hand Crank (276-2045-001).step",
+    "size": 974437,
+    "file": "TlorschCode/Gears & Pinions/Hand Crank (276-2045-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Hand%20Crank%20%28276-2045-001%29.step",
+    "sha256": "31534dfde8111789e3f2fff35e6875d5390825f5e6f40bde5aaf16e4b44e42b4"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/High Strength and Metal/24T High Strength Gear v2 (276-7572).step",
+    "size": 1220544,
+    "file": "TlorschCode/Gears & Pinions/High Strength and Metal/24T High Strength Gear v2 (276-7572).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/High%20Strength%20and%20Metal/24T%20High%20Strength%20Gear%20v2%20%28276-7572%29.step",
+    "sha256": "b6f56719f36e7ed671fa18ac38f9c5883c7bc0590587c8610cb80e7afabc9dd2"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Lead Screw (276-2045-032).step",
+    "size": 892980,
+    "file": "TlorschCode/Gears & Pinions/Lead Screw (276-2045-032).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Lead%20Screw%20%28276-2045-032%29.step",
+    "sha256": "1c49f0844dceceaa7b6ec96793012f40e3ab7553dc977653b2de334ed7a24216"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Rack Gear v2 (276-4782).step",
+    "size": 1168407,
+    "file": "TlorschCode/Gears & Pinions/Rack Gear v2 (276-4782).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Rack%20Gear%20v2%20%28276-4782%29.step",
+    "sha256": "2aa4c0bba984d712772a7c28bfbf098510fe764f0a15d8f2d213da7f3d958f87"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gears & Pinions/Worm Gear & Wheel (276-2184-004).step",
+    "size": 1422914,
+    "file": "TlorschCode/Gears & Pinions/Worm Gear & Wheel (276-2184-004).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gears%20%26%20Pinions/Worm%20Gear%20%26%20Wheel%20%28276-2184-004%29.step",
+    "sha256": "ea3ef649667abd5311b20a9a091be27957dd7907a9be54e078d52acdaae5e74d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/30 Degree Bent Gusset (276-7758-002).step",
+    "size": 432957,
+    "file": "TlorschCode/Gussets/30 Degree Bent Gusset (276-7758-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/30%20Degree%20Bent%20Gusset%20%28276-7758-002%29.step",
+    "sha256": "9f2f2cbcc52d64f61b9fe90711fd6a5b9f32b9927a6d8e3d6d69ce4e8e942217"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/30 Degree Flat Gusset (276-7758-001).step",
+    "size": 182008,
+    "file": "TlorschCode/Gussets/30 Degree Flat Gusset (276-7758-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/30%20Degree%20Flat%20Gusset%20%28276-7758-001%29.step",
+    "sha256": "14db294020632dde0ff42edaf363bad1f4907928f1a231cff9a7136be6bf372b"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/45 Degree Bent Gusset (276-7759-002).step",
+    "size": 433180,
+    "file": "TlorschCode/Gussets/45 Degree Bent Gusset (276-7759-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/45%20Degree%20Bent%20Gusset%20%28276-7759-002%29.step",
+    "sha256": "e7c0a62b41f0b771c55e2c7762e6fa6afc401d92b9d47daee3fa12600372d08d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/45 Degree Flat Gusset (276-7759-001).step",
+    "size": 182009,
+    "file": "TlorschCode/Gussets/45 Degree Flat Gusset (276-7759-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/45%20Degree%20Flat%20Gusset%20%28276-7759-001%29.step",
+    "sha256": "afd6e58362b8efc5c2c9527aa2e5ac411e6bff3a929926e8bb4814059fd6fae3"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/45 Degree Gusset (275-1186).step",
+    "size": 61328,
+    "file": "TlorschCode/Gussets/45 Degree Gusset (275-1186).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/45%20Degree%20Gusset%20%28275-1186%29.step",
+    "sha256": "a3e9de7ccaa1a0ad672b47a74cbeed1d3444d520044f13bb563ffe797c514590"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/60 Degree Bent Gusset (276-7760-002).step",
+    "size": 432765,
+    "file": "TlorschCode/Gussets/60 Degree Bent Gusset (276-7760-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/60%20Degree%20Bent%20Gusset%20%28276-7760-002%29.step",
+    "sha256": "8403ffaeae8ad962d5591aac6601f631bfee2c76edfe03f06d6669340e3c75a2"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/60 Degree Flat Gusset (276-7760-001).step",
+    "size": 181851,
+    "file": "TlorschCode/Gussets/60 Degree Flat Gusset (276-7760-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/60%20Degree%20Flat%20Gusset%20%28276-7760-001%29.step",
+    "sha256": "ac071e4b51efda8fac27873ac8d9e1fcf4c6e1b3d8293919fd6522b18b3be266"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/90 Degree Bent Gusset (276-7761-002).step",
+    "size": 352763,
+    "file": "TlorschCode/Gussets/90 Degree Bent Gusset (276-7761-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/90%20Degree%20Bent%20Gusset%20%28276-7761-002%29.step",
+    "sha256": "11db4d9eeee5818cc4128894d4e81c1ce47bf89d9a676b6f72f40a0bc38510bc"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/90 Degree Flat Gusset (276-7761-001).step",
+    "size": 231480,
+    "file": "TlorschCode/Gussets/90 Degree Flat Gusset (276-7761-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/90%20Degree%20Flat%20Gusset%20%28276-7761-001%29.step",
+    "sha256": "d9d92416ac1a55067e3938407fe7c417fec6183c064d76be24d02a7da602bfac"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/90-Degree Gusset Set - Angle (276-2577).step",
+    "size": 98097,
+    "file": "TlorschCode/Gussets/90-Degree Gusset Set - Angle (276-2577).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/90-Degree%20Gusset%20Set%20-%20Angle%20%28276-2577%29.step",
+    "sha256": "d620c8353359fec69cd37478030a695b057675ca49d1e520385eae9d73ae4f90"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/90-Degree Gusset Set - Plate (276-2577).step",
+    "size": 163464,
+    "file": "TlorschCode/Gussets/90-Degree Gusset Set - Plate (276-2577).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/90-Degree%20Gusset%20Set%20-%20Plate%20%28276-2577%29.step",
+    "sha256": "32d1485282c2ce75b52b83a477b35a24f0150122daaedec648a69bcabdd8dc56"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/Angle Corner Gusset (276-2576).step",
+    "size": 971846,
+    "file": "TlorschCode/Gussets/Angle Corner Gusset (276-2576).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/Angle%20Corner%20Gusset%20%28276-2576%29.step",
+    "sha256": "878f173684d8d54bbae10e15c6b7bb05ef94682fbd639e18c3f701521a09b373"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/Angle Coupler Gusset (276-2578).step",
+    "size": 483069,
+    "file": "TlorschCode/Gussets/Angle Coupler Gusset (276-2578).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/Angle%20Coupler%20Gusset%20%28276-2578%29.step",
+    "sha256": "68136672a79255a7a5ccf09d2956f014cdbea56d945713b4374584d5220779af"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/C-Channel Coupler Gusset (276-2575).step",
+    "size": 276221,
+    "file": "TlorschCode/Gussets/C-Channel Coupler Gusset (276-2575).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/C-Channel%20Coupler%20Gusset%20%28276-2575%29.step",
+    "sha256": "4ff97e543f4efdfb8f562010f5a7325bd97b27e49ed3f760b4ac0707d55cb828"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/Gusset Pack - Angle (276-1110).step",
+    "size": 83466,
+    "file": "TlorschCode/Gussets/Gusset Pack - Angle (276-1110).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/Gusset%20Pack%20-%20Angle%20%28276-1110%29.step",
+    "sha256": "c42eae6006a5658e65ba0ee8a83d0acb46985adcb19b5350fdb70d1041a995d3"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/Gusset Pack - Pivot (276-1110).step",
+    "size": 135548,
+    "file": "TlorschCode/Gussets/Gusset Pack - Pivot (276-1110).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/Gusset%20Pack%20-%20Pivot%20%28276-1110%29.step",
+    "sha256": "6e450b58b117fc09cfb83dd5aa767b85f10f0743934cf54f62fcf73e77c539bf"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Gussets/Gusset Pack - Plus (276-1110).step",
+    "size": 152991,
+    "file": "TlorschCode/Gussets/Gusset Pack - Plus (276-1110).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Gussets/Gusset%20Pack%20-%20Plus%20%28276-1110%29.step",
+    "sha256": "516733e7034963f5d364ff8fa8487c7e3849fef217e1a4c744c0b5d5dd22be2c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Misc. Metal/Rack Gearbox Bracket v2 (276-5771).step",
+    "size": 686959,
+    "file": "TlorschCode/Misc. Metal/Rack Gearbox Bracket v2 (276-5771).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Misc.%20Metal/Rack%20Gearbox%20Bracket%20v2%20%28276-5771%29.step",
+    "sha256": "39c3c4a2d5b7559d362059909e081595210689cfe1271afa7cdcd5000415ffb6"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Motors/V5 Smart Motor (276-4840).step",
+    "size": 16618822,
+    "file": "TlorschCode/Motors/V5 Smart Motor (276-4840).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Motors/V5%20Smart%20Motor%20%28276-4840%29.step",
+    "sha256": "9bd41c17344a6fc6ea8ec7d2c7305caf5840bd06491d478a476d3acc7ab99bf8"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Motors/V5 Smart Motor (5.5W) (276-4842).step",
+    "size": 695005,
+    "file": "TlorschCode/Motors/V5 Smart Motor (5.5W) (276-4842).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Motors/V5%20Smart%20Motor%20%285.5W%29%20%28276-4842%29.step",
+    "sha256": "70071d3db5f183260b348868baf413636b27281b7c105937ccb9d6546e37e0d9"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Plastic Containers/V5 Battery Clip (276-6020).step",
+    "size": 1017891,
+    "file": "TlorschCode/Plastic Containers/V5 Battery Clip (276-6020).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Plastic%20Containers/V5%20Battery%20Clip%20%28276-6020%29.step",
+    "sha256": "962c8a2bf8527113896072803c7ecc3cd624dbb2a774c7e2004dfcd6be5c73c2"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Plates/15x30 Base Plate (276-1341).step",
+    "size": 5349428,
+    "file": "TlorschCode/Plates/15x30 Base Plate (276-1341).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Plates/15x30%20Base%20Plate%20%28276-1341%29.step",
+    "sha256": "7704df163f9704f9fc853d8ba572b53ffa132ce93e80f6ac7b6401742ff76887"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Plates/5x25 Steel Plate (275-1140).step",
+    "size": 2589089,
+    "file": "TlorschCode/Plates/5x25 Steel Plate (275-1140).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Plates/5x25%20Steel%20Plate%20%28275-1140%29.step",
+    "sha256": "a0f4046d487ebe10dcbea677bb24063d78351fa977270d7dca3aa20606ba7a62"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Pneumatics/25mm Stroke Pneumatic Cylinder.step",
+    "size": 109167,
+    "file": "TlorschCode/Pneumatics/25mm Stroke Pneumatic Cylinder.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Pneumatics/25mm%20Stroke%20Pneumatic%20Cylinder.step",
+    "sha256": "cb2edf5fe58d32ed312815fc5f46ee093b41e6ce06e1bf7a1847810615e6d7bb"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Pneumatics/50mm Stroke Pneumatic Cylinder.step",
+    "size": 107784,
+    "file": "TlorschCode/Pneumatics/50mm Stroke Pneumatic Cylinder.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Pneumatics/50mm%20Stroke%20Pneumatic%20Cylinder.step",
+    "sha256": "046f42a972fd5cb68474662d05bd6680bdff6ebf3cdf517548ef7f0a77c8b2ea"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Pneumatics/75mm Stroke Pneumatic Cylinder.step",
+    "size": 110434,
+    "file": "TlorschCode/Pneumatics/75mm Stroke Pneumatic Cylinder.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Pneumatics/75mm%20Stroke%20Pneumatic%20Cylinder.step",
+    "sha256": "9dbfcc78e36ed565b4591ebb83f9b52ba35ee9ab952702bd154978cb69607d0e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Pneumatics/Pneumatic Reservoir Assembly.step",
+    "size": 85687,
+    "file": "TlorschCode/Pneumatics/Pneumatic Reservoir Assembly.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Pneumatics/Pneumatic%20Reservoir%20Assembly.step",
+    "sha256": "4a9cf60a94df268d0f3ff1d7ab06927a0e41884f51d9bed97fec2d02c370d82e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Pneumatics/Schrader Valve.step",
+    "size": 118691,
+    "file": "TlorschCode/Pneumatics/Schrader Valve.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Pneumatics/Schrader%20Valve.step",
+    "sha256": "5829cd07ade7e10236b593f5d1c029bbe60fbf23944fa3d8bedf16b857948f6a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Retainers/1-Post Hex Nut Retainer (276-6482).step",
+    "size": 782447,
+    "file": "TlorschCode/Retainers/1-Post Hex Nut Retainer (276-6482).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Retainers/1-Post%20Hex%20Nut%20Retainer%20%28276-6482%29.step",
+    "sha256": "afcf076e45611ee52ff66010ab279b38e0fe2a4e629ba4dc29d0f96db143883c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Retainers/1-Post Hex Nut Retainer w_ Bearing Flat (276-6481).step",
+    "size": 973478,
+    "file": "TlorschCode/Retainers/1-Post Hex Nut Retainer w_ Bearing Flat (276-6481).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Retainers/1-Post%20Hex%20Nut%20Retainer%20w_%20Bearing%20Flat%20%28276-6481%29.step",
+    "sha256": "5da64f64c2f0c83fd73f0d4a6439827a7ea35815c8000926469f81d0834c1a7a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Retainers/4-Post Hex Nut Retainer (276-6483).step",
+    "size": 1030914,
+    "file": "TlorschCode/Retainers/4-Post Hex Nut Retainer (276-6483).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Retainers/4-Post%20Hex%20Nut%20Retainer%20%28276-6483%29.step",
+    "sha256": "7ac2b4f714d832155608ff0f6b0c228c81b6dac039b5ae1970729c05214bc72d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Nuts/#8-32 Hex Nut (275-1028).step",
+    "size": 64139,
+    "file": "TlorschCode/Screws and Nuts/Nuts/#8-32 Hex Nut (275-1028).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Nuts/%238-32%20Hex%20Nut%20%28275-1028%29.step",
+    "sha256": "9047902235ebc48b258a29bf07c0e958827cef7a040ad7b077422681bca2e656"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Nuts/#8-32 Keps Nut (275-1026).step",
+    "size": 194648,
+    "file": "TlorschCode/Screws and Nuts/Nuts/#8-32 Keps Nut (275-1026).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Nuts/%238-32%20Keps%20Nut%20%28275-1026%29.step",
+    "sha256": "3f4e67491c99e1e4dc43b1ccf2d35f38cc24d51b19bc98b2a683d6fd83e7dcb3"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Nuts/#8-32 Low Profile Nut (276-7767).step",
+    "size": 49071,
+    "file": "TlorschCode/Screws and Nuts/Nuts/#8-32 Low Profile Nut (276-7767).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Nuts/%238-32%20Low%20Profile%20Nut%20%28276-7767%29.step",
+    "sha256": "5de7edc896cb181ddf0dd103ccbea703d90c822bdca2e3d4ca6e89c3611b4d13"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Nuts/#8-32 Nylock Nut (275-1027).step",
+    "size": 71826,
+    "file": "TlorschCode/Screws and Nuts/Nuts/#8-32 Nylock Nut (275-1027).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Nuts/%238-32%20Nylock%20Nut%20%28275-1027%29.step",
+    "sha256": "025b7b024267d7c62e2dad31aae2145d2ce2ee5ef2fbd572d000e31554582165"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Nuts/Lead Screw Nut (276-2045-031).step",
+    "size": 1591025,
+    "file": "TlorschCode/Screws and Nuts/Nuts/Lead Screw Nut (276-2045-031).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Nuts/Lead%20Screw%20Nut%20%28276-2045-031%29.step",
+    "sha256": "14e302faf71769f84a6bfddead8f48a4c441bbb123e514ca91b804d1c63b4752"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Rubber Bumper (276-7499).step",
+    "size": 39274,
+    "file": "TlorschCode/Screws and Nuts/Rubber Bumper (276-7499).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Rubber%20Bumper%20%28276-7499%29.step",
+    "sha256": "cce91dc9f30fbe0efd40ee7ce8906d1a3c538f9cb4b1bbc68b2adeacbdb82511"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.25 Inch Star Drive Screw.step",
+    "size": 113254,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.25 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.25%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "f97000652d47907a3e3fb5e4e0804ceca6fb2e1aee025a1e6e7cc6041f337704"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.375 Inch Star Drive Screw.step",
+    "size": 111487,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.375 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.375%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "fe1533dbb69423319b5e36f46fa2b6ffdf8bbcab055288af949ece2fee2362e2"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.50 Inch Star Drive Screw.step",
+    "size": 109281,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.50 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.50%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "e20f261a407fcfcb50bfd6a53f625a3116f8f26ef961e5f7f1172b9caf58308c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.625 Inch Star Drive Screw.step",
+    "size": 113249,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.625 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.625%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "c8ebcc9a4a8f08def3ff5139a35ec787b53acc5bbdd51a0a84af431bbaada761"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.75 in Star Drive Screw.step",
+    "size": 111474,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.75 in Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.75%20in%20Star%20Drive%20Screw.step",
+    "sha256": "5484c771de3ecd02c1b273fce7a52aa254e2d7fea3f2f98e7a66b9d9920a2fca"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/0.875 Inch Star Drive Screw.step",
+    "size": 111496,
+    "file": "TlorschCode/Screws and Nuts/Screws/0.875 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/0.875%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "4c66b191b2e731467337e2cc4a87d11133a9c9e4858aa9dbab814f50ee90ddc7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/1.00 Inch Star Drive Screw.step",
+    "size": 111493,
+    "file": "TlorschCode/Screws and Nuts/Screws/1.00 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/1.00%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "f2129249b617c4ed47fc025e5923c787940b77ade6357cf776036adb2dbe1d0a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/1.25 Inch Star Drive Screw.step",
+    "size": 113263,
+    "file": "TlorschCode/Screws and Nuts/Screws/1.25 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/1.25%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "e9b77c3ef14d1a7f97aafeb45ed2db8c1defae0fe9965d9f818116af78736b9a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/1.50 Inch Star Drive Screw.step",
+    "size": 111489,
+    "file": "TlorschCode/Screws and Nuts/Screws/1.50 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/1.50%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "bb5b8aec09f337b9c423be56efedb4781945b116ef0b34c0bcc9dd678ecb63b9"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/1.75 Inch Star Drive Screw.step",
+    "size": 113241,
+    "file": "TlorschCode/Screws and Nuts/Screws/1.75 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/1.75%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "1706fa3a715c6e2444da88ee221c04a7a59305510dc51b8772a54bd43c48431e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/2.00 Inch Star Drive Screw.step",
+    "size": 111499,
+    "file": "TlorschCode/Screws and Nuts/Screws/2.00 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/2.00%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "802f280ca301766110cd6ad6aa81b50eeee8e407427dce12245194479d4ef4f6"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Screws and Nuts/Screws/2.50 Inch Star Drive Screw.step",
+    "size": 112771,
+    "file": "TlorschCode/Screws and Nuts/Screws/2.50 Inch Star Drive Screw.step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Screws%20and%20Nuts/Screws/2.50%20Inch%20Star%20Drive%20Screw.step",
+    "sha256": "421083df6805a2b3190aaf00fce8d9a6a54bce9fed8ddfd430d0e975a6f033dd"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Bumper Switch v2 (276-4858).step",
+    "size": 10217970,
+    "file": "TlorschCode/Sensors/Bumper Switch v2 (276-4858).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Bumper%20Switch%20v2%20%28276-4858%29.step",
+    "sha256": "9288795a6dcf5081f958943174f317a36d36b44d86eaedcfbb8bf217e3f135e7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Legacy/Bumper Switch (276-2159).step",
+    "size": 2626389,
+    "file": "TlorschCode/Sensors/Legacy/Bumper Switch (276-2159).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Legacy/Bumper%20Switch%20%28276-2159%29.step",
+    "sha256": "bb7bfdf3a26d9e3ad3f4f6571597b194323863eda9e2d57a785a2d664e5dae1c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Light Sensor (276-2158).step",
+    "size": 1942269,
+    "file": "TlorschCode/Sensors/Light Sensor (276-2158).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Light%20Sensor%20%28276-2158%29.step",
+    "sha256": "8a2d60b8f0cf10f58ba28609c54e3f6a3ad789b53548bcf8b908c1ce58934461"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Limit Switch (276-2174).step",
+    "size": 1031461,
+    "file": "TlorschCode/Sensors/Limit Switch (276-2174).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Limit%20Switch%20%28276-2174%29.step",
+    "sha256": "60f2a761ebc11b0cc441344672d9a16d011fa05e22a7d5b0cefaaad1abd40f9f"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Line Tracker (276-2154).step",
+    "size": 1964602,
+    "file": "TlorschCode/Sensors/Line Tracker (276-2154).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Line%20Tracker%20%28276-2154%29.step",
+    "sha256": "1f932259016b031f325de518f6da243fa4da96b45768026cef3da5752091212b"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Optical Shaft Encoder (276-2156).step",
+    "size": 4828835,
+    "file": "TlorschCode/Sensors/Optical Shaft Encoder (276-2156).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Optical%20Shaft%20Encoder%20%28276-2156%29.step",
+    "sha256": "d5e1c1fea97310cd4bae177a233bdeea2dcc1dc92f7ceb0981ba17028bc44e54"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Potentiometer V2 (276-7417).step",
+    "size": 4727524,
+    "file": "TlorschCode/Sensors/Potentiometer V2 (276-7417).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Potentiometer%20V2%20%28276-7417%29.step",
+    "sha256": "93d2b75c5b65ef83db984e25d611d6175bdf81507064306fb4c31f37fdd481ca"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/Ultrasonic Range Finder (276-2155).step",
+    "size": 2481814,
+    "file": "TlorschCode/Sensors/Ultrasonic Range Finder (276-2155).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/Ultrasonic%20Range%20Finder%20%28276-2155%29.step",
+    "sha256": "86a5926d9dda9ddce047b4a146808ba9200c2c0bd2414348f4eb6db78ee6acb9"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Distance Sensor (276-4852).step",
+    "size": 3376572,
+    "file": "TlorschCode/Sensors/V5 Distance Sensor (276-4852).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Distance%20Sensor%20%28276-4852%29.step",
+    "sha256": "1a239219cee020759f6e644ded1cf6b9ef55dd6e271958a52b3bd00956a84940"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Inertial Sensor (276-4855).step",
+    "size": 1188104,
+    "file": "TlorschCode/Sensors/V5 Inertial Sensor (276-4855).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Inertial%20Sensor%20%28276-4855%29.step",
+    "sha256": "3eb4fd21131fd2f7d8c22b3a16ae99f3dbb542d5a0597d99402aed988334bd7a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Optical Sensor (276-7043).step",
+    "size": 3464326,
+    "file": "TlorschCode/Sensors/V5 Optical Sensor (276-7043).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Optical%20Sensor%20%28276-7043%29.step",
+    "sha256": "6fc228a07c5a38368bf64f8a8009e8baf989fcb8b5f1510b0e50a8ebcd20b260"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Robot Battery (276-4811).step",
+    "size": 13777198,
+    "file": "TlorschCode/Sensors/V5 Robot Battery (276-4811).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Robot%20Battery%20%28276-4811%29.step",
+    "sha256": "236e35ba96187724da95a7a2fbd275387aa3436a914f54faa99304f4d69e7546"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Robot Radio (276-4831).step",
+    "size": 6098612,
+    "file": "TlorschCode/Sensors/V5 Robot Radio (276-4831).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Robot%20Radio%20%28276-4831%29.step",
+    "sha256": "d414bab08edeb1c1c4467c9a7ae856e39ca2ee71949de7c626c803facb3c1d14"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sensors/V5 Rotation Sensor (276-6050).step",
+    "size": 3141274,
+    "file": "TlorschCode/Sensors/V5 Rotation Sensor (276-6050).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sensors/V5%20Rotation%20Sensor%20%28276-6050%29.step",
+    "sha256": "88f45ec6dd5c8d1d5bbb2e6c74eca2ae5cac375a16c3e1ec16a97492bf7efc8e"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shaft Collars/Clamping Shaft Collar (276-3891).step",
+    "size": 581079,
+    "file": "TlorschCode/Shaft Collars/Clamping Shaft Collar (276-3891).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shaft%20Collars/Clamping%20Shaft%20Collar%20%28276-3891%29.step",
+    "sha256": "9636b6d9063ddc43de37c6a37cebb8a3e7810be33f4fd6bb81f576d6ea441e17"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shaft Collars/High Strength Clamping Shaft Collar (276-3520).step",
+    "size": 371254,
+    "file": "TlorschCode/Shaft Collars/High Strength Clamping Shaft Collar (276-3520).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shaft%20Collars/High%20Strength%20Clamping%20Shaft%20Collar%20%28276-3520%29.step",
+    "sha256": "6afc8b7f7ef62194a17e9345e5edab5c0ad6bfb577fd5fe027810ae990a176b4"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shaft Collars/Low Profile High Strength Clamping Shaft Collar (276-7580).step",
+    "size": 115857,
+    "file": "TlorschCode/Shaft Collars/Low Profile High Strength Clamping Shaft Collar (276-7580).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shaft%20Collars/Low%20Profile%20High%20Strength%20Clamping%20Shaft%20Collar%20%28276-7580%29.step",
+    "sha256": "ac807ec50f8b671ce430e02e61f674c3c3cb45fddb9109b0bd031d353f64b48c"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shaft Collars/Shaft Collar (276-2010).step",
+    "size": 748841,
+    "file": "TlorschCode/Shaft Collars/Shaft Collar (276-2010).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shaft%20Collars/Shaft%20Collar%20%28276-2010%29.step",
+    "sha256": "f926615ba64e9e39a45a49ea85310a30efdd45dd27b340aede95dee31a6511e7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shaft Collars/Shaft Collar Retainer with Bearing Flat (276-8024).step",
+    "size": 1166540,
+    "file": "TlorschCode/Shaft Collars/Shaft Collar Retainer with Bearing Flat (276-8024).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shaft%20Collars/Shaft%20Collar%20Retainer%20with%20Bearing%20Flat%20%28276-8024%29.step",
+    "sha256": "aa2799b7cbf146e5a232d7861abdc63d65863aa4192716c2f140b28655458b79"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Shafts (axles)/High Strength/12 High Strength Shaft (276-3524).step",
+    "size": 73098,
+    "file": "TlorschCode/Shafts (axles)/High Strength/12 High Strength Shaft (276-3524).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Shafts%20%28axles%29/High%20Strength/12%20High%20Strength%20Shaft%20%28276-3524%29.step",
+    "sha256": "f65426c29afaa9ede95aab3f07a74c626a5c8a3a24b79456ce28ebce644c20cf"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_16 High Strength Shaft Spacer (276-3441-001).step",
+    "size": 244627,
+    "file": "TlorschCode/Spacers/1_16 High Strength Shaft Spacer (276-3441-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_16%20High%20Strength%20Shaft%20Spacer%20%28276-3441-001%29.step",
+    "sha256": "e82b58c82d3e4f6c7360dc2eb22fb14299559cec50c6ea0c11081607b2867bbb"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_2 High Strength Shaft Spacer (276-3441-004).step",
+    "size": 249747,
+    "file": "TlorschCode/Spacers/1_2 High Strength Shaft Spacer (276-3441-004).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_2%20High%20Strength%20Shaft%20Spacer%20%28276-3441-004%29.step",
+    "sha256": "34f941270a857f439b8dc7594c8941b80be9306ab4e58fab008ae05b8c1d6618"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_2 Nylon Spacer (275-1066-004).step",
+    "size": 17474,
+    "file": "TlorschCode/Spacers/1_2 Nylon Spacer (275-1066-004).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_2%20Nylon%20Spacer%20%28275-1066-004%29.step",
+    "sha256": "e15e54ab73d2b20fbad5f71e5933d21dc664c758973cdec585254d4dcb63bba7"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_4 High Strength Shaft Spacer (276-3441-003).step",
+    "size": 243825,
+    "file": "TlorschCode/Spacers/1_4 High Strength Shaft Spacer (276-3441-003).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_4%20High%20Strength%20Shaft%20Spacer%20%28276-3441-003%29.step",
+    "sha256": "685c7eff5ca375f7dfac844bebcc88a3ab2289f3328eebf6b114820c92f14c18"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_4 Nylon Spacer (275-1066-002).step",
+    "size": 17467,
+    "file": "TlorschCode/Spacers/1_4 Nylon Spacer (275-1066-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_4%20Nylon%20Spacer%20%28275-1066-002%29.step",
+    "sha256": "5012787b32cd2d8889399efad415c73f1e9fa5cfe73a0bbf712cdcfb4c333c1b"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_8 High Strength Shaft Spacer (276-3441-002).step",
+    "size": 249963,
+    "file": "TlorschCode/Spacers/1_8 High Strength Shaft Spacer (276-3441-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_8%20High%20Strength%20Shaft%20Spacer%20%28276-3441-002%29.step",
+    "sha256": "d6e63540f30c1adbbbb1a338c05ae5aa516a30d082b4779840917358c96d5ad4"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/1_8 Nylon Spacer (275-1066-001).step",
+    "size": 17496,
+    "file": "TlorschCode/Spacers/1_8 Nylon Spacer (275-1066-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/1_8%20Nylon%20Spacer%20%28275-1066-001%29.step",
+    "sha256": "eccaba3ea5bb7d7d12df07ea7fdbae8d334a40abeb0d748cb3e41bc26b79b2d6"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/3_8 Nylon Spacer (275-1066-003).step",
+    "size": 17465,
+    "file": "TlorschCode/Spacers/3_8 Nylon Spacer (275-1066-003).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/3_8%20Nylon%20Spacer%20%28275-1066-003%29.step",
+    "sha256": "69facc14d32508862e0a7d418a2667cf54daf409d05ae9679cb9f3045c4f848d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/4.6mm Plastic Spacer (276-2018).step",
+    "size": 21390,
+    "file": "TlorschCode/Spacers/4.6mm Plastic Spacer (276-2018).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/4.6mm%20Plastic%20Spacer%20%28276-2018%29.step",
+    "sha256": "963f94461bc175bcb83c8bd00c10c40f4bc1a2518e2e79617b645f91b0ca0755"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/8mm Plastic Spacer (276-2019).step",
+    "size": 21372,
+    "file": "TlorschCode/Spacers/8mm Plastic Spacer (276-2019).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/8mm%20Plastic%20Spacer%20%28276-2019%29.step",
+    "sha256": "54449e1b7373abeed681b18edf191b209e3a8129ab42830172be68a827915869"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/Metal Shaft Inserts (276-3881-002).step",
+    "size": 68264,
+    "file": "TlorschCode/Spacers/Metal Shaft Inserts (276-3881-002).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/Metal%20Shaft%20Inserts%20%28276-3881-002%29.step",
+    "sha256": "69795b54e6c657659e8a0ea3ef8e3dbfe18894c05299482b8e74821a375f2b2a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/Plastic Shaft Inserts (276-3881-001).step",
+    "size": 54043,
+    "file": "TlorschCode/Spacers/Plastic Shaft Inserts (276-3881-001).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/Plastic%20Shaft%20Inserts%20%28276-3881-001%29.step",
+    "sha256": "39bd424f310f537e1a653a3df6a9383eb1f817519a6fe800d5c6fe787683399d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/Steel Washer (275-1024).step",
+    "size": 17456,
+    "file": "TlorschCode/Spacers/Steel Washer (275-1024).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/Steel%20Washer%20%28275-1024%29.step",
+    "sha256": "7dffe0920b097db0b8efea9526108fe78b3eb59f4f82d70c55f76fe06dca94c1"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Spacers/Teflon Washer (275-1025).step",
+    "size": 17461,
+    "file": "TlorschCode/Spacers/Teflon Washer (275-1025).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Spacers/Teflon%20Washer%20%28275-1025%29.step",
+    "sha256": "94684c9479c7e4aa478ada43b5e7259ee9ca7574955a4e265aa4a293bb6b5eaf"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sprockets/High Strength/12T High Strength Sprocket (HS Bore) (276-3877).step",
+    "size": 3506946,
+    "file": "TlorschCode/Sprockets/High Strength/12T High Strength Sprocket (HS Bore) (276-3877).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sprockets/High%20Strength/12T%20High%20Strength%20Sprocket%20%28HS%20Bore%29%20%28276-3877%29.step",
+    "sha256": "50bd871684df62989ccdf71b83492f12817850c4fb6d0c1eadb62e5e45c10dc4"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sprockets/High Strength/18T High Strength Sprocket (HS Bore) (276-3878).step",
+    "size": 7583245,
+    "file": "TlorschCode/Sprockets/High Strength/18T High Strength Sprocket (HS Bore) (276-3878).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sprockets/High%20Strength/18T%20High%20Strength%20Sprocket%20%28HS%20Bore%29%20%28276-3878%29.step",
+    "sha256": "29cd67ff275ba466a590d8dde06f648fd5630c72d173085d249186e350cd19bd"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sprockets/High Strength/24T High Strength Sprocket (HS Bore) (276-3879).step",
+    "size": 13019275,
+    "file": "TlorschCode/Sprockets/High Strength/24T High Strength Sprocket (HS Bore) (276-3879).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sprockets/High%20Strength/24T%20High%20Strength%20Sprocket%20%28HS%20Bore%29%20%28276-3879%29.step",
+    "sha256": "cfb1c3728d864849522285f324ecfaec5ce77213ce9f5304d43005064d5b2243"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sprockets/High Strength/30T High Strength Sprocket (HS Bore) (276-3880).step",
+    "size": 15742277,
+    "file": "TlorschCode/Sprockets/High Strength/30T High Strength Sprocket (HS Bore) (276-3880).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sprockets/High%20Strength/30T%20High%20Strength%20Sprocket%20%28HS%20Bore%29%20%28276-3880%29.step",
+    "sha256": "9dfd27c929a4a9075a2ace627026a64d4e0f1e6deaeb831a270d2cecc14c4cdf"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Sprockets/High Strength/6T High Strength Sprocket (HS Bore) (276-3876).step",
+    "size": 1689599,
+    "file": "TlorschCode/Sprockets/High Strength/6T High Strength Sprocket (HS Bore) (276-3876).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Sprockets/High%20Strength/6T%20High%20Strength%20Sprocket%20%28HS%20Bore%29%20%28276-3876%29.step",
+    "sha256": "f3d1d271e761a7729c94f69b849157ea8b3d0f834d302d53389b902eff6edaee"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/1.00 Standoff (275-1016).step",
+    "size": 78030,
+    "file": "TlorschCode/Standoffs/1.00 Standoff (275-1016).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/1.00%20Standoff%20%28275-1016%29.step",
+    "sha256": "0199790800dff607b5126a6ea4084ea5961b0a617fb16989585786ce15b16696"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/1.500 Standoff (275-1017).step",
+    "size": 78283,
+    "file": "TlorschCode/Standoffs/1.500 Standoff (275-1017).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/1.500%20Standoff%20%28275-1017%29.step",
+    "sha256": "69fc190bed9ca5cfdae11a0c6db4dbecb93f62159efbeccd3010b70b68045a4a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/1_2 Standoff (275-1014).step",
+    "size": 78024,
+    "file": "TlorschCode/Standoffs/1_2 Standoff (275-1014).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/1_2%20Standoff%20%28275-1014%29.step",
+    "sha256": "565bc4f4832fcb76a877bb7af058475e3141025bdca22970798dcf375df9695d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/1_4 Standoff (275-1013).step",
+    "size": 76497,
+    "file": "TlorschCode/Standoffs/1_4 Standoff (275-1013).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/1_4%20Standoff%20%28275-1013%29.step",
+    "sha256": "dd000e0b2a7f0ea4f5520b11c2ec44370dd478dae90f593fbfcfe562f5ddd0aa"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/2.00 Standoff  (275-1018).step",
+    "size": 81283,
+    "file": "TlorschCode/Standoffs/2.00 Standoff  (275-1018).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/2.00%20Standoff%20%20%28275-1018%29.step",
+    "sha256": "51ddf7a21aa449e7b8a8261e01f578fd7c5d2d5805f8ba626237334f072886b1"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/2.50 Standoff (275-1019).step",
+    "size": 78019,
+    "file": "TlorschCode/Standoffs/2.50 Standoff (275-1019).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/2.50%20Standoff%20%28275-1019%29.step",
+    "sha256": "8575b1df978b4dca3197e80ce7ce35deb21fca2d5de13e5ef6b6ea3a8a61db7f"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/3.00 Standoff (275-1020).step",
+    "size": 77992,
+    "file": "TlorschCode/Standoffs/3.00 Standoff (275-1020).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/3.00%20Standoff%20%28275-1020%29.step",
+    "sha256": "70e7217dc96473d5ade059ca4e79c61bd1f5072ced0b1f556596af9b070f4778"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/3_4 Standoff (275-1015).step",
+    "size": 76476,
+    "file": "TlorschCode/Standoffs/3_4 Standoff (275-1015).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/3_4%20Standoff%20%28275-1015%29.step",
+    "sha256": "155a845ddb569e44ed53cd16013651759829011d8f0385646c629d74cf5c9e13"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/4.00 Standoff (275-1021).step",
+    "size": 79477,
+    "file": "TlorschCode/Standoffs/4.00 Standoff (275-1021).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/4.00%20Standoff%20%28275-1021%29.step",
+    "sha256": "9ab239621391ec5d6ec139480cf408b1807a7c1a01ec42ab65727289b9d5f271"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/5.00 Standoff (275-1022).step",
+    "size": 77953,
+    "file": "TlorschCode/Standoffs/5.00 Standoff (275-1022).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/5.00%20Standoff%20%28275-1022%29.step",
+    "sha256": "9423e3cecfddb841b1e9ac1c0ee1353993fc3520971cfe27d2e2424434637dba"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Standoffs/6.00 Standoff (275-1023).step",
+    "size": 77977,
+    "file": "TlorschCode/Standoffs/6.00 Standoff (275-1023).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Standoffs/6.00%20Standoff%20%28275-1023%29.step",
+    "sha256": "ed176412c9b3cbd11853bd995d0c82b08c8b1b6102576fc05bb4a122986cfc52"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Unknown & Misc/Cam Follower (276-2045-066).step",
+    "size": 3086109,
+    "file": "TlorschCode/Unknown & Misc/Cam Follower (276-2045-066).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Unknown%20%26%20Misc/Cam%20Follower%20%28276-2045-066%29.step",
+    "sha256": "a2c0a3cb14400f377adf5841d069b35f845bad575e886fcf57c757fac443b283"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Unknown & Misc/Lead Screw Bracket (276-2045-033).step",
+    "size": 5187751,
+    "file": "TlorschCode/Unknown & Misc/Lead Screw Bracket (276-2045-033).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Unknown%20%26%20Misc/Lead%20Screw%20Bracket%20%28276-2045-033%29.step",
+    "sha256": "a93695cb5bc8989e897301320abc36257771b16f0511f2321f876d5c71256cbb"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Flex/1.625 OD Straight Flex Wheel (217-6350).step",
+    "size": 162238,
+    "file": "TlorschCode/Wheels/Flex/1.625 OD Straight Flex Wheel (217-6350).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Flex/1.625%20OD%20Straight%20Flex%20Wheel%20%28217-6350%29.step",
+    "sha256": "43e20023ab9bdb06465a689c05acf37f44e04e9a09d7e033d47453273fe4c891"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Flex/2 OD Straight Flex Wheel (217-6353).step",
+    "size": 162209,
+    "file": "TlorschCode/Wheels/Flex/2 OD Straight Flex Wheel (217-6353).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Flex/2%20OD%20Straight%20Flex%20Wheel%20%28217-6353%29.step",
+    "sha256": "0fb7195da004fdee6c4974de564142410cc5eb76a90786f5549d5af17976e8fb"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Flex/3 OD Straight Flex Wheel (217-6447).step",
+    "size": 390117,
+    "file": "TlorschCode/Wheels/Flex/3 OD Straight Flex Wheel (217-6447).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Flex/3%20OD%20Straight%20Flex%20Wheel%20%28217-6447%29.step",
+    "sha256": "b34dba122536f078e5c6818f862e1f06c51a08b010aa17aa5ab54516fbd44554"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Flex/4 OD Straight Flex Wheel (217-6450).step",
+    "size": 390337,
+    "file": "TlorschCode/Wheels/Flex/4 OD Straight Flex Wheel (217-6450).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Flex/4%20OD%20Straight%20Flex%20Wheel%20%28217-6450%29.step",
+    "sha256": "e187a01aeaa91d5a1001208feac923be6e516cc848a858081ff5751f42893e66"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Normal/2.75 (220mm Travel) Anti-Static Wheel (276-8098).step",
+    "size": 11184077,
+    "file": "TlorschCode/Wheels/Normal/2.75 (220mm Travel) Anti-Static Wheel (276-8098).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Normal/2.75%20%28220mm%20Travel%29%20Anti-Static%20Wheel%20%28276-8098%29.step",
+    "sha256": "f5c0e0ee2d4a5f821c4f2e41833e0378564e52ec16856a0a4609b1d8979be5be"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Normal/3.25 (260mm Travel) Anti-Static Wheel (276-7771).step",
+    "size": 14216895,
+    "file": "TlorschCode/Wheels/Normal/3.25 (260mm Travel) Anti-Static Wheel (276-7771).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Normal/3.25%20%28260mm%20Travel%29%20Anti-Static%20Wheel%20%28276-7771%29.step",
+    "sha256": "8cae7fdd0a0e7c4b9ad87c95b1d549502a3a17d1bf9d6dbe7b8de57ff72ffd1f"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Normal/4 (320mm Travel) Anti-Static Wheel (2-Pack) (276-8103).step",
+    "size": 17635185,
+    "file": "TlorschCode/Wheels/Normal/4 (320mm Travel) Anti-Static Wheel (2-Pack) (276-8103).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Normal/4%20%28320mm%20Travel%29%20Anti-Static%20Wheel%20%282-Pack%29%20%28276-8103%29.step",
+    "sha256": "187be42385f1a4aab2fc5d37d595c34fd6c166fbb980dd374d6b153abac6faf5"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Omni/2.75 Omni-Directional Wheel - Double Roller (276-1902) .step",
+    "size": 12499276,
+    "file": "TlorschCode/Wheels/Omni/2.75 Omni-Directional Wheel - Double Roller (276-1902) .step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Omni/2.75%20Omni-Directional%20Wheel%20-%20Double%20Roller%20%28276-1902%29%20.step",
+    "sha256": "1a353645641bb503d8b3d40fd1bba6b6042578586b4d709a3b2db6e724f33484"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Omni/2\u201d Omni-Directional Wheel (276-9044).step",
+    "size": 5539784,
+    "file": "TlorschCode/Wheels/Omni/2\u201d Omni-Directional Wheel (276-9044).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Omni/2%E2%80%9D%20Omni-Directional%20Wheel%20%28276-9044%29.step",
+    "sha256": "d014aa1a677d7b04c46dc22d3926e839d57dbae7c018aaa5ad1916e26ec78b8d"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Omni/3.25 (260mm Travel) Omni-Directional Anti-Static Wheel (276-8026).step",
+    "size": 3925796,
+    "file": "TlorschCode/Wheels/Omni/3.25 (260mm Travel) Omni-Directional Anti-Static Wheel (276-8026).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Omni/3.25%20%28260mm%20Travel%29%20Omni-Directional%20Anti-Static%20Wheel%20%28276-8026%29.step",
+    "sha256": "88d417508aa5ca1a3d7c8aa72ec9a5f2192735f1b4af3ffa0520a720bba1239a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Omni/4 (320mm Travel) Omni-Directional Anti-Static Wheel (276-8107).step",
+    "size": 5420836,
+    "file": "TlorschCode/Wheels/Omni/4 (320mm Travel) Omni-Directional Anti-Static Wheel (276-8107).step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Omni/4%20%28320mm%20Travel%29%20Omni-Directional%20Anti-Static%20Wheel%20%28276-8107%29.step",
+    "sha256": "909b57ad2a120785c4ca55008f9ead5087cd310c2b199ce14253365dc494afba"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Omni/4 Omni-Directional Wheel (276-2185) .step",
+    "size": 18125283,
+    "file": "TlorschCode/Wheels/Omni/4 Omni-Directional Wheel (276-2185) .step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Omni/4%20Omni-Directional%20Wheel%20%28276-2185%29%20.step",
+    "sha256": "ad4ae39845a844ff7facae0081228743e0e6ac20de6806a4b9e39437f359f39a"
+  },
+  {
+    "repository": "TlorschCode/VEX-V5-Parts-Solidworks-Download",
+    "revision": "c49519327b827f77db3d26052e9486c2db8b4463",
+    "path": "Wheels/Traction/3.25 Traction Wheel (276-3525) .step",
+    "size": 8216241,
+    "file": "TlorschCode/Wheels/Traction/3.25 Traction Wheel (276-3525) .step",
+    "url": "https://raw.githubusercontent.com/TlorschCode/VEX-V5-Parts-Solidworks-Download/c49519327b827f77db3d26052e9486c2db8b4463/Wheels/Traction/3.25%20Traction%20Wheel%20%28276-3525%29%20.step",
+    "sha256": "a758a6629dd0900c6e4f8b5614e2661a5697c4479f06d619fc0d68967ea8d521"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Chain/CHAIN-LINK.STEP",
+    "size": 417954,
+    "file": "62019S/Karl CAD Lib/Chain/CHAIN-LINK.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Chain/CHAIN-LINK.STEP",
+    "sha256": "65e1873c6a11a589e0e3f403da67e465f24af974a57c0e6b3470f49f6964fda5"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Electronics/RJ11 Sensors/Vision_Sensor_276-4850.STEP",
+    "size": 20303981,
+    "file": "62019S/Karl CAD Lib/Electronics/RJ11 Sensors/Vision_Sensor_276-4850.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Electronics/RJ11%20Sensors/Vision_Sensor_276-4850.STEP",
+    "sha256": "e8bfe19f8cb3e6cdf95cb595ff1ef77c916f49e404f052e0bddc5f5346fb16ee"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Electronics/V5/V5_Robot_Brain_276-4810.STEP",
+    "size": 44360788,
+    "file": "62019S/Karl CAD Lib/Electronics/V5/V5_Robot_Brain_276-4810.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Electronics/V5/V5_Robot_Brain_276-4810.STEP",
+    "sha256": "47fdb7eac0fbd6be5b6dcbf74d580dd7fe7a56208db639053d193d43c55329ed"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Gears/HS/Metal_12-Tooth_Pinion_276-2251.STEP",
+    "size": 162578,
+    "file": "62019S/Karl CAD Lib/Gears/HS/Metal_12-Tooth_Pinion_276-2251.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Gears/HS/Metal_12-Tooth_Pinion_276-2251.STEP",
+    "sha256": "6b49e0396ea36df2db576d97e7b93d495876c819f580332bf405a63f96261e53"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Pnuematics/Reservoir.STEP",
+    "size": 126631,
+    "file": "62019S/Karl CAD Lib/Pnuematics/Reservoir.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Pnuematics/Reservoir.STEP",
+    "sha256": "46787b86b233ead0bd3df77e5d3021aece07e6fb5f1f8cec81651ed9e3c5772d"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Shaft and Shaft Hardware/LS/Drive_Shaft_12_276-1149.STEP",
+    "size": 65811,
+    "file": "62019S/Karl CAD Lib/Shaft and Shaft Hardware/LS/Drive_Shaft_12_276-1149.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Shaft%20and%20Shaft%20Hardware/LS/Drive_Shaft_12_276-1149.STEP",
+    "sha256": "4abfbfcdf0ec19df9bee5a55dbb357d9b66276fda39938f6f907c6b192bd96b2"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sliders/276-1926-001 Rev1.STEP",
+    "size": 527555,
+    "file": "62019S/Karl CAD Lib/Sliders/276-1926-001 Rev1.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sliders/276-1926-001%20Rev1.STEP",
+    "sha256": "6ffe20322fca75a5feee4ae408ae32f9643574531f3c73380cf17b10545ce1cb"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sliders/276-1926-003 Rev1.STEP",
+    "size": 2387229,
+    "file": "62019S/Karl CAD Lib/Sliders/276-1926-003 Rev1.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sliders/276-1926-003%20Rev1.STEP",
+    "sha256": "57af18010de88c08179cf73d211fe2eddbdd55755bd32a60632ccf64d506143b"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sliders/276-1926-004 Rev1.STEP",
+    "size": 4375592,
+    "file": "62019S/Karl CAD Lib/Sliders/276-1926-004 Rev1.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sliders/276-1926-004%20Rev1.STEP",
+    "sha256": "bb5901fcd486275daadc163c1cd619e20f115393562a0bc1f3af84f7dc14570e"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sprockets/LS/VEX-10-TOOTH-SPROCKET.STEP",
+    "size": 511843,
+    "file": "62019S/Karl CAD Lib/Sprockets/LS/VEX-10-TOOTH-SPROCKET.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sprockets/LS/VEX-10-TOOTH-SPROCKET.STEP",
+    "sha256": "058ab576ee32d6b5be8032aed892a9c77ac00a4680bd75f359287e0fe0e21b72"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sprockets/LS/VEX-15-TOOTH-SPROCKET.STEP",
+    "size": 668308,
+    "file": "62019S/Karl CAD Lib/Sprockets/LS/VEX-15-TOOTH-SPROCKET.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sprockets/LS/VEX-15-TOOTH-SPROCKET.STEP",
+    "sha256": "e2856e86bd3e45b70b7221e7045c2dd69610495d83e16ab7e729dd1588d52294"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sprockets/LS/VEX-24-TOOTH-SPROCKET.STEP",
+    "size": 1259096,
+    "file": "62019S/Karl CAD Lib/Sprockets/LS/VEX-24-TOOTH-SPROCKET.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sprockets/LS/VEX-24-TOOTH-SPROCKET.STEP",
+    "sha256": "ba29c1d4604f5a2dbda5300abf2c53be7cfe0444c13ea02a399d90c64a84c289"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sprockets/LS/VEX-40-TOOTH-SPROCKET.STEP",
+    "size": 2150609,
+    "file": "62019S/Karl CAD Lib/Sprockets/LS/VEX-40-TOOTH-SPROCKET.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sprockets/LS/VEX-40-TOOTH-SPROCKET.STEP",
+    "sha256": "fce7fea2cf07da4d09beb7662575a7c8b2ee8876ed628942c89f1bce1cd10c50"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Sprockets/LS/VEX-48-TOOTH-SPROCKET.STEP",
+    "size": 2289836,
+    "file": "62019S/Karl CAD Lib/Sprockets/LS/VEX-48-TOOTH-SPROCKET.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Sprockets/LS/VEX-48-TOOTH-SPROCKET.STEP",
+    "sha256": "c401f2b19bdd606894d8ca0c4f2e40c7ad6fa699050109db10792e5b2fc78082"
+  },
+  {
+    "repository": "62019S/2020-2021_CAD",
+    "revision": "c87bf25e57d13623a44a11d64f6f3bc237fb0b3b",
+    "path": "Karl CAD Lib/Wheels/3_25_Omni-Directional_Wheel/3_25_Omni-Directional_Wheel_276-3526.STEP",
+    "size": 18531683,
+    "file": "62019S/Karl CAD Lib/Wheels/3_25_Omni-Directional_Wheel/3_25_Omni-Directional_Wheel_276-3526.STEP",
+    "url": "https://raw.githubusercontent.com/62019S/2020-2021_CAD/c87bf25e57d13623a44a11d64f6f3bc237fb0b3b/Karl%20CAD%20Lib/Wheels/3_25_Omni-Directional_Wheel/3_25_Omni-Directional_Wheel_276-3526.STEP",
+    "sha256": "4ca336bf29506484c4bda30be4c35f856bce0c2777da8d999c9d6d8f82636765"
+  },
+  {
+    "file": "VEX\\4 Mecanum Wheel (276-1447) .step",
+    "path": "4 Mecanum Wheel (276-1447) .step",
+    "url": "https://www.vexrobotics.com/cadmodels/upload/download/upload_id/48be74e3-71e3-459d-95a2-97c751d58e1a",
+    "size": 7225196,
+    "sha256": "273123a97d0ab978768d5ea9ef8c32009ed42e185a7684c20cb39ba87bae2a3b",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX\\276-9250-000 (2026-04-26).STEP",
+    "path": "276-9250-000 (2026-04-26).STEP",
+    "url": "https://link.vex.com/docs/26-27/v5rc/field-cad",
+    "size": 131867705,
+    "sha256": "3f24b7572d21195522ad44f265b358bc96d0f5767920cdc6fc817c2891477a1e",
+    "archiveSHA256": "bfd460063192f2f6ee531175315eb3fdd6325bd4df35ec026c714968a81ceb5e",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX\\276-7500-000 Spin Up - Competition Field.STEP",
+    "path": "276-7500-000 Spin Up - Competition Field.STEP",
+    "url": "https://link.vex.com/docs/2022-2023/vrc-spin-up/FieldCAD",
+    "size": 38886030,
+    "sha256": "424c98d7434048b75775c9e27a4c9055e997822e560f9cecbf359a2e485d55c6",
+    "archiveSHA256": "014b9dbb96e5fecf8d7e54157114d4301e1ba117cbd233d468757fef528ea4f6",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX\\276-8868-000 2024-09-16.STEP",
+    "path": "V5RC-HighStakesCAD-091724/276-8868-000 2024-09-16.STEP",
+    "url": "https://link.vex.com/docs/24-25/vrc-high-stakes/FieldCAD",
+    "size": 136384080,
+    "sha256": "f9ba2b33fda20407df5c5d702ec98f9f7fa99196a284ec17314e0ff60fddd10f",
+    "archiveSHA256": "bedc6aa81fc9c7d870397c16060dc5bd4cf9cbde299fc7fb8b06fb9927caade1",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX\\276-9142 V5RC Push Back.STEP",
+    "path": "25-26-Push-Back-FieldCAD/276-9142 V5RC Push Back.STEP",
+    "url": "https://link.vex.com/docs/25-26/v5rc-pushback-cad",
+    "size": 83407236,
+    "sha256": "1b572361604478a33d04b4292d9e69ad141c29f475547381991b6d665159af74",
+    "archiveSHA256": "7113acceb4e3bde6670b4cff4fdb1c5e7491c843aa340a9eb7084ceb0291ecb6",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX\\#8-32 x 2.250 Star Drive Screw (276-8015).step",
+    "path": "#8-32 x 2.250 Star Drive Screw (276-8015).step",
+    "url": "https://www.vexrobotics.com/cadmodels/upload/download/upload_id/94f1e296-9620-45e4-ac36-7ef1fe39459b",
+    "size": 114309,
+    "sha256": "66b973ad63342f92822831b3c892a2a4c137b69fd5cde25de892db92b18b677c",
+    "retrieved": "2026-10-03",
+    "publisher": "VEX Robotics"
+  },
+  {
+    "file": "VEX/2.75 Wheel (276-1496) .step",
+    "publisher": "VEX Robotics",
+    "url": "https://www.vexrobotics.com/cadmodels/upload/download/upload_id/73a7f11b-0cb0-4038-83fb-013766cd12de",
+    "sha256": "5c5ee4df4b16539b95a3501e6e8863fe9acfd523a7936bc56017d63c400df22c",
+    "size": 12881722,
+    "retrieved": "2026-10-03"
+  }
+]
