@@ -42,6 +42,7 @@ def mappings(files):
         'ANGL-1x1-35':'217-6484','ANGL-2x2-35':'275-1143','ANGL-3x3-35':'275-1144',
         'CCHL-1x2-35':'276-2289','CCHL-1x3-35':'276-4359','CCHL-1x5-35':'276-2298',
         'UCHL-2x2-35':'276-7285','BSPT':'276-1341','RAIL-2x25':'275-1145','RAIL-2x35':'275-1146',
+        'RAILS-2x25':'275-1145','RAILS-2x35':'275-1146',
         'NUT-Lock':'275-1027','NUT-Keps':'275-1026','NUT-Hex':'275-1028','NUT-Low Profile':'276-7767',
         'GSET-Coupler-Angle':'276-2578','GSET-Coupler-Angle Corner':'276-2576','GSET-Coupler-Channel':'276-2575',
         'GSET-45 Degree-Plate':'275-1186','GSET-90 Degree-Angle':'90-Degree Gusset Set - Angle',

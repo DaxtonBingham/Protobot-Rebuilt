@@ -2,6 +2,8 @@
 
 Use **File > Export As... > STEP...** for the current assembly. Export does not modify the PBB. The writer runs in a separate process only while an export is active; it needs no Python, Fusion, FreeCAD, account or network connection on the user's machine.
 
+The bundled STEP worker supports 64-bit Windows. Other platforms offer STL without attempting to start the Windows worker. Upstream structural-rail IDs (`RAILS-2x25` and `RAILS-2x35`) share the reviewed CAD templates used by older `RAIL` saves; linear rails retain their separate IDs.
+
 The output is an AP214 STEP assembly in millimetres, with named component instances, placements, mirrored/scaled geometry and face colors. Repeated parts share definitions. Chain links and automatically displayed shaft inserts are separate components. Poly Maker outlines, Bezier curves, thickness, cutouts and round/elliptical/square holes become analytic CAD solids.
 
 Stock geometry comes from the original CAD sources listed with pinned revisions and SHA-256 hashes in `Assets/StreamingAssets/StepExport/Library/sources.json`. Mesh triangles are used offline to register and compare those sources; they are **not** converted to thousands of planar STEP faces. Closed manufacturer shells are made solid; genuine sheet surfaces such as labels/screens are retained.
