@@ -92,9 +92,12 @@ namespace Protobot.CustomParts {
             CustomHoleShape.Square
         };
 
+        private static float UiScale => Mathf.Clamp(Screen.height / 1080f, 1f, 2.5f);
+        private static float UiWidth => Screen.width / UiScale;
+        private static float UiHeight => Screen.height / UiScale;
         private const float TopBarHeight = 64f;
-        private float LeftPanelWidth => Screen.width < 1150 ? 172f : 208f;
-        private float RightPanelWidth => Screen.width < 1150 ? 264f : 300f;
+        private float LeftPanelWidth => UiWidth < 1150 ? 172f : 208f;
+        private float RightPanelWidth => UiWidth < 1150 ? 264f : 300f;
         private const float BottomMargin = 42f;
         private const float CanvasPadding = 8f;
         private const float PanelDimMargin = 2f;
@@ -317,13 +320,11 @@ namespace Protobot.CustomParts {
         }
 
         private static Vector2 GuiToScreenPixels(Vector2 guiPoint) {
-            Vector2 topLeftScreen = GUIUtility.GUIToScreenPoint(guiPoint);
-            return new Vector2(topLeftScreen.x, Screen.height - topLeftScreen.y);
+            return new Vector2(guiPoint.x * UiScale, Screen.height - guiPoint.y * UiScale);
         }
 
         private static Vector2 ScreenPixelsToGui(Vector3 screenPoint) {
-            Vector2 topLeftScreen = new Vector2(screenPoint.x, Screen.height - screenPoint.y);
-            return GUIUtility.ScreenToGUIPoint(topLeftScreen);
+            return new Vector2(screenPoint.x / UiScale, (Screen.height - screenPoint.y) / UiScale);
         }
 
         private Transform GetActiveSurfaceTransform() {
@@ -622,24 +623,30 @@ namespace Protobot.CustomParts {
 
         private void OnGUI() {
             if (!studioOpen) return;
-            EnsureGuiResources();
+            Matrix4x4 previousMatrix = GUI.matrix;
+            GUI.matrix = Matrix4x4.Scale(new Vector3(UiScale, UiScale, 1f));
+            try {
+                EnsureGuiResources();
 
-            HandleUndoRedoHotkeys();
-            if (!studioOpen) return;
+                HandleUndoRedoHotkeys();
+                if (!studioOpen) return;
 
-            EnsureWorkingDefinition();
-            GUI.enabled = !showCloseDialog;
-            DrawStudioBackdrop();
-            DrawTopBar();
-            DrawLeftPanel();
-            DrawRightPanel();
-            DrawCanvas();
-            DrawWorkspaceFooter();
-            typingInField = !string.IsNullOrEmpty(GUI.GetNameOfFocusedControl());
-            GUI.enabled = true;
+                EnsureWorkingDefinition();
+                GUI.enabled = !showCloseDialog;
+                DrawStudioBackdrop();
+                DrawTopBar();
+                DrawLeftPanel();
+                DrawRightPanel();
+                DrawCanvas();
+                DrawWorkspaceFooter();
+                typingInField = !string.IsNullOrEmpty(GUI.GetNameOfFocusedControl());
+                GUI.enabled = true;
 
-            if (showCloseDialog) {
-                DrawCloseDialog();
+                if (showCloseDialog) {
+                    DrawCloseDialog();
+                }
+            } finally {
+                GUI.matrix = previousMatrix;
             }
         }
 
@@ -651,9 +658,9 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawStudioBackdrop() {
-            Rect topBarRect = new Rect(0f, 0f, Screen.width, TopBarHeight + PanelDimMargin);
-            Rect leftPanelRect = new Rect(0f, TopBarHeight, LeftPanelWidth + PanelDimMargin, Screen.height - TopBarHeight);
-            Rect rightPanelRect = new Rect(Screen.width - RightPanelWidth - PanelDimMargin, TopBarHeight, RightPanelWidth + PanelDimMargin, Screen.height - TopBarHeight);
+            Rect topBarRect = new Rect(0f, 0f, UiWidth, TopBarHeight + PanelDimMargin);
+            Rect leftPanelRect = new Rect(0f, TopBarHeight, LeftPanelWidth + PanelDimMargin, UiHeight - TopBarHeight);
+            Rect rightPanelRect = new Rect(UiWidth - RightPanelWidth - PanelDimMargin, TopBarHeight, RightPanelWidth + PanelDimMargin, UiHeight - TopBarHeight);
 
             Color backdrop = IsStandaloneDefinitionMode ? UiDark10 : BackdropColor;
             DrawFilledRect(topBarRect, backdrop);
@@ -662,11 +669,11 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawTopBar() {
-            DrawFilledRect(new Rect(0, 0, Screen.width, TopBarHeight), UiDark10);
-            DrawFilledRect(new Rect(0, TopBarHeight - 1, Screen.width, 1), UiBorder);
+            DrawFilledRect(new Rect(0, 0, UiWidth, TopBarHeight), UiDark10);
+            DrawFilledRect(new Rect(0, TopBarHeight - 1, UiWidth, 1), UiBorder);
             GUI.Label(new Rect(16, 10, 155, 24), "Poly Maker", headerStyle);
             GUI.Label(new Rect(16, 34, 220, 22), IsStandaloneDefinitionMode ? "Design a custom plate" : "Editing selected part", mutedLabelStyle);
-            float right = Screen.width - 16;
+            float right = UiWidth - 16;
             if (GUI.Button(new Rect(right - 68, 16, 68, 32), "Close", buttonStyle)) RequestCloseStudio();
             GUI.enabled = !showCloseDialog && geometryValid;
             if (GUI.Button(new Rect(right - 220, 16, 144, 32), IsStandaloneDefinitionMode ? "Insert part" : "Apply changes", primaryButtonStyle)) FinishAndInsert();
@@ -675,11 +682,11 @@ namespace Protobot.CustomParts {
                 ? new GUIContent("Save + update copies", "Saving this library design also updates its placed copies. Open a selected part to edit just that instance.")
                 : new GUIContent("Save to library");
             if (GUI.Button(new Rect(right - 362, 16, 134, 32), saveLabel, buttonStyle)) SaveWorkingDefinition();
-            if (Screen.width > 950) GUI.Label(new Rect(LeftPanelWidth + 16, 21, Screen.width - LeftPanelWidth - 402, 24), workingDefinition.name + (hasUnsavedChanges ? "  *" : ""), labelStyle);
+            if (UiWidth > 950) GUI.Label(new Rect(LeftPanelWidth + 16, 21, UiWidth - LeftPanelWidth - 402, 24), workingDefinition.name + (hasUnsavedChanges ? "  *" : ""), labelStyle);
         }
 
         private void DrawLeftPanel() {
-            var rect = new Rect(0, TopBarHeight, LeftPanelWidth, Screen.height - TopBarHeight - BottomMargin);
+            var rect = new Rect(0, TopBarHeight, LeftPanelWidth, UiHeight - TopBarHeight - BottomMargin);
             DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, CurrentPanelAlpha));
             GUILayout.BeginArea(rect, panelStyle);
             GUILayout.Label("WORKSPACE", mutedLabelStyle);
@@ -730,7 +737,7 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawRightPanel() {
-            var rect = new Rect(Screen.width - RightPanelWidth, TopBarHeight, RightPanelWidth, Screen.height - TopBarHeight - BottomMargin);
+            var rect = new Rect(UiWidth - RightPanelWidth, TopBarHeight, RightPanelWidth, UiHeight - TopBarHeight - BottomMargin);
             DrawFilledRect(rect, new Color(UiDark10.r, UiDark10.g, UiDark10.b, CurrentPanelAlpha));
             GUILayout.BeginArea(rect, panelStyle);
             rightPanelScroll = GUILayout.BeginScrollView(rightPanelScroll);
@@ -1036,15 +1043,15 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawWorkspaceFooter() {
-            Rect rect = new Rect(0, Screen.height - BottomMargin, Screen.width, BottomMargin);
+            Rect rect = new Rect(0, UiHeight - BottomMargin, UiWidth, BottomMargin);
             DrawFilledRect(rect, UiDark10);
             DrawFilledRect(new Rect(0, rect.y, rect.width, 1), UiBorder);
             var old = GUI.contentColor;
             GUI.contentColor = geometryValid ? OuterLoopColor : UiWarning;
             string status = !string.IsNullOrEmpty(fileStatus) ? fileStatus : geometryPending ? "Checking geometry...  /  All dimensions in inches" : geometryValid ? "Ready to build  /  All dimensions in inches" : "Check geometry: edges must not cross; holes and cutouts must stay inside the outline.";
-            GUI.Label(new Rect(16, rect.y + 10, Screen.width - 220, 24), new GUIContent(status, status), labelStyle);
+            GUI.Label(new Rect(16, rect.y + 10, UiWidth - 220, 24), new GUIContent(status, status), labelStyle);
             GUI.contentColor = old;
-            GUI.Label(new Rect(Screen.width - 180, rect.y + 10, 166, 24), hasUnsavedChanges ? "Unsaved design" : "Saved to library", mutedLabelStyle);
+            GUI.Label(new Rect(UiWidth - 180, rect.y + 10, 166, 24), hasUnsavedChanges ? "Unsaved design" : "Saved to library", mutedLabelStyle);
         }
 
         private void InvalidateGeometry() {
@@ -1465,8 +1472,8 @@ namespace Protobot.CustomParts {
         }
 
         private void DrawCloseDialog() {
-            DrawFilledRect(new Rect(0, 0, Screen.width, Screen.height), new Color(0, 0, 0, 0.65f));
-            Rect rect = new Rect(Screen.width / 2f - 240, Screen.height / 2f - 100, 480, 200);
+            DrawFilledRect(new Rect(0, 0, UiWidth, UiHeight), new Color(0, 0, 0, 0.65f));
+            Rect rect = new Rect(UiWidth / 2f - 240, UiHeight / 2f - 100, 480, 200);
             GUILayout.BeginArea(rect, panelStyle);
             GUILayout.Label("Keep your changes?", headerStyle);
             GUILayout.Space(12);
@@ -1861,8 +1868,8 @@ namespace Protobot.CustomParts {
         private void DrawCanvas() {
             EnsureWorkingDefinition();
 
-            float width = Screen.width - LeftPanelWidth - RightPanelWidth - (CanvasPadding * 2f);
-            float height = Screen.height - TopBarHeight - BottomMargin - CanvasPadding - 44;
+            float width = UiWidth - LeftPanelWidth - RightPanelWidth - (CanvasPadding * 2f);
+            float height = UiHeight - TopBarHeight - BottomMargin - CanvasPadding - 44;
             if (width <= 20f || height <= 20f) {
                 return;
             }
@@ -3533,8 +3540,8 @@ namespace Protobot.CustomParts {
             float length = delta.magnitude;
 
             GUI.color = color;
-            GUIUtility.RotateAroundPivot(angle, a);
-            GUI.DrawTexture(new Rect(a.x, a.y - width * 0.5f, length, width), oneByOne);
+            GUI.matrix = oldMatrix * Matrix4x4.TRS(a, Quaternion.Euler(0, 0, angle), Vector3.one);
+            GUI.DrawTexture(new Rect(0, -width * 0.5f, length, width), oneByOne);
             GUI.matrix = oldMatrix;
             GUI.color = oldColor;
         }
